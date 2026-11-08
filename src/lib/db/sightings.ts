@@ -21,6 +21,15 @@ function cleanPlate(plate: string | null | undefined): { plate: string | null; p
 	return normalized ? { plate: trimmed, plateNormalized: normalized } : { plate: null, plateNormalized: null };
 }
 
+/**
+ * Copies a location into a plain object. Values coming from Svelte `$state`
+ * are Proxies, which IndexedDB cannot store (DataCloneError).
+ */
+function plainLocation(location: GeoPoint | null | undefined): GeoPoint | null {
+	if (!location) return null;
+	return { lat: location.lat, lng: location.lng, accuracy: location.accuracy ?? null };
+}
+
 export async function addSighting(input: NewSighting, database: SpzDatabase = defaultDb): Promise<Sighting> {
 	const now = Date.now();
 	const sighting: Sighting = {
@@ -29,7 +38,7 @@ export async function addSighting(input: NewSighting, database: SpzDatabase = de
 		regionCode: input.regionCode.toUpperCase(),
 		...cleanPlate(input.plate),
 		seenAt: input.seenAt ?? now,
-		location: input.location ?? null,
+		location: plainLocation(input.location),
 		note: input.note?.trim() ?? '',
 		createdAt: now,
 		updatedAt: now,
@@ -50,6 +59,7 @@ export async function updateSighting(
 	if ('plate' in patch) Object.assign(changes, cleanPlate(patch.plate));
 	if (patch.regionCode) changes.regionCode = patch.regionCode.toUpperCase();
 	if (patch.note !== undefined) changes.note = patch.note.trim();
+	if ('location' in patch) changes.location = plainLocation(patch.location);
 	const updated = await database.sightings.update(id, changes);
 	if (!updated) throw new Error(`Sighting ${id} not found`);
 }

@@ -5,6 +5,7 @@
 	import { i18n, t } from '#lib/i18n/i18n.svelte.js';
 	import type { MessageKey } from '#lib/i18n/messages.js';
 	import UpdatePrompt from '#lib/components/UpdatePrompt.svelte';
+	import Toasts from '#lib/components/Toasts.svelte';
 
 	let { children } = $props();
 
@@ -22,7 +23,8 @@
 	];
 
 	function isActive(href: string): boolean {
-		const path = page.url.pathname.replace(/\/$/, '') || '/';
+		let path = page.url.pathname.replace(/\/$/, '') || '/';
+		if (path.startsWith('/sighting')) path = '/history'; // edit screen belongs to History
 		return href === '/' ? path === '/' : path.startsWith(href);
 	}
 </script>
@@ -45,6 +47,7 @@
 		{/each}
 	</nav>
 
+	<Toasts />
 	<UpdatePrompt />
 </div>
 

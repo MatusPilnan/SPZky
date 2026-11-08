@@ -31,6 +31,14 @@ describe('sightings repository', () => {
 		expect(await db.sightings.get(s.id)).toEqual(s);
 	});
 
+	it('stores locations coming from reactive proxies (Svelte $state)', async () => {
+		const proxied = new Proxy({ lat: 48.1, lng: 17.1, accuracy: 10 }, {});
+		const s = await addSighting({ collectionId: 'sk', regionCode: 'BA', location: proxied }, db);
+		expect((await db.sightings.get(s.id))?.location).toEqual({ lat: 48.1, lng: 17.1, accuracy: 10 });
+		await updateSighting(s.id, { location: new Proxy({ lat: 1, lng: 2, accuracy: null }, {}) }, db);
+		expect((await db.sightings.get(s.id))?.location).toEqual({ lat: 1, lng: 2, accuracy: null });
+	});
+
 	it('stores quick entries without a plate', async () => {
 		const s = await addSighting({ collectionId: 'cz', regionCode: 'A', plate: '  ' }, db);
 		expect(s.plate).toBeNull();

@@ -31,7 +31,8 @@
 		position: fixed;
 		left: 1rem;
 		right: 1rem;
-		bottom: calc(var(--nav-height) + 1rem + env(safe-area-inset-bottom));
+		/* Top of the screen, so it never collides with toasts above the nav bar. */
+		top: calc(3.5rem + env(safe-area-inset-top));
 		z-index: 20;
 		margin: 0 auto;
 		max-width: 28rem;

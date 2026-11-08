@@ -1,15 +1,12 @@
 <script lang="ts">
 	import { liveQuery } from 'dexie';
-	import { listSightings, deleteSighting } from '#lib/db/sightings.js';
-	import { getCollection } from '#lib/collections.js';
+	import { resolve } from '$app/paths';
+	import { listSightings } from '#lib/db/sightings.js';
+	import { getCollection, getRegion } from '#lib/collections.js';
 	import { formatDateTime, t } from '#lib/i18n/i18n.svelte.js';
 	import PlateBadge from '#lib/components/PlateBadge.svelte';
 
 	const sightings = liveQuery(() => listSightings());
-
-	async function remove(id: string) {
-		if (confirm(t('history.confirmDelete'))) await deleteSighting(id);
-	}
 </script>
 
 <h1>{t('history.title')}</h1>
@@ -20,20 +17,23 @@
 	<ul>
 		{#each $sightings as s (s.id)}
 			{@const collection = getCollection(s.collectionId)}
-			<li class="card">
-				<div class="main">
-					<PlateBadge
-						text={s.plate ?? s.regionCode}
-						country={collection?.country ?? '?'}
-						muted={s.plate === null}
-					/>
-					<div class="meta muted">
-						{collection?.flag ?? ''}
-						{s.regionCode} · {formatDateTime(s.seenAt)}
-						{#if s.plate === null}· {t('history.quickEntry')}{/if}
+			<li>
+				<a class="card item" href="{resolve('/sighting')}?id={encodeURIComponent(s.id)}">
+					<PlateBadge text={s.plate ?? s.regionCode} country={collection?.country ?? '?'} muted={s.plate === null} />
+					<div class="meta">
+						<span>
+							{collection?.flag}
+							<strong>{s.regionCode}</strong>
+							{getRegion(s.collectionId, s.regionCode)?.name ?? ''}
+						</span>
+						<span class="muted small">
+							{formatDateTime(s.seenAt)}
+							{#if s.plate === null}· {t('history.quickEntry')}{/if}
+							{#if s.location}· 📍{/if}
+						</span>
+						{#if s.note}<span class="muted small note">{s.note}</span>{/if}
 					</div>
-				</div>
-				<button class="btn danger" onclick={() => remove(s.id)} aria-label={t('history.delete')}>✕</button>
+				</a>
 			</li>
 		{/each}
 	</ul>
@@ -48,21 +48,28 @@
 		flex-direction: column;
 		gap: 0.5rem;
 	}
-	li {
+	.item {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: 0.75rem;
+		gap: 0.9rem;
 		padding: 0.75rem;
-	}
-	.main {
-		display: flex;
-		flex-direction: column;
-		gap: 0.35rem;
-		min-width: 0;
-		font-size: 1.1rem;
+		color: inherit;
+		text-decoration: none;
+		font-size: 1.05rem;
 	}
 	.meta {
-		font-size: 0.85rem;
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		font-size: 0.95rem;
+		line-height: 1.35;
+	}
+	.small {
+		font-size: 0.8rem;
+	}
+	.note {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 </style>

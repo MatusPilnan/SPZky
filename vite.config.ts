@@ -46,6 +46,10 @@ export default defineConfig({
 				},
 				// Static files, built assets and prerendered pages are precached by
 				// the SvelteKit integration's defaults.
+				generateSW: {
+					// /sighting?id=… must hit the precached /sighting shell.
+					ignoreURLParametersMatching: [/^utm_/, /^fbclid$/, /^id$/]
+				},
 				devOptions: {
 					enabled: false
 				}
