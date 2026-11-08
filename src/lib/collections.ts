@@ -1,18 +1,29 @@
-// Minimal collection registry. Phase 2 extends each entry with plate patterns
-// and the full list of regions (codes, names, map ids).
-export interface CollectionInfo {
-	id: 'sk' | 'cz' | 'cz-vintage';
-	/** ISO country code shown in the plate's EU band. */
-	country: 'SK' | 'CZ';
-	flag: string;
-}
+import { czRegions } from './data/cz';
+import { czVintageRegions } from './data/cz-vintage';
+import { skRegions } from './data/sk';
+import type { CollectionDef, CollectionId, Region } from './data/types';
 
-export const collections: CollectionInfo[] = [
-	{ id: 'sk', country: 'SK', flag: '🇸🇰' },
-	{ id: 'cz', country: 'CZ', flag: '🇨🇿' },
-	{ id: 'cz-vintage', country: 'CZ', flag: '🇨🇿' }
+export type { CollectionDef, CollectionId, Region };
+
+export const collections: CollectionDef[] = [
+	{ id: 'sk', country: 'SK', flag: '🇸🇰', bonus: false, regions: skRegions },
+	{ id: 'cz', country: 'CZ', flag: '🇨🇿', bonus: false, regions: czRegions },
+	{ id: 'cz-vintage', country: 'CZ', flag: '🇨🇿', bonus: true, regions: czVintageRegions }
 ];
 
-export function getCollection(id: string): CollectionInfo | undefined {
-	return collections.find((c) => c.id === id);
+const byId = new Map(collections.map((c) => [c.id as string, c]));
+const regionIndex = new Map(
+	collections.map((c) => [c.id as string, new Map(c.regions.map((r) => [r.code, r]))])
+);
+
+export function getCollection(id: string): CollectionDef | undefined {
+	return byId.get(id);
+}
+
+export function getRegion(collectionId: string, code: string): Region | undefined {
+	return regionIndex.get(collectionId)?.get(code);
+}
+
+export function isCollectionId(id: string): id is CollectionId {
+	return byId.has(id);
 }
