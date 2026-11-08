@@ -9,13 +9,20 @@ Node **22.17+** (see `.nvmrc`). On an older Node the npm scripts stop with a ver
 With [fnm](https://github.com/Schniz/fnm), in each new PowerShell terminal:
 
 ```powershell
+[Console]::OutputEncoding = [Text.Encoding]::UTF8             # see note below
 fnm env --shell powershell | Out-String | Invoke-Expression   # activate fnm in this shell
 fnm use                                                      # picks up .nvmrc
 ```
 
+> **Note (Windows PowerShell 5.1):** `fnm env` prints UTF-8, but PowerShell decodes native
+> output with the console code page (e.g. IBM 852). If your user path contains non-ASCII
+> characters, the paths get garbled, PATH is broken and `fnm` stops being found
+> ("The term 'fnm' is not recognized"). Setting the console output encoding to UTF-8 first fixes it.
+
 To make fnm switch automatically instead, add this to your `$PROFILE`:
 
 ```powershell
+[Console]::OutputEncoding = [Text.Encoding]::UTF8
 fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
 ```
 
