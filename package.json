@@ -18,6 +18,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"pretest": "node scripts/check-node.cjs",
 		"test": "vitest run",
+		"presmoke": "node scripts/check-node.cjs",
+		"smoke": "vite build && node scripts/smoke.mjs",
 		"icons": "pwa-assets-generator"
 	},
 	"devDependencies": {
@@ -29,6 +31,7 @@
 		"@vite-pwa/sveltekit": "^2.0.1",
 		"fake-indexeddb": "^6.2.8",
 		"magicast": "^0.5.5",
+		"puppeteer-core": "^24.43.1",
 		"svelte": "^5.57.3",
 		"svelte-check": "^4.7.8",
 		"tslib": "^2.9.1",
