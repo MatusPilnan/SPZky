@@ -15,6 +15,7 @@ per country by how many regional codes have been found.
 | Stack                  | SvelteKit (static, prerendered client-only shells) + `@vite-pwa/sveltekit`, Dexie (IndexedDB)           |
 | Sync backend           | Supabase (auth + Postgres + row-level security); local DB stays the source of truth (offline-first)     |
 | UI language            | Slovak + English with a switch (own lightweight typed i18n instead of Paraglide)                        |
+| Hosting & CI           | GitHub Pages at the repo-name URL `matuspilnan.github.io/SPZky/`. Tests on every push to `main`, deploy only on release tags (decided 2026-11-13) |
 | Plates without region  | Not saved; the app explains why (SK since 2023, personalised, EV)                                       |
 
 ## Facts about the plate systems
@@ -46,10 +47,77 @@ by `updatedAt`. On first sign-in, local anonymous data is attached to the accoun
 | --- | ----------------------------------------------------------------------------------------- | ------------------------- |
 | 1   | Scaffold: SvelteKit, PWA, Dexie, i18n, app shell, icons                                    | ✅ done (v0.1.0)          |
 | 2   | SK + CZ data, plate detection, plate + quick entry, history/edit, date + GPS              | ✅ done (not released yet) |
-| 3   | Progress: per-country screens, code grids, home overview                                   | next                      |
-| 4   | Maps: boundary data → SVG, colored map views                                               |                           |
-| 5   | Sync: Supabase project, schema + RLS, auth screens, sync engine, first-login merge         | needs Supabase URL + anon key from the user |
-| 6   | Vintage CZ polish, deploy (Netlify / Cloudflare Pages / GitHub Pages)                      |                           |
+| 3   | Deploy: GitHub Pages under `/SPZky/`, CI on `main`, release-tag publishing (see below)     | next                      |
+| 4   | Progress: per-country screens, code grids, home overview                                   |                           |
+| 5   | Maps: boundary data → SVG, colored map views                                               |                           |
+| 6   | Sync: Supabase project, schema + RLS, auth screens, sync engine, first-login merge         | needs Supabase URL + anon key from the user |
+| 7   | Vintage CZ polish                                                                          |                           |
+
+Deploy comes before the remaining features so the app can be installed and tested on a phone
+over HTTPS (needed for the service worker, install prompt and GPS) from then on.
+
+## Deployment (phase 3)
+
+**Target:** GitHub Pages at the repository-name URL <https://matuspilnan.github.io/SPZky/>
+(decided 2026-11-13), deployed by GitHub Actions (Pages source set to "GitHub Actions", no
+`gh-pages` branch). The path is case-sensitive and follows the repo name, so it is not
+hardcoded: CI derives the base path as `/${{ github.event.repository.name }}`.
+
+### Pipelines
+
+GitHub only runs workflows from `.github/workflows/*.yml` (or `.yaml`) at the **repository
+root**. The repo root is this project folder (`spz-ky/`), so the files are:
+
+| Workflow file                    | Trigger                                  | Steps                                                                                                                  |
+| -------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `.github/workflows/ci.yml`       | `push` to `main`, `pull_request` to `main` | Node from `.nvmrc` (`actions/setup-node` with `node-version-file`), `npm ci`, `npm run check`, `npm test`, `npm run smoke` (Chrome is preinstalled on `ubuntu-latest`); upload `.smoke/` screenshots as an artifact on failure |
+| `.github/workflows/release.yml`  | `push` of tags `v*.*.*`                   | Same checks, then verify the tag equals `v` + `package.json` version, build with the base path, upload with `actions/upload-pages-artifact`, deploy with `actions/deploy-pages` (job needs `permissions: pages: write, id-token: write` and `environment: github-pages`), create a GitHub Release with notes generated from the Conventional Commits since the previous tag |
+
+Only release tags publish. Pushes to `main` are tested but not deployed.
+
+### One-time repository settings
+
+- Settings → Pages → Source: **GitHub Actions**.
+- Settings → Environments → `github-pages` → deployment branches and tags: add a tag rule
+  `v*`. By default the environment often only allows the default branch, and a deploy started
+  by a tag then fails with "Tag … is not allowed to deploy to github-pages due to environment
+  protection rules".
+- **Visibility:** the repo is **public** (since 2026-11-13; verified via the GitHub API:
+  name `SPZky`, default branch `main`). That is required for Pages on a free plan, and Actions
+  minutes are unlimited for public repos. Pages was not enabled yet at that point.
+
+### Release flow
+
+1. Bump `version` in `package.json` (SemVer, see CLAUDE.md), commit `chore(release): vX.Y.Z`.
+2. Tag `vX.Y.Z` and push the commit and the tag.
+3. `release.yml` tests, deploys and creates the GitHub Release. A failing check blocks the deploy.
+
+Optionally add an `npm run release -- <patch|minor|major>` script for steps 1–2.
+
+### App changes needed for a sub-path
+
+- Set the SvelteKit base path from an env var (e.g. `BASE_PATH=/SPZky`, set by CI), so local
+  dev and preview keep working at `/`. All links already go through `resolve()`, and assets
+  through `%sveltekit.assets%`.
+- Make the manifest base-aware: `id`, `start_url` and `scope` are currently hardcoded to `/`.
+- Service worker scope must be the base path (`/SPZky/`), so it never controls other projects
+  on `matuspilnan.github.io`.
+- The origin `matuspilnan.github.io` is shared with any other Pages project of the same user.
+  IndexedDB (`spz-ky`) and localStorage keys (`spz-ky.*`) are already namespaced. Keep it that way.
+- Run the smoke test against a build with the base path (preview served under `/SPZky/`), so
+  path bugs are caught before release.
+- No `.nojekyll` needed: Actions-based deploys (`deploy-pages`) publish the artifact as-is
+  without Jekyll, so the `_app/` folder is served.
+
+### Open points
+
+- **Renaming the repo changes the URL** (and therefore the PWA's scope, and stored data under
+  the old path's service worker). The base path follows automatically, but installed apps
+  would need reinstalling. Keep the name stable once released.
+- Supabase (phase 6) will need `https://matuspilnan.github.io/SPZky/` in its allowed auth
+  redirect URLs.
+- A custom domain would later change the origin, so locally stored data would not carry over.
+  Prefer to decide on the domain before people start using the app.
 
 ## Known limitations
 
