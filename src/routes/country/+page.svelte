@@ -97,7 +97,15 @@
 	{/if}
 </div>
 
-<dialog bind:this={dialog} onclose={() => (detail = null)} aria-labelledby="detail-title">
+<!-- The close event is dispatched asynchronously: if another sheet was opened in the
+     meantime (quick taps), a stale event must not close it again. -->
+<dialog
+	bind:this={dialog}
+	onclose={() => {
+		if (!dialog?.open) detail = null;
+	}}
+	aria-labelledby="detail-title"
+>
 	{#if detail && collection}
 		<div class="sheet stack tight">
 			<div class="sheet-head">

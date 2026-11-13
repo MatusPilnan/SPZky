@@ -308,9 +308,16 @@ try {
 	let sheet = await page.$eval('dialog[open]', (d) => d.innerText.replace(/\s+/g, ' '));
 	check('region details: count and plates', sheet.includes('Seen once') && sheet.includes('BA-123AB'), sheet);
 	await shot('10-country-region');
-	await page.evaluate(() => [...document.querySelectorAll('dialog[open] button')].find((b) => b.innerText === 'Close').click());
-	await page.waitForFunction(() => !document.querySelector('dialog[open]'));
-	await page.evaluate(() => [...document.querySelectorAll('.nationwide button')].find((b) => b.innerText.includes('Electric')).click());
+	// Close and immediately open another sheet in the same tick: the browser's close event
+	// arrives after the new sheet opened and must not close it (was a real bug, seen on CI).
+	await page.evaluate(async () => {
+		[...document.querySelectorAll('dialog[open] button')].find((b) => b.innerText === 'Close').click();
+		// Let Svelte's effect run dialog.close() (microtasks), but not the queued close event (a task).
+		for (let i = 0; i < 5; i++) await Promise.resolve();
+		[...document.querySelectorAll('.nationwide button')].find((b) => b.innerText.includes('Electric')).click();
+	});
+	await sleep(300);
+	check('quick re-open of details is not closed by the previous close', (await page.$('dialog[open]')) !== null);
 	await page.waitForSelector('dialog[open]');
 	sheet = await page.$eval('dialog[open]', (d) => d.innerText.replace(/\s+/g, ' '));
 	const evItems = await page.$$eval('dialog[open] li', (l) => l.length);
