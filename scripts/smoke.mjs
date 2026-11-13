@@ -262,6 +262,54 @@ try {
 	const toastOnHome = await page.$eval('.toasts', (e) => e.innerText).catch(() => '');
 	check('returns home after adding (setting on)', wentHome && toastOnHome.includes('KE'), toastOnHome);
 
+	// Progress: home overview → country screen → region / nationwide details
+	// Data so far: SK BA, ZA, KE + 2 nationwide (AA-123BC, quick EV); CZ A + 1 nationwide (EL-123AB)
+	await page.waitForSelector('a.collection');
+	const cards = await page.$$eval('a.collection', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ')));
+	check(
+		'home shows progress per country',
+		cards.some((c) => c.includes('Slovakia') && c.includes('3 of 93 found') && c.includes('+ 2 nationwide plates')) &&
+			cards.some((c) => c.includes('Czechia') && c.includes('1 of 14 found') && c.includes('+ 1 nationwide plate')) &&
+			cards.some((c) => c.includes('pre-2001') && c.includes('0 of 96 found')),
+		cards.join(' || ')
+	);
+	check('home lists recent sightings', (await page.$$('main ul li')).length === 3);
+	await shot('09-home');
+	await page.evaluate(() => [...document.querySelectorAll('a.collection')].find((a) => a.innerText.includes('Slovakia')).click());
+	await page.waitForFunction(() => location.pathname.endsWith('/country') && document.querySelector('main h1'));
+	const gridSize = () => page.$$eval('.grid button', (b) => b.length);
+	const filterTo = (label) =>
+		page.evaluate((l) => [...document.querySelectorAll('.filters button')].find((b) => b.innerText === l).click(), label);
+	const progressShown = await page
+		.waitForFunction(() => document.querySelector('main').innerText.includes('3 of 93 found'), { timeout: 5000 })
+		.then(() => true, () => false);
+	check('country screen shows progress', progressShown);
+	check('country grid shows all codes', (await gridSize()) === 93);
+	await filterTo('Found');
+	await sleep(100);
+	check('filter: found', (await gridSize()) === 3);
+	await filterTo('Missing');
+	await sleep(100);
+	check('filter: missing', (await gridSize()) === 90);
+	await filterTo('Found');
+	await sleep(100);
+	await page.evaluate(() => [...document.querySelectorAll('.grid button')].find((b) => b.innerText.startsWith('BA')).click());
+	await page.waitForSelector('dialog[open]');
+	let sheet = await page.$eval('dialog[open]', (d) => d.innerText.replace(/\s+/g, ' '));
+	check('region details: count and plates', sheet.includes('Seen once') && sheet.includes('BA-123AB'), sheet);
+	await shot('10-country-region');
+	await page.evaluate(() => [...document.querySelectorAll('dialog[open] button')].find((b) => b.innerText === 'Close').click());
+	await page.waitForFunction(() => !document.querySelector('dialog[open]'));
+	await page.evaluate(() => [...document.querySelectorAll('.nationwide button')].find((b) => b.innerText.includes('Electric')).click());
+	await page.waitForSelector('dialog[open]');
+	sheet = await page.$eval('dialog[open]', (d) => d.innerText.replace(/\s+/g, ' '));
+	const evItems = await page.$$eval('dialog[open] li', (l) => l.length);
+	check('nationwide details list only this country and type', evItems === 1 && sheet.includes('Nationwide'), sheet);
+	await page.keyboard.press('Escape');
+	await page.waitForFunction(() => !document.querySelector('dialog[open]'));
+	check('details close with Escape', true);
+	await shot('11-country');
+
 	// Slovak UI
 	await page.evaluate(() => localStorage.setItem('spz-ky.locale', 'sk'));
 	await page.goto(`${APP}/`, { waitUntil: 'networkidle0' });
@@ -274,7 +322,7 @@ try {
 	if (PREVIEW) {
 		await page.setOfflineMode(true);
 		try {
-			for (const route of ['/', '/add', '/settings', '/history']) {
+			for (const route of ['/', '/add', '/settings', '/country?id=cz', '/history']) {
 				await page.goto(`${APP}${route}`, { waitUntil: 'load' });
 				await page.waitForSelector('nav', { timeout: 5000 });
 				const ok = await page.evaluate(() => document.querySelector('main')?.innerText.trim().length > 0);

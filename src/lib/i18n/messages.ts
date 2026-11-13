@@ -17,7 +17,27 @@ export const en = {
 	'home.total': { one: '{count} plate spotted', other: '{count} plates spotted' },
 	'home.empty': 'No plates yet. Spot one and add it!',
 	'home.addCta': 'Add a plate',
-	'home.collectionsSoon': 'Per-country progress screens are coming in the next phase.',
+	'home.countries': 'Countries',
+	'home.bonus': 'Bonus collection',
+	'home.recent': 'Recently spotted',
+	'home.seeAll': 'See all',
+
+	'progress.found': '{found} of {total} found',
+	'progress.label': '{name}: {found} of {total} found',
+	'progress.nationwide': { one: '+ {count} nationwide plate', other: '+ {count} nationwide plates' },
+
+	'country.notFound': 'Unknown country.',
+	'country.filterAll': 'All',
+	'country.filterFound': 'Found',
+	'country.filterMissing': 'Missing',
+	'country.noneFound': 'Nothing found yet.',
+	'country.allFound': 'All found! 🎉',
+
+	'region.notSeen': 'Not spotted yet.',
+	'region.seen': { one: 'Seen once', other: 'Seen {count} times' },
+	'region.firstSeen': 'First: {date}',
+	'region.lastSeen': 'Last: {date}',
+	'region.close': 'Close',
 
 	'add.title': 'Add a sighting',
 	'add.modePlate': 'Plate number',
@@ -140,7 +160,31 @@ export const sk: Messages = {
 	},
 	'home.empty': 'Zatiaľ žiadne ŠPZ. Nejakú zbadaj a pridaj!',
 	'home.addCta': 'Pridať ŠPZ',
-	'home.collectionsSoon': 'Prehľad postupu po krajinách príde v ďalšej fáze.',
+	'home.countries': 'Krajiny',
+	'home.bonus': 'Bonusová kolekcia',
+	'home.recent': 'Naposledy videné',
+	'home.seeAll': 'Zobraziť všetko',
+
+	'progress.found': 'nájdené {found} z {total}',
+	'progress.label': '{name}: nájdené {found} z {total}',
+	'progress.nationwide': {
+		one: '+ {count} celoštátna ŠPZ',
+		few: '+ {count} celoštátne ŠPZ',
+		other: '+ {count} celoštátnych ŠPZ'
+	},
+
+	'country.notFound': 'Neznáma krajina.',
+	'country.filterAll': 'Všetky',
+	'country.filterFound': 'Nájdené',
+	'country.filterMissing': 'Chýbajúce',
+	'country.noneFound': 'Zatiaľ nič nenájdené.',
+	'country.allFound': 'Všetko nájdené! 🎉',
+
+	'region.notSeen': 'Zatiaľ nevidené.',
+	'region.seen': { one: 'Videné raz', few: 'Videné {count}-krát', other: 'Videné {count}-krát' },
+	'region.firstSeen': 'Prvýkrát: {date}',
+	'region.lastSeen': 'Naposledy: {date}',
+	'region.close': 'Zavrieť',
 
 	'add.title': 'Nový úlovok',
 	'add.modePlate': 'Evidenčné číslo',

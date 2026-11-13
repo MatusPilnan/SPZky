@@ -8,16 +8,27 @@
 		counts?: Map<string, number>;
 		/** Highlighted code (e.g. current selection when editing). */
 		selected?: string | null;
+		/** Show only found or only missing regions. */
+		filter?: 'all' | 'found' | 'missing';
+		/** Hide the "x / y found" line (when the page shows progress itself). */
+		showSummary?: boolean;
 		onpick: (code: string) => void;
 	}
 
-	let { collection, counts, selected = null, onpick }: Props = $props();
+	let { collection, counts, selected = null, filter = 'all', showSummary = true, onpick }: Props = $props();
 
-	const sorted = $derived([...collection.regions].sort((a, b) => a.code.localeCompare(b.code)));
-	const found = $derived(collection.regions.filter((r) => (counts?.get(r.code) ?? 0) > 0).length);
+	const isFound = (code: string) => (counts?.get(code) ?? 0) > 0;
+	const sorted = $derived(
+		[...collection.regions]
+			.filter((r) => filter === 'all' || (filter === 'found') === isFound(r.code))
+			.sort((a, b) => a.code.localeCompare(b.code))
+	);
+	const found = $derived(collection.regions.filter((r) => isFound(r.code)).length);
 </script>
 
-<p class="summary muted">{t('grid.found', { found, total: collection.regions.length })}</p>
+{#if showSummary}
+	<p class="summary muted">{t('grid.found', { found, total: collection.regions.length })}</p>
+{/if}
 
 <div class="grid">
 	{#each sorted as region (region.code)}
