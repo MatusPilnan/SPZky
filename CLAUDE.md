@@ -28,6 +28,13 @@ Setup and scripts for humans: [README.md](README.md).
 - Don't leave a shell `cd`'d inside `build/`: Windows locks the folder and the next build fails
   with EBUSY.
 - Git on that PC is old (2.17): no `git stash push <path>`, no `git init -b`.
+- Commit message files: write them **without a BOM**. PowerShell 5.1 `Set-Content -Encoding
+  UTF8` adds one, which ends up at the start of the subject and breaks the Conventional
+  Commit parsing for CHANGELOG.md. Use the Write tool, `-Encoding ASCII`, or
+  `[IO.File]::WriteAllText(path, text, (New-Object Text.UTF8Encoding $false))`.
+- `npm i <package>` removes the generated `node_modules/$app` (tsconfig/types from
+  `svelte-kit sync`), and then Vitest fails with "Failed to load tsconfig '$app/tsconfig'".
+  `npm test` runs `svelte-kit sync` first; otherwise run `npx svelte-kit sync`.
 
 ## Stack gotchas (SvelteKit 3 / Svelte 5)
 
@@ -81,14 +88,17 @@ after touching links, paths, the manifest or the service worker (PowerShell:
 
 ```
 src/lib/data/         region lists (sk, cz, cz-vintage) with sources
-src/lib/collections.ts collection registry + lookups
-src/lib/plates/       normalizePlate, detectPlate (ranked candidates, no-region formats)
-src/lib/db/           Dexie schema, sighting repository (soft delete, sync fields)
-src/lib/progress.ts   counts per collection/region (computed, never stored)
+src/lib/collections.ts collection registry, nationwide types per country, highlightOf, countryOf
+src/lib/plates/       normalizePlate, detectPlate (region + nationwide candidates), orderByCountry
+src/lib/geo/          countryAt (offline point-in-polygon); borders.ts is GENERATED
+src/lib/db/           Dexie schema (v2: plateType), sighting repository (soft delete, sync fields)
+src/lib/progress.ts   region counts + nationwide counts (computed, never stored)
 src/lib/i18n/         typed sk/en messages, plural-aware formatter, reactive locale
 src/lib/*.svelte.ts   prefs (localStorage), location tracker, toasts
-src/lib/components/   PlateInput, PlateBadge, RegionGrid, CollectionSwitch, Toasts, UpdatePrompt
+src/lib/components/   PlateInput, PlateBadge, RegionGrid, NationwidePicker, TypeChip, Switch,
+                      CollectionSwitch, Toasts, UpdatePrompt
 src/routes/           home, add (plate + quick), history, sighting (edit), settings
-scripts/              check-node.cjs, smoke.mjs, release-notes.mjs (+ test)
+scripts/              check-node.cjs, smoke.mjs, release-notes.mjs (+ test),
+                      build-borders.mjs (regenerates src/lib/geo/borders.ts)
 .github/workflows/    ci.yml, release.yml
 ```

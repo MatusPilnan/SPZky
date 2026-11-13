@@ -32,30 +32,37 @@ per country by how many regional codes have been found.
 - Source: Wikipedia "Vehicle registration plates of Slovakia / of the Czech Republic".
   Data lives in `src/lib/data/`.
 
-## Nationwide plates (plates without a region)
+## Nationwide plates (plates without a region) — phase 4
 
-Plates whose format carries no region are no longer rejected. Each country gets a
-subcollection labelled **Nationwide** (SK: *Celoštátne*, CZ: *Celostátní* — UI text in sk/en
-as usual) that collects them.
+Plates whose format carries no region are saved into a per-country subcollection labelled
+**Nationwide** (*Celoštátne* in the Slovak UI). Pre-2001 CZ plates have no nationwide part.
 
-- **Not part of progress:** the country's region count (e.g. "47 / 93") ignores them. The
-  nationwide subcollection shows its own counter instead (number of plates, and per type).
-- **Plate types** (detected from the format, highlighted with their own badge/colour):
+- **Not part of progress:** the region count (e.g. "47 / 93") ignores them. The nationwide
+  section shows its own counter (total and per type) below the region grid.
+- **Plates with a region keep their region,** e.g. a pre-2023 SK personalised plate `ZA-HELLO`
+  stays in Žilina (highlighted as special). Only plates without a region are nationwide.
+- **Duplicates:** the same plate still counts only once.
+- **Quick mode / manual pick / edit:** a nationwide picker per country with its plate types.
+- **Plate types and highlights** (`highlightOf()` in `src/lib/collections.ts`):
 
-  | Country | Type                         | Format (as detected today)                         | Highlight            |
-  | ------- | ---------------------------- | -------------------------------------------------- | -------------------- |
-  | SK      | standard since 2023          | `XX-NNNLL` with a non-district prefix (`AA…`)      | plain                |
-  | SK      | personalised since 2023      | `LL-XXXXX` with a non-district prefix              | special              |
-  | SK/CZ   | electric vehicle             | `EL…` / `EV…` prefix                               | special, green (EV)  |
-  | CZ      | personalised                 | 8 characters, at least one digit                   | special              |
+  | Country | Type (`plateType`)            | Format                                                      | Highlight          |
+  | ------- | ----------------------------- | ----------------------------------------------------------- | ------------------ |
+  | SK      | `sk-2023` standard since 2023 | `XX-NNNLL` with a non-district prefix (`AA…`)               | plain              |
+  | SK      | `sk-personalized` since 2023  | `LL-XXXXX` with a non-district prefix                       | ★ special          |
+  | SK      | `ev` electric (since 2023)    | `EL`/`EV` + `NNN` + `LL`, **green** letters on white        | ⚡ green           |
+  | CZ      | `ev` electric                 | `EL` + `NNN` + `LL` (EL-000-AA … EL-999-ZZ), **black** letters | ⚡ green        |
+  | CZ      | `cz-personalized`             | 8 characters, ≥ 1 digit, no G/O/Q/W                         | ★ special          |
+  | SK / CZ | regional `sk-district-special`, `cz-historic` | (keep their region)                         | ★ special          |
 
-  Candidates to verify and add later: diplomatic plates (SK `CD-NNNNN`, CZ `DD`/`XX` series),
-  military plates, temporary/export plates.
-- **EV country:** the `EL`/`EV` prefix alone doesn't tell SK from CZ (detection currently
-  returns `country: null`), so the country choice below applies. Check the exact SK and CZ EV
-  formats from sources before implementing; they may turn out to be distinguishable.
+  So `EV…` is always Slovak, while `EL-NNN-LL` fits both countries (see country choice below);
+  the app shows a tip that SK EV plates have green and CZ ones black letters.
+  Sources: [Wikipedia SK](https://en.wikipedia.org/wiki/Vehicle_registration_plates_of_Slovakia),
+  [Slov-Lex 480/2022](https://static.slov-lex.sk/static/SK/ZZ/2022/480/20230101.html),
+  [cs.wikipedia CZ](https://cs.wikipedia.org/wiki/Registrační_značky_v_Česku).
+  Candidates to add later: diplomatic (SK `CD-NNNNN`; CZ `NNN CD/XX/XS/HC NN`), military
+  (numeric), export/trade/test plates.
 
-## Choosing the country when detection is ambiguous
+## Choosing the country when detection is ambiguous — phase 4
 
 When the plate format leaves more than one possible country (EV plates today, and any overlap
 once more countries are added), the entry screen shows the countries as choices, ordered and
@@ -70,33 +77,29 @@ preselected like this (decided 2026-11-13):
 The first option is preselected, so the common case is just "Save". Duplicates in the list are
 removed (e.g. when GPS and last used are the same country).
 
-- The lookup must work **offline**: point-in-polygon against simplified country outlines
-  shipped with the app (a few kB for SK + CZ; the maps phase can reuse them). Bounding boxes
-  alone are not enough, because SK and CZ boxes overlap.
+- The lookup works **offline**: point-in-polygon against Natural Earth 1:10m outlines of SK and
+  CZ shipped with the app (`src/lib/geo/borders.ts`, ~23 kB, generated by
+  `scripts/build-borders.mjs`; the maps phase can reuse them). Bounding boxes alone are not
+  enough, because SK and CZ boxes overlap.
 - Outside all supported countries, or without location, step 1 is skipped.
 - The GPS position only picks the **default** choice. It is a hint (a Slovak car is often seen
   in Czechia), never an automatic decision without showing the options.
 - This only applies to the **country**. When the country is clear but several regions match,
-  candidates stay ordered by detection confidence as today.
-- **Duplicates:** the same plate still counts only once (same duplicate check as regional
-  plates).
-- **Quick mode:** a "Nationwide" tile per country, with a type picker (standard / EV /
-  personalised), for logging without typing the plate.
-- **Plates with a region keep their region.** E.g. a pre-2023 SK personalised plate
-  `ZA-HELLO` stays in Žilina. Only plates without a region go to the nationwide subcollection.
+  candidates stay ordered by detection confidence. Implemented in `orderByCountry()`
+  (`src/lib/plates/detect.ts`).
 
 ## Data model
 
-`Sighting` (see `src/lib/db/types.ts`): client UUID, `collectionId`, `regionCode`, raw and
-normalized plate (null for quick entries), `seenAt`, optional `location`, `note`, plus sync
-fields `createdAt`, `updatedAt`, `deleted` (soft delete), `userId`, `dirty`. Progress is always
-computed from sightings, never stored.
+`Sighting` (see `src/lib/db/types.ts`): client UUID, `collectionId`, `regionCode` (`null` =
+nationwide), `plateType` (detected format, e.g. `sk-district`, `ev`, `sk-2023`; required for
+nationwide, `null` for quick region taps and unrecognised plates), raw and normalized plate
+(null for quick entries), `seenAt`, optional `location`, `note`, plus sync fields `createdAt`,
+`updatedAt`, `deleted` (soft delete), `userId`, `dirty`. Progress is always computed from
+sightings, never stored; nationwide plates are counted separately (`countNationwide()`).
 
-Planned for nationwide plates: `collectionId` stays the country (`sk`, `cz`), `regionCode` is
-`null`, and a new `plateType` field stores the detected format (`sk-2023`, `ev`,
-`sk-personalized`, `cz-personalized`, …; also useful for regional special plates). This needs
-a Dexie schema version 2 with an upgrade that fills `plateType` for existing rows, and the
-progress counting must skip `regionCode === null`.
+Dexie schema v2 (phase 4) fills `plateType` for existing rows from their plate. The
+repository rejects a nationwide sighting without a valid nationwide type of its collection.
+Sync (phase 7) must include `plateType` and a nullable `region_code`.
 
 Planned sync: push dirty rows, then pull rows changed since the last sync, last write wins
 by `updatedAt`. On first sign-in, local anonymous data is attached to the account and uploaded.
@@ -108,8 +111,8 @@ by `updatedAt`. On first sign-in, local anonymous data is attached to the accoun
 | 1   | Scaffold: SvelteKit, PWA, Dexie, i18n, app shell, icons                                    | ✅ done (v0.1.0)          |
 | 2   | SK + CZ data, plate detection, plate + quick entry, history/edit, date + GPS              | ✅ done (v0.2.0)          |
 | 3   | Deploy: GitHub Pages under `/SPZky/`, CI on `main`, release-tag publishing (see below)     | ✅ done (v0.2.0, live at https://matuspilnan.github.io/SPZky/) |
-| 4   | Nationwide plates: save plates without region per country, plate types + highlighting; country choice ordered by GPS, then last used (see above) | next |
-| 5   | Progress: per-country screens incl. nationwide subcollection, code grids, home overview    |                           |
+| 4   | Nationwide plates: save plates without region per country, plate types + highlighting; country choice ordered by GPS, then last used (see above) | ✅ done (not released yet) |
+| 5   | Progress: per-country screens incl. nationwide subcollection, code grids, home overview    | next                      |
 | 6   | Maps: boundary data → SVG, colored map views                                               |                           |
 | 7   | Sync: Supabase project, schema + RLS, auth screens, sync engine, first-login merge         | needs Supabase URL + anon key from the user |
 | 8   | Vintage CZ polish                                                                          |                           |
