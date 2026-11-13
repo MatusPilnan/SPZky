@@ -56,6 +56,24 @@ npm run smoke   # builds, then drives the app in headless Edge/Chrome (scripts/s
 
 For a readable stack trace from the smoke test, run `MODE=dev node scripts/smoke.mjs`
 against the dev server. Screenshots land in `.smoke/`; look at them after UI changes.
+CI runs the smoke test with `BASE_PATH=/SPZky` (GitHub Pages sub-path). Run it that way too
+after touching links, paths, the manifest or the service worker (PowerShell:
+`$env:BASE_PATH='/SPZky'; npm run smoke`).
+
+## Deployment and releases
+
+- GitHub Pages at `https://matuspilnan.github.io/SPZky/`. Workflows live in
+  `.github/workflows/` at the repo root: `ci.yml` (push/PR to `main`, also reused by
+  release) and `release.yml` (tags `v*.*.*`: verify tag = `package.json` version, CI,
+  build, deploy, GitHub Release).
+- The base path comes from `BASE_PATH` (CI: `/${{ github.event.repository.name }}`). Never
+  hardcode `/` or `/SPZky` in app code: use `resolve()` for links, `%sveltekit.assets%` /
+  relative paths for assets, `page.route.id` (not `page.url.pathname`) for route checks.
+- Release: `npm run release -- <patch|minor|major>` then `git push --follow-tags`, only after
+  the owner confirms the release.
+- Action versions in the workflows were current majors on 2026-11-13 (checkout/setup-node/
+  upload-artifact v7, configure-pages v6, upload-pages-artifact v5, deploy-pages v5). Check
+  their `action.yml` before changing inputs.
 
 ## Code map
 
@@ -69,5 +87,6 @@ src/lib/i18n/         typed sk/en messages, plural-aware formatter, reactive loc
 src/lib/*.svelte.ts   prefs (localStorage), location tracker, toasts
 src/lib/components/   PlateInput, PlateBadge, RegionGrid, CollectionSwitch, Toasts, UpdatePrompt
 src/routes/           home, add (plate + quick), history, sighting (edit), settings
-scripts/              check-node.cjs, smoke.mjs
+scripts/              check-node.cjs, smoke.mjs, release-notes.mjs (+ test)
+.github/workflows/    ci.yml, release.yml
 ```

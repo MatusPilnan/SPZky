@@ -37,7 +37,33 @@ fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
 | `npm run preview` | Serve the production build (use this to test offline/install) |
 | `npm run check`   | Type-check (svelte-check)                                     |
 | `npm test`        | Unit tests (Vitest, IndexedDB via fake-indexeddb)             |
-| `npm run smoke`   | Build + browser smoke test in headless Edge/Chrome (`BROWSER_PATH` to override) |
+| `npm run smoke`   | Build + browser smoke test in headless Edge/Chrome (`BROWSER_PATH` to override; `BASE_PATH=/SPZky` to test the Pages sub-path) |
+| `npm run release -- <patch\|minor\|major>` | Check + test, bump version, commit `chore(release): vX.Y.Z`, create tag |
+
+## Deployment
+
+The app is published to GitHub Pages at **https://matuspilnan.github.io/SPZky/**.
+
+- `.github/workflows/ci.yml`: type-check, unit tests and browser smoke test (built for the
+  Pages sub-path, incl. offline loading) on every push and pull request to `main`.
+- `.github/workflows/release.yml`: on a `vX.Y.Z` tag, checks that the tag matches
+  `package.json`, runs the same checks, builds with `BASE_PATH=/<repo name>`, deploys to
+  Pages and creates a GitHub Release with notes from the Conventional Commits since the
+  previous tag (`scripts/release-notes.mjs`).
+
+### Releasing
+
+```sh
+npm run release -- minor      # or patch / major; needs a clean working tree
+git push --follow-tags        # pushes the commit and the tag → release workflow deploys
+```
+
+### One-time GitHub setup
+
+1. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
+2. **Settings → Environments → `github-pages` → Deployment branches and tags:** add a rule
+   for tags `v*` (otherwise deploys started by a tag are rejected by the environment's
+   protection rules). The environment appears after step 1.
 | `npm run icons`   | Regenerate PWA icons from `static/favicon.svg`                |
 
 ## Stack
