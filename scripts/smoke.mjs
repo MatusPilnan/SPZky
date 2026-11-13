@@ -70,6 +70,8 @@ async function waitForServer() {
 }
 
 let browser;
+/** @type {import('puppeteer-core').Page | undefined} */
+let page;
 try {
 	await waitForServer();
 	browser = await puppeteer.launch({
@@ -80,7 +82,9 @@ try {
 		userDataDir: profileDir
 	});
 	await browser.defaultBrowserContext().overridePermissions(ORIGIN, ['geolocation']);
-	const page = await browser.newPage();
+	page = await browser.newPage();
+	// SLOW=4 throttles the CPU 4× to surface race conditions that only show on slow CI runners.
+	if (process.env.SLOW) await page.emulateCPUThrottling(Number(process.env.SLOW));
 	await page.setViewport({ width: 400, height: 860, deviceScaleFactor: 1 });
 	await page.setGeolocation({ latitude: 48.1486, longitude: 17.1077, accuracy: 12 });
 	page.on('pageerror', (e) => errors.push('pageerror: ' + (e.stack || e.message || String(e))));
@@ -94,7 +98,7 @@ try {
 
 	const shot = (name) => page.screenshot({ path: path.join(outDir, `${name}.png`), fullPage: true });
 	const plateSel = 'input[aria-label="Plate number"]';
-	const text = () => page.evaluate(() => document.querySelector('main').innerText);
+	const text = () => page.evaluate(() => (document.querySelector('main')?.innerText ?? ''));
 	async function typePlate(value) {
 		await page.click(plateSel, { clickCount: 3 });
 		await page.keyboard.press('Backspace');
@@ -160,14 +164,14 @@ try {
 	await shot('02-add-ev-sk');
 	await page.setGeolocation({ latitude: 50.0755, longitude: 14.4378, accuracy: 12 });
 	await page.reload({ waitUntil: 'networkidle0' });
-	await page.waitForFunction(() => document.querySelector('main').innerText.includes('Location will be saved'));
+	await page.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('Location will be saved'));
 	await typePlate('EL-123AB');
 	check('EL plate: GPS in CZ → Czechia first', (await firstCandidate()).includes('Czechia'), await firstCandidate());
 	await page.keyboard.press('Enter');
 	await page.waitForFunction(() => document.querySelector('.toasts')?.innerText.includes('EL-123AB'));
 	await page.setGeolocation({ latitude: 48.1486, longitude: 17.1077, accuracy: 12 });
 	await page.reload({ waitUntil: 'networkidle0' });
-	await page.waitForFunction(() => document.querySelector('main').innerText.includes('Location will be saved'));
+	await page.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('Location will be saved'));
 
 	// CZ pre-2001 + CZ standard
 	await typePlate('BN 12-34');
@@ -198,12 +202,12 @@ try {
 	check('quick grid counts found (nationwide not counted)', t.includes('2 / 93 found'), t.match(/\d+ \/ \d+ found/)?.[0]);
 	check('quick mode shows the nationwide section', t.includes('Nationwide') && t.includes('1 plate'));
 	await page.evaluate(() => [...document.querySelectorAll('.grid button')].find((b) => b.innerText.startsWith('KE')).click());
-	await page.waitForFunction(() => document.querySelector('main').innerText.includes('3 / 93 found'));
+	await page.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('3 / 93 found'));
 	check('quick tap logged', true);
 	await page.evaluate(() =>
 		[...document.querySelectorAll('.toasts .toast button')].find((b) => b.innerText.toUpperCase().includes('UNDO')).click()
 	);
-	await page.waitForFunction(() => document.querySelector('main').innerText.includes('2 / 93 found'));
+	await page.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('2 / 93 found'));
 	check('undo removed quick entry', true);
 	await page.evaluate(() => [...document.querySelectorAll('.nationwide button')].find((b) => b.innerText.includes('Electric')).click());
 	await page.waitForFunction(() => document.querySelector('.nationwide').innerText.includes('2 plates'));
@@ -224,7 +228,7 @@ try {
 	await page.click('ul li:last-child a');
 	await page.waitForFunction(
 		() =>
-			document.querySelector('main').innerText.includes('Edit sighting') &&
+			(document.querySelector('main')?.innerText ?? '').includes('Edit sighting') &&
 			document.querySelector('input[aria-label="Plate number"]')?.value
 	);
 	t = await text();
@@ -233,7 +237,7 @@ try {
 	await page.type('input[placeholder^="e.g. highway"]', 'test note');
 	await page.evaluate(() => [...document.querySelectorAll('button')].find((b) => b.innerText === 'Save changes').click());
 	await page.waitForFunction(() => location.pathname.endsWith('/history'));
-	await page.waitForFunction(() => document.querySelector('main').innerText.includes('test note'));
+	await page.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('test note'));
 	check('edit saved note', true);
 
 	// Setting: return home after adding a plate
@@ -264,7 +268,13 @@ try {
 
 	// Progress: home overview → country screen → region / nationwide details
 	// Data so far: SK BA, ZA, KE + 2 nationwide (AA-123BC, quick EV); CZ A + 1 nationwide (EL-123AB)
-	await page.waitForSelector('a.collection');
+	// Wait for the data (cards render before the database query delivers it).
+	await page
+		.waitForFunction(
+			() => document.querySelectorAll('main ul li').length === 3 && document.querySelector('a.collection')?.innerText.includes('3 of 93'),
+			{ timeout: 10000 }
+		)
+		.catch(() => {});
 	const cards = await page.$$eval('a.collection', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ')));
 	check(
 		'home shows progress per country',
@@ -281,7 +291,7 @@ try {
 	const filterTo = (label) =>
 		page.evaluate((l) => [...document.querySelectorAll('.filters button')].find((b) => b.innerText === l).click(), label);
 	const progressShown = await page
-		.waitForFunction(() => document.querySelector('main').innerText.includes('3 of 93 found'), { timeout: 5000 })
+		.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('3 of 93 found'), { timeout: 5000 })
 		.then(() => true, () => false);
 	check('country screen shows progress', progressShown);
 	check('country grid shows all codes', (await gridSize()) === 93);
@@ -332,7 +342,7 @@ try {
 			await page.waitForSelector('ul li a');
 			const editUrl = await page.$eval('ul li:first-child a', (a) => a.href);
 			await page.goto(editUrl, { waitUntil: 'load' });
-			await page.waitForFunction(() => document.querySelector('main').innerText.includes('Upraviť záznam'));
+			await page.waitForFunction(() => document.querySelector('main')?.innerText.includes('Upraviť záznam'));
 			check('offline: edit page with ?id= loads', true);
 			await shot('09-offline-edit');
 		} finally {
@@ -341,6 +351,10 @@ try {
 	}
 } catch (e) {
 	check('script', false, e.stack);
+	// Show where the run stopped (uploaded as a CI artifact on failure).
+	await page?.screenshot({ path: path.join(outDir, 'zz-failure.png'), fullPage: true }).catch(() => {});
+	const url = await Promise.resolve(page?.url()).catch(() => '?');
+	console.log(`stopped at: ${url}`);
 } finally {
 	await browser?.close().catch(() => {});
 	server.kill();
