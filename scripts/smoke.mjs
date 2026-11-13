@@ -5,17 +5,22 @@
 //   npm run smoke              # builds, then tests the production build
 //   MODE=dev node scripts/smoke.mjs   # test the dev server (readable stack traces)
 //
+// BASE_PATH (e.g. /SPZky) tests a build made for a sub-path; build with the same value.
 // Browser: set BROWSER_PATH, otherwise common Edge/Chrome locations are tried.
 // Screenshots go to .smoke/ (gitignored).
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import puppeteer from 'puppeteer-core';
 
 const projectDir = process.cwd();
 const outDir = path.join(projectDir, '.smoke');
 const PORT = 4174;
-const BASE = `http://localhost:${PORT}`;
+const ORIGIN = `http://localhost:${PORT}`;
+const BASE_PATH = (process.env.BASE_PATH ?? '').replace(/\/+$/, '');
+const APP = ORIGIN + BASE_PATH;
+const PREVIEW = process.env.MODE !== 'dev';
 
 function findBrowser() {
 	const candidates = [
@@ -35,12 +40,15 @@ function findBrowser() {
 	return found;
 }
 
-rmSync(outDir, { recursive: true, force: true });
+// Fresh output folder: remove old screenshots only (a browser profile could be locked on Windows).
 mkdirSync(outDir, { recursive: true });
+for (const f of readdirSync(outDir)) if (f.endsWith('.png')) rmSync(path.join(outDir, f), { force: true });
+// Fresh browser profile per run, so no IndexedDB/service worker state leaks between runs.
+const profileDir = mkdtempSync(path.join(os.tmpdir(), 'spzky-smoke-'));
 
 const server = spawn(
 	process.execPath,
-	[path.join(projectDir, 'node_modules/vite/bin/vite.js'), process.env.MODE === 'dev' ? 'dev' : 'preview', '--port', String(PORT), '--strictPort'],
+	[path.join(projectDir, 'node_modules/vite/bin/vite.js'), PREVIEW ? 'preview' : 'dev', '--port', String(PORT), '--strictPort'],
 	{ cwd: projectDir, stdio: 'ignore' }
 );
 
@@ -52,7 +60,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function waitForServer() {
 	for (let i = 0; i < 80; i++) {
 		try {
-			if ((await fetch(BASE)).ok) return;
+			if ((await fetch(`${APP}/`)).ok) return;
 		} catch {
 			// not up yet
 		}
@@ -67,10 +75,11 @@ try {
 	browser = await puppeteer.launch({
 		executablePath: findBrowser(),
 		headless: true,
-		args: ['--no-first-run'],
-		userDataDir: path.join(outDir, 'profile')
+		// CI runners (Ubuntu 24.04) restrict the user namespaces Chrome's sandbox needs.
+		args: ['--no-first-run', ...(process.env.CI ? ['--no-sandbox'] : [])],
+		userDataDir: profileDir
 	});
-	await browser.defaultBrowserContext().overridePermissions(BASE, ['geolocation']);
+	await browser.defaultBrowserContext().overridePermissions(ORIGIN, ['geolocation']);
 	const page = await browser.newPage();
 	await page.setViewport({ width: 400, height: 860, deviceScaleFactor: 1 });
 	await page.setGeolocation({ latitude: 48.1486, longitude: 17.1077, accuracy: 12 });
@@ -93,9 +102,15 @@ try {
 		await sleep(150);
 	}
 
-	await page.goto(`${BASE}/add`, { waitUntil: 'networkidle0' });
+	await page.goto(`${APP}/add`, { waitUntil: 'networkidle0' });
 	await page.waitForSelector(plateSel);
 	await sleep(500); // let geolocation fire
+
+	// Service worker (production build only; disabled in dev)
+	if (PREVIEW) {
+		const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
+		check('service worker active with app scope', scope === `${ORIGIN}${BASE_PATH}/`, scope);
+	}
 
 	// SK district plate
 	await typePlate('ba-123ab');
@@ -156,7 +171,7 @@ try {
 	check('undo removed quick entry', true);
 
 	// history + edit
-	await page.goto(`${BASE}/history`, { waitUntil: 'networkidle0' });
+	await page.goto(`${APP}/history`, { waitUntil: 'networkidle0' });
 	await page.waitForSelector('ul li');
 	const items = await page.$$eval('ul li', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ')));
 	check('history lists 3 sightings', items.length === 3, items.join(' || '));
@@ -173,21 +188,48 @@ try {
 	await shot('05-edit');
 	await page.type('input[placeholder^="e.g. highway"]', 'test note');
 	await page.evaluate(() => [...document.querySelectorAll('button')].find((b) => b.innerText === 'Save changes').click());
-	await page.waitForFunction(() => location.pathname === '/history');
+	await page.waitForFunction(() => location.pathname.endsWith('/history'));
 	await page.waitForFunction(() => document.querySelector('main').innerText.includes('test note'));
 	check('edit saved note', true);
 
 	// Slovak UI
 	await page.evaluate(() => localStorage.setItem('spz-ky.locale', 'sk'));
-	await page.goto(`${BASE}/`, { waitUntil: 'networkidle0' });
+	await page.goto(`${APP}/`, { waitUntil: 'networkidle0' });
 	t = await page.evaluate(() => document.body.innerText);
 	check('home in Slovak with plural form', t.includes('3 zaznamenané ŠPZ'), t.split('\n').slice(0, 6).join(' | '));
 	await shot('06-home-sk');
+
+	// Offline: every page must load from the service worker cache, incl. the edit page with ?id=
+	if (PREVIEW) {
+		await page.setOfflineMode(true);
+		try {
+			for (const route of ['/', '/add', '/settings', '/history']) {
+				await page.goto(`${APP}${route}`, { waitUntil: 'load' });
+				await page.waitForSelector('nav', { timeout: 5000 });
+				const ok = await page.evaluate(() => document.querySelector('main')?.innerText.trim().length > 0);
+				check(`offline: ${route} loads`, ok);
+			}
+			// Full navigation (not the client router) so the request goes through the service worker.
+			await page.waitForSelector('ul li a');
+			const editUrl = await page.$eval('ul li:first-child a', (a) => a.href);
+			await page.goto(editUrl, { waitUntil: 'load' });
+			await page.waitForFunction(() => document.querySelector('main').innerText.includes('Upraviť záznam'));
+			check('offline: edit page with ?id= loads', true);
+			await shot('07-offline-edit');
+		} finally {
+			await page.setOfflineMode(false);
+		}
+	}
 } catch (e) {
 	check('script', false, e.stack);
 } finally {
 	await browser?.close().catch(() => {});
 	server.kill();
+	try {
+		rmSync(profileDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 500 });
+	} catch {
+		// Windows may still hold files for a moment; it's in the temp folder anyway.
+	}
 }
 
 for (const r of results) console.log(r.line);
