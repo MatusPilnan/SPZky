@@ -22,6 +22,7 @@
 		"smoke": "vite build && node scripts/smoke.mjs",
 		"icons": "pwa-assets-generator",
 		"preversion": "npm run check && npm test",
+		"version": "node scripts/release-notes.mjs changelog && git add CHANGELOG.md",
 		"release": "npm version -m \"chore(release): v%s\""
 	},
 	"devDependencies": {

@@ -87,8 +87,9 @@ jobs:
         with:
           node-version-file: .nvmrc
 
-      - name: Generate release notes
-        run: node scripts/release-notes.mjs "$GITHUB_REF_NAME" > release-notes.md
+      # The tag's section from CHANGELOG.md (written by `npm run release`).
+      - name: Release notes from CHANGELOG.md
+        run: node scripts/release-notes.mjs notes "$GITHUB_REF_NAME" > release-notes.md
 
       - name: Create release
         run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file release-notes.md --verify-tag

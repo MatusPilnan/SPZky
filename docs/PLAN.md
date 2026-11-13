@@ -153,8 +153,10 @@ Only release tags publish. Pushes to `main` are tested but not deployed.
 2. Tag `vX.Y.Z` and push the commit and the tag.
 3. `release.yml` tests, deploys and creates the GitHub Release. A failing check blocks the deploy.
 
-Steps 1–2 are `npm run release -- <patch|minor|major>` (runs check + tests first) followed by
-`git push --follow-tags`.
+Steps 1–2 are `npm run release -- <patch|minor|major>` (runs check + tests first, adds the
+`CHANGELOG.md` entry to the release commit) followed by `git push --follow-tags`. Release
+notes are kept in `CHANGELOG.md` (decided 2026-11-13), and the GitHub Release reuses the
+version's section.
 
 ### App changes needed for a sub-path
 

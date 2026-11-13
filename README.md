@@ -38,7 +38,7 @@ fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
 | `npm run check`   | Type-check (svelte-check)                                     |
 | `npm test`        | Unit tests (Vitest, IndexedDB via fake-indexeddb)             |
 | `npm run smoke`   | Build + browser smoke test in headless Edge/Chrome (`BROWSER_PATH` to override; `BASE_PATH=/SPZky` to test the Pages sub-path) |
-| `npm run release -- <patch\|minor\|major>` | Check + test, bump version, commit `chore(release): vX.Y.Z`, create tag |
+| `npm run release -- <patch\|minor\|major>` | Check + test, bump version, add a `CHANGELOG.md` entry, commit `chore(release): vX.Y.Z`, create tag |
 
 ## Deployment
 
@@ -48,8 +48,11 @@ The app is published to GitHub Pages at **https://matuspilnan.github.io/SPZky/**
   Pages sub-path, incl. offline loading) on every push and pull request to `main`.
 - `.github/workflows/release.yml`: on a `vX.Y.Z` tag, checks that the tag matches
   `package.json`, runs the same checks, builds with `BASE_PATH=/<repo name>`, deploys to
-  Pages and creates a GitHub Release with notes from the Conventional Commits since the
-  previous tag (`scripts/release-notes.mjs`).
+  Pages and creates a GitHub Release whose notes are the version's section of
+  [CHANGELOG.md](CHANGELOG.md).
+- `CHANGELOG.md` is written by `npm run release`: a new entry from the Conventional Commits
+  since the previous tag is added to the release commit (`scripts/release-notes.mjs`). It can
+  be edited by hand before pushing the tag (amend the release commit and move the tag).
 
 ### Releasing
 

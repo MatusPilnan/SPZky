@@ -70,7 +70,9 @@ after touching links, paths, the manifest or the service worker (PowerShell:
   hardcode `/` or `/SPZky` in app code: use `resolve()` for links, `%sveltekit.assets%` /
   relative paths for assets, `page.route.id` (not `page.url.pathname`) for route checks.
 - Release: `npm run release -- <patch|minor|major>` then `git push --follow-tags`, only after
-  the owner confirms the release.
+  the owner confirms the release. The npm `version` hook adds the `CHANGELOG.md` entry to the
+  release commit, and the GitHub Release text is that section. Keep commit subjects clean
+  Conventional Commits, because they become the changelog lines.
 - Action versions in the workflows were current majors on 2026-11-13 (checkout/setup-node/
   upload-artifact v7, configure-pages v6, upload-pages-artifact v5, deploy-pages v5). Check
   their `action.yml` before changing inputs.
