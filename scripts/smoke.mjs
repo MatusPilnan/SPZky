@@ -110,6 +110,19 @@ try {
 	if (PREVIEW) {
 		const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
 		check('service worker active with app scope', scope === `${ORIGIN}${BASE_PATH}/`, scope);
+
+		// "Ready to work offline" closes itself after a countdown (mouse is not over it).
+		const offlineText = 'ready to work offline';
+		const shown = await page
+			.waitForFunction((s) => document.body.innerText.includes(s), { timeout: 5000 }, offlineText)
+			.then(() => true, () => false);
+		check('offline-ready message shown with countdown bar', shown && (await page.$('.countdown')) !== null);
+		await shot('00-offline-ready');
+		const started = Date.now();
+		const closed = await page
+			.waitForFunction((s) => !document.body.innerText.includes(s), { timeout: 9000 }, offlineText)
+			.then(() => true, () => false);
+		check('offline-ready message closes by itself', closed, `${((Date.now() - started) / 1000).toFixed(1)} s`);
 	}
 
 	// SK district plate
