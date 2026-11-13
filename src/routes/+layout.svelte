@@ -23,9 +23,10 @@
 	];
 
 	function isActive(href: string): boolean {
-		let path = page.url.pathname.replace(/\/$/, '') || '/';
-		if (path.startsWith('/sighting')) path = '/history'; // edit screen belongs to History
-		return href === '/' ? path === '/' : path.startsWith(href);
+		// Route ids don't include the base path (e.g. /SPZky on GitHub Pages).
+		let route = page.route.id ?? '';
+		if (route.startsWith('/sighting')) route = '/history'; // edit screen belongs to History
+		return href === '/' ? route === '/' : route.startsWith(href);
 	}
 </script>
 

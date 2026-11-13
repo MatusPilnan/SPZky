@@ -5,6 +5,14 @@ import { defineConfig } from 'vite';
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8'));
 
+/**
+ * Sub-path the app is served from: "" locally, "/SPZky" on GitHub Pages
+ * (set by CI from the repository name). Must start with "/" and have no trailing slash.
+ */
+const base = (process.env.BASE_PATH ?? '').replace(/\/+$/, '');
+if (base && !base.startsWith('/')) throw new Error(`BASE_PATH must start with "/": ${base}`);
+const scope = `${base}/`;
+
 export default defineConfig({
 	define: {
 		__APP_VERSION__: JSON.stringify(pkg.version)
@@ -14,20 +22,21 @@ export default defineConfig({
 			{
 				// Every route is prerendered (ssr=false shells), so the build is a plain
 				// static site that works on any host, and every page can be precached.
-				adapter: adapter()
+				adapter: adapter(),
+				paths: { base: base as '' | `/${string}` }
 			},
 			{
 				strategies: 'generateSW',
 				registerType: 'prompt',
 				injectRegister: false,
 				manifest: {
-					id: '/',
+					id: scope,
 					name: 'ŠPZ-ky',
 					short_name: 'ŠPZ-ky',
 					description: 'Hunt license plates from every region.',
 					lang: 'sk',
-					start_url: '/',
-					scope: '/',
+					start_url: scope,
+					scope,
 					display: 'standalone',
 					orientation: 'portrait',
 					theme_color: '#003399',
