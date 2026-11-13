@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Reused by release.yml so a release runs exactly the same checks.
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Check, test, smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type-check
+        run: npm run check
+
+      - name: Unit tests
+        run: npm test
+
+      # Builds for the GitHub Pages sub-path (/<repo name>) and drives the app in
+      # headless Chrome (preinstalled on ubuntu-latest), incl. offline loading.
+      - name: Browser smoke test
+        run: npm run smoke
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}
+
+      - name: Upload smoke screenshots
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-screenshots
+          path: .smoke/*.png
+          if-no-files-found: ignore
+          retention-days: 7

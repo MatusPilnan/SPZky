@@ -20,7 +20,9 @@
 		"test": "vitest run",
 		"presmoke": "node scripts/check-node.cjs",
 		"smoke": "vite build && node scripts/smoke.mjs",
-		"icons": "pwa-assets-generator"
+		"icons": "pwa-assets-generator",
+		"preversion": "npm run check && npm test",
+		"release": "npm version -m \"chore(release): v%s\""
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^4.0.1",
