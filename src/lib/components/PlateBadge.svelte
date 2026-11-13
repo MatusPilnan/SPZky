@@ -6,12 +6,14 @@
 		country: string;
 		/** Dimmed style, e.g. for quick entries showing only a region code. */
 		muted?: boolean;
+		/** Electric vehicle: green letters (as on Slovak EV plates). */
+		ev?: boolean;
 	}
 
-	let { text, country, muted = false }: Props = $props();
+	let { text, country, muted = false, ev = false }: Props = $props();
 </script>
 
-<span class="plate" class:muted>
+<span class="plate" class:muted class:ev>
 	<span class="band" aria-hidden="true">
 		<svg viewBox="0 0 20 20" class="stars">
 			{#each Array.from({ length: 12 }, (_, i) => i) as i (i)}
@@ -68,6 +70,9 @@
 		align-items: center;
 		padding: 0 0.5em;
 		text-transform: uppercase;
+	}
+	.ev .text {
+		color: #0f8a3c; /* plate background is always white */
 	}
 	.muted .text {
 		color: #666;

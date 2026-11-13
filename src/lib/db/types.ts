@@ -1,3 +1,5 @@
+import type { PlateFormat } from '../plates/detect';
+
 export interface GeoPoint {
 	lat: number;
 	lng: number;
@@ -13,8 +15,16 @@ export interface Sighting {
 	id: string;
 	/** Which collection the region belongs to, e.g. "sk", "cz", "cz-vintage". */
 	collectionId: string;
-	/** Region code within the collection, e.g. "BA" (SK) or "A" (CZ). */
-	regionCode: string;
+	/**
+	 * Region code within the collection, e.g. "BA" (SK) or "A" (CZ).
+	 * null = nationwide plate (no region; not counted toward progress).
+	 */
+	regionCode: string | null;
+	/**
+	 * Detected plate format, e.g. "sk-district", "ev", "sk-2023". Required for
+	 * nationwide plates; null for quick region taps and unrecognised plates.
+	 */
+	plateType: PlateFormat | null;
 	/** Plate as typed by the user; null for quick "tap a region" entries. */
 	plate: string | null;
 	/** normalizePlate(plate); null when plate is null. Used for duplicate checks. */

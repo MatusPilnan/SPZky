@@ -1,10 +1,13 @@
+import { isNationwideType } from '../collections';
 import { normalizePlate } from '../plates/normalize';
 import { db as defaultDb, type SpzDatabase } from './db';
 import type { GeoPoint, Sighting } from './types';
 
 export interface NewSighting {
 	collectionId: string;
-	regionCode: string;
+	/** null = nationwide plate (then plateType must be one of the collection's nationwide types). */
+	regionCode: string | null;
+	plateType?: Sighting['plateType'];
 	plate?: string | null;
 	seenAt?: number;
 	location?: GeoPoint | null;
@@ -12,8 +15,14 @@ export interface NewSighting {
 }
 
 export type SightingPatch = Partial<
-	Pick<Sighting, 'collectionId' | 'regionCode' | 'plate' | 'seenAt' | 'location' | 'note'>
+	Pick<Sighting, 'collectionId' | 'regionCode' | 'plateType' | 'plate' | 'seenAt' | 'location' | 'note'>
 >;
+
+function assertConsistent(s: Pick<Sighting, 'collectionId' | 'regionCode' | 'plateType'>) {
+	if (s.regionCode === null && !isNationwideType(s.collectionId, s.plateType)) {
+		throw new Error(`Nationwide sighting needs a nationwide plate type of ${s.collectionId}, got ${s.plateType}`);
+	}
+}
 
 function cleanPlate(plate: string | null | undefined): { plate: string | null; plateNormalized: string | null } {
 	const trimmed = plate?.trim() ?? '';
@@ -35,7 +44,8 @@ export async function addSighting(input: NewSighting, database: SpzDatabase = de
 	const sighting: Sighting = {
 		id: crypto.randomUUID(),
 		collectionId: input.collectionId,
-		regionCode: input.regionCode.toUpperCase(),
+		regionCode: input.regionCode?.toUpperCase() ?? null,
+		plateType: input.plateType ?? null,
 		...cleanPlate(input.plate),
 		seenAt: input.seenAt ?? now,
 		location: plainLocation(input.location),
@@ -46,6 +56,7 @@ export async function addSighting(input: NewSighting, database: SpzDatabase = de
 		userId: null,
 		dirty: 1
 	};
+	assertConsistent(sighting);
 	await database.sightings.add(sighting);
 	return sighting;
 }
@@ -60,8 +71,12 @@ export async function updateSighting(
 	if (patch.regionCode) changes.regionCode = patch.regionCode.toUpperCase();
 	if (patch.note !== undefined) changes.note = patch.note.trim();
 	if ('location' in patch) changes.location = plainLocation(patch.location);
-	const updated = await database.sightings.update(id, changes);
-	if (!updated) throw new Error(`Sighting ${id} not found`);
+	await database.transaction('rw', database.sightings, async () => {
+		const current = await database.sightings.get(id);
+		if (!current) throw new Error(`Sighting ${id} not found`);
+		assertConsistent({ ...current, ...changes });
+		await database.sightings.update(id, changes);
+	});
 }
 
 /** Soft-deletes so the deletion can propagate to other devices on sync. */

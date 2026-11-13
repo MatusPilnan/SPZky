@@ -4,18 +4,20 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { liveQuery } from 'dexie';
-	import { db } from '#lib/db/db.js';
+	import { db, inferPlateType } from '#lib/db/db.js';
 	import { deleteSighting, updateSighting } from '#lib/db/sightings.js';
 	import type { GeoPoint, Sighting } from '#lib/db/types.js';
-	import { collections, getCollection, getRegion } from '#lib/collections.js';
-	import { detectPlate } from '#lib/plates/detect.js';
-	import { countByRegion } from '#lib/progress.js';
+	import { collections, getCollection, getRegion, isNationwideType } from '#lib/collections.js';
+	import { detectPlate, type NationwideFormat } from '#lib/plates/detect.js';
+	import { countByRegion, countNationwide } from '#lib/progress.js';
 	import { fromLocalInputValue, toLocalInputValue } from '#lib/datetime.js';
 	import { showToast } from '#lib/toast.svelte.js';
 	import { t } from '#lib/i18n/i18n.svelte.js';
 	import PlateInput from '#lib/components/PlateInput.svelte';
 	import RegionGrid from '#lib/components/RegionGrid.svelte';
+	import NationwidePicker from '#lib/components/NationwidePicker.svelte';
 	import CollectionSwitch from '#lib/components/CollectionSwitch.svelte';
+	import TypeChip from '#lib/components/TypeChip.svelte';
 
 	// Edit page uses ?id= rather than a dynamic route so it can be prerendered
 	// (and precached) as a single static shell.
@@ -25,7 +27,9 @@
 	let notFound = $state(false);
 	let plate = $state('');
 	let collectionId = $state<string>(collections[0].id);
-	let regionCode = $state('');
+	/** null = nationwide (then nationwideType says which kind). */
+	let regionCode = $state<string | null>(null);
+	let nationwideType = $state<NationwideFormat | null>(null);
 	let seenAtInput = $state('');
 	let note = $state('');
 	let location = $state<GeoPoint | null>(null);
@@ -34,6 +38,11 @@
 
 	const all = liveQuery(() => db.sightings.toArray());
 	const counts = $derived(countByRegion($all ?? []));
+	const nationwideCounts = $derived(countNationwide($all ?? []));
+
+	const valid = $derived(
+		regionCode !== null ? !!getRegion(collectionId, regionCode) : isNationwideType(collectionId, nationwideType)
+	);
 
 	onMount(async () => {
 		const s = await db.sightings.get(id);
@@ -45,6 +54,7 @@
 		plate = s.plate ?? '';
 		collectionId = s.collectionId;
 		regionCode = s.regionCode;
+		nationwideType = s.regionCode === null && isNationwideType(s.collectionId, s.plateType) ? s.plateType : null;
 		seenAtInput = toLocalInputValue(s.seenAt);
 		note = s.note;
 		location = s.location;
@@ -52,22 +62,32 @@
 
 	function onPlateInput() {
 		// Follow the plate when the user retypes it and it is clearly recognised.
-		const top = detectPlate(plate)[0];
-		if (top?.type === 'region' && top.confidence === 'high') {
-			collectionId = top.collectionId;
+		// Keep the current country if it is one of the matches (e.g. EL plates fit SK and CZ).
+		const matches = detectPlate(plate).filter((d) => d.confidence === 'high');
+		const top = matches.find((d) => d.collectionId === collectionId) ?? matches[0];
+		if (!top) return;
+		collectionId = top.collectionId;
+		if (top.type === 'region') {
 			regionCode = top.regionCode;
+			nationwideType = null;
+		} else {
+			regionCode = null;
+			nationwideType = top.format;
 		}
 	}
 
 	async function save(event: SubmitEvent) {
 		event.preventDefault();
-		if (!original || !getRegion(collectionId, regionCode)) return;
+		if (!original || !valid) return;
 		saving = true;
 		try {
+			const newPlate = plate.trim() ? plate : null;
 			await updateSighting(original.id, {
-				plate: plate.trim() ? plate : null,
+				plate: newPlate,
 				collectionId,
 				regionCode,
+				plateType:
+					regionCode === null ? nationwideType : inferPlateType({ plate: newPlate, collectionId, regionCode }),
 				seenAt: fromLocalInputValue(seenAtInput) ?? original.seenAt,
 				note,
 				location
@@ -109,8 +129,15 @@
 			<section class="card stack">
 				<div class="current">
 					<span class="flag" aria-hidden="true">{getCollection(collectionId)?.flag}</span>
-					<span class="code">{regionCode}</span>
-					<span class="name">{getRegion(collectionId, regionCode)?.name ?? ''}</span>
+					{#if regionCode !== null}
+						<span class="code">{regionCode}</span>
+						<span class="name">{getRegion(collectionId, regionCode)?.name ?? ''}</span>
+					{:else}
+						<span class="name">
+							{t('nationwide.title')}
+							<TypeChip type={nationwideType} showPlain />
+						</span>
+					{/if}
 					<button type="button" class="btn" onclick={() => (pickerOpen = !pickerOpen)} aria-expanded={pickerOpen}>
 						{pickerOpen ? t('edit.closePicker') : t('edit.changeRegion')}
 					</button>
@@ -118,15 +145,29 @@
 				{#if pickerOpen}
 					<CollectionSwitch bind:value={collectionId} />
 					{#key collectionId}
-						<RegionGrid
-							collection={getCollection(collectionId) ?? collections[0]}
-							counts={counts.get(collectionId)}
-							selected={regionCode}
-							onpick={(code) => {
-								regionCode = code;
-								pickerOpen = false;
-							}}
-						/>
+						{@const c = getCollection(collectionId) ?? collections[0]}
+						<div>
+							<RegionGrid
+								collection={c}
+								counts={counts.get(c.id)}
+								selected={regionCode}
+								onpick={(code) => {
+									regionCode = code;
+									nationwideType = null;
+									pickerOpen = false;
+								}}
+							/>
+							<NationwidePicker
+								collection={c}
+								counts={nationwideCounts.get(c.id)}
+								selected={regionCode === null ? nationwideType : null}
+								onpick={(type) => {
+									regionCode = null;
+									nationwideType = type;
+									pickerOpen = false;
+								}}
+							/>
+						</div>
 					{/key}
 				{/if}
 			</section>
@@ -156,7 +197,7 @@
 				{/if}
 			</section>
 
-			<button class="btn primary" type="submit" disabled={saving || !getRegion(collectionId, regionCode)}>
+			<button class="btn primary" type="submit" disabled={saving || !valid}>
 				{t('edit.save')}
 			</button>
 			<button class="btn danger" type="button" onclick={remove}>{t('edit.delete')}</button>

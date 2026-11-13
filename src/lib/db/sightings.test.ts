@@ -1,4 +1,5 @@
 import 'fake-indexeddb/auto';
+import Dexie from 'dexie';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { SpzDatabase } from './db';
 import { addSighting, deleteSighting, findByPlate, listSightings, updateSighting } from './sightings';
@@ -37,6 +38,21 @@ describe('sightings repository', () => {
 		expect((await db.sightings.get(s.id))?.location).toEqual({ lat: 48.1, lng: 17.1, accuracy: 10 });
 		await updateSighting(s.id, { location: new Proxy({ lat: 1, lng: 2, accuracy: null }, {}) }, db);
 		expect((await db.sightings.get(s.id))?.location).toEqual({ lat: 1, lng: 2, accuracy: null });
+	});
+
+	it('stores nationwide plates with their type', async () => {
+		const s = await addSighting({ collectionId: 'sk', regionCode: null, plateType: 'ev', plate: 'EL-123AB' }, db);
+		expect(await db.sightings.get(s.id)).toMatchObject({ regionCode: null, plateType: 'ev', plateNormalized: 'EL123AB' });
+	});
+
+	it('rejects nationwide plates without a valid nationwide type', async () => {
+		await expect(addSighting({ collectionId: 'sk', regionCode: null }, db)).rejects.toThrow('nationwide');
+		await expect(addSighting({ collectionId: 'cz', regionCode: null, plateType: 'sk-2023' }, db)).rejects.toThrow();
+		await expect(addSighting({ collectionId: 'cz-vintage', regionCode: null, plateType: 'ev' }, db)).rejects.toThrow();
+		const s = await addSighting({ collectionId: 'sk', regionCode: 'BA' }, db);
+		await expect(updateSighting(s.id, { regionCode: null }, db)).rejects.toThrow('nationwide');
+		await updateSighting(s.id, { regionCode: null, plateType: 'sk-2023' }, db);
+		expect((await db.sightings.get(s.id))?.regionCode).toBeNull();
 	});
 
 	it('stores quick entries without a plate', async () => {
@@ -81,5 +97,28 @@ describe('sightings repository', () => {
 		await deleteSighting(b.id, db);
 		expect((await findByPlate('BA123AB', db)).map((s) => s.id)).toEqual([a.id]);
 		expect(await findByPlate('---', db)).toEqual([]);
+	});
+});
+
+describe('schema upgrade v1 → v2', () => {
+	it('fills plateType for existing sightings', async () => {
+		const name = `upgrade-${crypto.randomUUID()}`;
+		const v1 = new Dexie(name);
+		v1.version(1).stores({
+			sightings: 'id, collectionId, [collectionId+regionCode], plateNormalized, seenAt, updatedAt, dirty'
+		});
+		const base = { seenAt: 1, location: null, note: '', createdAt: 1, updatedAt: 1, deleted: 0, userId: null, dirty: 0 };
+		await v1.table('sightings').bulkAdd([
+			{ ...base, id: 'a', collectionId: 'sk', regionCode: 'BA', plate: 'BA-123AB', plateNormalized: 'BA123AB' },
+			{ ...base, id: 'b', collectionId: 'sk', regionCode: 'ZA', plate: 'ZA-HELLO', plateNormalized: 'ZAHELLO' },
+			{ ...base, id: 'c', collectionId: 'sk', regionCode: 'KE', plate: null, plateNormalized: null },
+			{ ...base, id: 'd', collectionId: 'sk', regionCode: 'ZA', plate: '1234567', plateNormalized: '1234567' }
+		]);
+		v1.close();
+
+		const v2 = new SpzDatabase(name);
+		const types = Object.fromEntries((await v2.sightings.toArray()).map((s) => [s.id, s.plateType]));
+		expect(types).toEqual({ a: 'sk-district', b: 'sk-district-special', c: null, d: null });
+		await v2.delete();
 	});
 });

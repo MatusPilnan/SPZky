@@ -41,11 +41,19 @@ export const en = {
 	'add.quickHint': 'Tap the region code you just saw.',
 	'add.quickSaved': 'Logged {code} – {name}',
 
-	'noRegion.sk-2023':
-		'Slovak plate issued since 2023. These no longer contain a district code, so it can’t count toward a region.',
-	'noRegion.sk-personalized': 'Personalised Slovak plate without a district code. No region to count.',
-	'noRegion.ev': 'Electric vehicle plate. These don’t contain a region.',
-	'noRegion.cz-personalized': 'Personalised Czech plate. These don’t contain a region.',
+	'add.chooseCountry': 'This plate fits more than one country. Which one did you see?',
+	'add.evColorHint': 'Tip: Slovak EV plates have green letters, Czech ones black.',
+	'add.notCounted': 'not counted toward progress',
+	'add.savedNationwide': 'Saved {plate} (nationwide)',
+	'add.quickSavedNationwide': 'Logged nationwide: {type}',
+
+	'nationwide.title': 'Nationwide',
+	'nationwide.hint': 'Plates without a region. They don’t count toward progress.',
+	'nationwide.count': { one: '{count} plate', other: '{count} plates' },
+	'nationwideType.sk-2023': 'Standard (since 2023)',
+	'nationwideType.sk-personalized': 'Personalised',
+	'nationwideType.ev': 'Electric',
+	'nationwideType.cz-personalized': 'Personalised',
 
 	'format.sk-district': 'district plate',
 	'format.sk-district-special': 'special / personalised plate',
@@ -156,11 +164,19 @@ export const sk: Messages = {
 	'add.quickHint': 'Ťukni na kód, ktorý si práve videl(a).',
 	'add.quickSaved': 'Zaznamenané {code} – {name}',
 
-	'noRegion.sk-2023':
-		'Slovenská ŠPZ vydaná od roku 2023. Tie už neobsahujú kód okresu, takže sa nedá započítať.',
-	'noRegion.sk-personalized': 'Slovenská personalizovaná ŠPZ bez kódu okresu. Nedá sa započítať.',
-	'noRegion.ev': 'ŠPZ elektromobilu. Tie neobsahujú okres ani kraj.',
-	'noRegion.cz-personalized': 'Česká personalizovaná ŠPZ. Tie neobsahujú kraj.',
+	'add.chooseCountry': 'Táto ŠPZ sedí na viac krajín. Ktorú si videl(a)?',
+	'add.evColorHint': 'Tip: slovenské ŠPZ elektromobilov majú zelené písmo, české čierne.',
+	'add.notCounted': 'nezapočítava sa do postupu',
+	'add.savedNationwide': 'Uložené: {plate} (celoštátna)',
+	'add.quickSavedNationwide': 'Zaznamenaná celoštátna: {type}',
+
+	'nationwide.title': 'Celoštátne',
+	'nationwide.hint': 'ŠPZ bez okresu či kraja. Nezapočítavajú sa do postupu.',
+	'nationwide.count': { one: '{count} ŠPZ', few: '{count} ŠPZ', other: '{count} ŠPZ' },
+	'nationwideType.sk-2023': 'Bežná (od 2023)',
+	'nationwideType.sk-personalized': 'Personalizovaná',
+	'nationwideType.ev': 'Elektromobil',
+	'nationwideType.cz-personalized': 'Personalizovaná',
 
 	'format.sk-district': 'okresná ŠPZ',
 	'format.sk-district-special': 'špeciálna / personalizovaná ŠPZ',

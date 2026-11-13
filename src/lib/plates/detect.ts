@@ -1,6 +1,6 @@
-import { getRegion } from '../collections';
+import { countryOf, getRegion } from '../collections';
 import { czNumericToLetter } from '../data/cz';
-import type { CollectionId } from '../data/types';
+import type { CollectionId, NationwideCollectionId } from '../data/types';
 import { normalizePlate } from './normalize';
 
 /** Plate formats that encode a region. */
@@ -16,18 +16,18 @@ export type RegionFormat =
 	/** CZ pre-2001: XX NN-NN / XXX NN-NN, first two letters = district. */
 	| 'cz-vintage';
 
-/** Recognised plate formats that carry no region. */
-export type NoRegionFormat =
+/** Recognised plate formats without a region; they go to the country's nationwide subcollection. */
+export type NationwideFormat =
 	/** SK state-wide plates since 2023: same layout, but no district (series from AA). */
 	| 'sk-2023'
 	/** SK personalised plate since 2023 (LL-XXXXX), no district. */
 	| 'sk-personalized'
-	/** Electric vehicle plates (EL/EV prefix). */
+	/** Electric vehicles: SK EL/EV + NNN + LL (green letters), CZ EL + NNN + LL (black letters). */
 	| 'ev'
-	/** CZ personalised (8 characters, at least one digit). */
+	/** CZ personalised: up to 8 characters with at least one digit, no G/O/Q/W. */
 	| 'cz-personalized';
 
-export type PlateFormat = RegionFormat | NoRegionFormat;
+export type PlateFormat = RegionFormat | NationwideFormat;
 
 export type Confidence = 'high' | 'medium' | 'low';
 
@@ -40,10 +40,10 @@ export type Detection =
 			confidence: Confidence;
 	  }
 	| {
-			/** Recognised plate format that does not encode a region. */
-			type: 'no-region';
-			country: 'SK' | 'CZ' | null;
-			format: NoRegionFormat;
+			/** No region on the plate: saved to the country's nationwide subcollection. */
+			type: 'nationwide';
+			collectionId: NationwideCollectionId;
+			format: NationwideFormat;
 			confidence: Confidence;
 	  };
 
@@ -60,6 +60,10 @@ function region(
 		: null;
 }
 
+function nationwide(collectionId: NationwideCollectionId, format: NationwideFormat, confidence: Confidence): Detection {
+	return { type: 'nationwide', collectionId, format, confidence };
+}
+
 function detectSlovak(n: string): Detection[] {
 	const out: (Detection | null)[] = [];
 	const prefix = n.slice(0, 2);
@@ -67,13 +71,12 @@ function detectSlovak(n: string): Detection[] {
 
 	if (/^[A-Z]{2}\d{3}[A-Z]{2}$/.test(n)) {
 		if (isDistrict) out.push(region('sk', prefix, 'sk-district', 'high'));
-		else if (prefix === 'EL' || prefix === 'EV')
-			out.push({ type: 'no-region', country: null, format: 'ev', confidence: 'high' });
-		else out.push({ type: 'no-region', country: 'SK', format: 'sk-2023', confidence: 'high' });
+		else if (prefix === 'EL' || prefix === 'EV') out.push(nationwide('sk', 'ev', 'high'));
+		else out.push(nationwide('sk', 'sk-2023', 'high'));
 	} else if (/^[A-Z]{2}[A-Z0-9]{5}$/.test(n)) {
 		// Personalised (XX-LLLLL / XX-LLLLN before 2023, LL-XXXXX since 2023).
 		if (isDistrict) out.push(region('sk', prefix, 'sk-district-special', 'medium'));
-		else out.push({ type: 'no-region', country: 'SK', format: 'sk-personalized', confidence: 'low' });
+		else out.push(nationwide('sk', 'sk-personalized', 'low'));
 	} else if (/^[A-Z]{2}([A-Z]{1,2}\d{3}|\d{3}[A-Z])$/.test(n) && isDistrict) {
 		// Dealer (XX-M 001 / XX-MA001), temporary (V), official (XX-NNN X).
 		out.push(region('sk', prefix, 'sk-district-special', 'medium'));
@@ -83,6 +86,9 @@ function detectSlovak(n: string): Detection[] {
 
 function detectCzech(n: string): Detection[] {
 	const out: (Detection | null)[] = [];
+
+	// Electric vehicles: EL + series digit + two digits + two letters (EL-000-AA … EL-999-ZZ).
+	if (/^EL\d{3}[A-Z]{2}$/.test(n)) out.push(nationwide('cz', 'ev', 'high'));
 
 	const standard = /^\d([A-Z])[A-Z0-9]\d{4}$/.exec(n);
 	if (standard) out.push(region('cz', standard[1], 'cz-standard', 'high'));
@@ -100,16 +106,22 @@ function detectCzech(n: string): Detection[] {
 		if (code) out.push(region('cz-vintage', code, 'cz-vintage', 'high'));
 	}
 
-	const anyRegion = out.some((d) => d !== null);
-	if (!anyRegion && /^(?=.*\d)[A-Z0-9]{8}$/.test(n)) {
-		out.push({ type: 'no-region', country: 'CZ', format: 'cz-personalized', confidence: 'low' });
+	const anyMatch = out.some((d) => d !== null);
+	if (!anyMatch && /^(?=.*\d)[A-FH-NPR-VX-Z0-9]{8}$/.test(n)) {
+		out.push(nationwide('cz', 'cz-personalized', 'low'));
 	}
 	return out.filter((d): d is Detection => d !== null);
 }
 
+export function detectionKey(d: Detection): string {
+	return d.type === 'region' ? `${d.collectionId}:${d.regionCode}` : `${d.collectionId}:*${d.format}`;
+}
+
 /**
  * Detects country and region from a plate as typed. Returns candidates
- * ordered best-first; an empty array means the plate was not recognised.
+ * ordered best-first (by confidence; regional before nationwide on a tie);
+ * an empty array means the plate was not recognised. When candidates span
+ * several countries, see orderByCountry().
  */
 export function detectPlate(raw: string): Detection[] {
 	const n = normalizePlate(raw);
@@ -118,13 +130,41 @@ export function detectPlate(raw: string): Detection[] {
 	const seen = new Set<string>();
 	return [...detectSlovak(n), ...detectCzech(n)]
 		.filter((d) => {
-			const key = d.type === 'region' ? `${d.collectionId}:${d.regionCode}` : `none:${d.format}`;
+			const key = detectionKey(d);
 			if (seen.has(key)) return false;
 			seen.add(key);
 			return true;
 		})
 		.sort((a, b) => {
-			if (a.type !== b.type) return a.type === 'region' ? -1 : 1;
-			return confidenceRank[a.confidence] - confidenceRank[b.confidence];
+			const byConfidence = confidenceRank[a.confidence] - confidenceRank[b.confidence];
+			if (byConfidence !== 0) return byConfidence;
+			return a.type === b.type ? 0 : a.type === 'region' ? -1 : 1;
 		});
+}
+
+/**
+ * When the candidates belong to more than one country, puts the preferred
+ * countries first (in the given order: GPS country, then last used), keeping
+ * the existing order otherwise. With a single country nothing changes.
+ */
+export function orderByCountry<T extends { collectionId: string }>(
+	candidates: T[],
+	preferred: (string | null | undefined)[]
+): T[] {
+	const countries = new Set(candidates.map((c) => countryOf(c.collectionId)));
+	if (countries.size <= 1) return candidates;
+	const ranking = [...new Set(preferred.filter((p): p is string => !!p))];
+	const rank = (c: T) => {
+		const i = ranking.indexOf(countryOf(c.collectionId) ?? '');
+		return i === -1 ? ranking.length : i;
+	};
+	return candidates
+		.map((c, i) => ({ c, i }))
+		.sort((a, b) => rank(a.c) - rank(b.c) || a.i - b.i)
+		.map(({ c }) => c);
+}
+
+/** True when the candidates belong to more than one country. */
+export function spansCountries(candidates: { collectionId: string }[]): boolean {
+	return new Set(candidates.map((c) => countryOf(c.collectionId))).size > 1;
 }

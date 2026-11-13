@@ -12,6 +12,9 @@
 	--accent-contrast: #ffffff;
 	--danger: #c62828;
 	--success: #2e7d32;
+	/* Highlights for special plates: electric (green, like SK EV plate letters) and personalised/special. */
+	--ev: #0f8a3c;
+	--special: #8a4bd6;
 
 	--radius: 12px;
 	--shadow: 0 4px 16px rgb(0 0 0 / 0.12);
@@ -35,6 +38,8 @@
 		--accent-contrast: #0f1115;
 		--danger: #ef6b6b;
 		--success: #6fcf73;
+		--ev: #4fd17f;
+		--special: #b98cf2;
 		--shadow: 0 4px 16px rgb(0 0 0 / 0.5);
 	}
 }

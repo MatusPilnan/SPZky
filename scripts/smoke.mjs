@@ -143,9 +143,31 @@ try {
 	check('duplicate warned', t.includes('already logged this plate'));
 	check('save disabled on duplicate', await page.$eval('button.save', (b) => b.disabled));
 
-	// SK 2023 plate without region
+	// SK 2023 plate without region → nationwide, saveable
 	await typePlate('AA-123BC');
-	check('SK 2023 plate → no region', (await text()).includes('since 2023'));
+	t = await text();
+	check('SK 2023 plate → nationwide candidate', t.includes('Slovakia · Nationwide') && t.includes('not counted'));
+	await page.keyboard.press('Enter');
+	await page.waitForFunction(() => document.querySelector('.toasts')?.innerText.includes('(nationwide)'));
+	check('nationwide plate saved', true);
+
+	// EL plates fit SK and CZ: GPS country first (Bratislava → SK, Praha → CZ)
+	const firstCandidate = () => page.$eval('.candidates .candidate', (e) => e.innerText.replace(/\s+/g, ' '));
+	await typePlate('EL-123AB');
+	t = await text();
+	check('EL plate asks for the country', t.includes('fits more than one country') && t.includes('green letters'));
+	check('EL plate: GPS in SK → Slovakia first', (await firstCandidate()).includes('Slovakia'), await firstCandidate());
+	await shot('02-add-ev-sk');
+	await page.setGeolocation({ latitude: 50.0755, longitude: 14.4378, accuracy: 12 });
+	await page.reload({ waitUntil: 'networkidle0' });
+	await page.waitForFunction(() => document.querySelector('main').innerText.includes('Location will be saved'));
+	await typePlate('EL-123AB');
+	check('EL plate: GPS in CZ → Czechia first', (await firstCandidate()).includes('Czechia'), await firstCandidate());
+	await page.keyboard.press('Enter');
+	await page.waitForFunction(() => document.querySelector('.toasts')?.innerText.includes('EL-123AB'));
+	await page.setGeolocation({ latitude: 48.1486, longitude: 17.1077, accuracy: 12 });
+	await page.reload({ waitUntil: 'networkidle0' });
+	await page.waitForFunction(() => document.querySelector('main').innerText.includes('Location will be saved'));
 
 	// CZ pre-2001 + CZ standard
 	await typePlate('BN 12-34');
@@ -159,7 +181,7 @@ try {
 	// unrecognised → manual picker
 	await typePlate('1234567');
 	check('unrecognised shows manual picker', (await text()).includes('not recognised'));
-	await shot('02-add-manual');
+	await shot('03-add-manual');
 	await page.evaluate(() =>
 		[...document.querySelectorAll('.manual .grid button')].find((b) => b.innerText.startsWith('ZA')).click()
 	);
@@ -172,24 +194,33 @@ try {
 	await page.evaluate(() => [...document.querySelectorAll('[role=tab]')].find((b) => b.innerText.includes('Quick')).click());
 	await page.waitForSelector('.grid button');
 	t = await text();
-	check('quick grid counts found', t.includes('2 / 93 found'), t.match(/\d+ \/ \d+ found/)?.[0]);
+	// BA + ZA; the nationwide AA-123BC is not counted
+	check('quick grid counts found (nationwide not counted)', t.includes('2 / 93 found'), t.match(/\d+ \/ \d+ found/)?.[0]);
+	check('quick mode shows the nationwide section', t.includes('Nationwide') && t.includes('1 plate'));
 	await page.evaluate(() => [...document.querySelectorAll('.grid button')].find((b) => b.innerText.startsWith('KE')).click());
 	await page.waitForFunction(() => document.querySelector('main').innerText.includes('3 / 93 found'));
 	check('quick tap logged', true);
-	await shot('03-quick');
 	await page.evaluate(() =>
 		[...document.querySelectorAll('.toasts .toast button')].find((b) => b.innerText.toUpperCase().includes('UNDO')).click()
 	);
 	await page.waitForFunction(() => document.querySelector('main').innerText.includes('2 / 93 found'));
 	check('undo removed quick entry', true);
+	await page.evaluate(() => [...document.querySelectorAll('.nationwide button')].find((b) => b.innerText.includes('Electric')).click());
+	await page.waitForFunction(() => document.querySelector('.nationwide').innerText.includes('2 plates'));
+	t = await text();
+	check('quick nationwide EV logged, region count unchanged', t.includes('2 / 93 found'));
+	await shot('04-quick');
 
 	// history + edit
 	await page.goto(`${APP}/history`, { waitUntil: 'networkidle0' });
 	await page.waitForSelector('ul li');
 	const items = await page.$$eval('ul li', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ')));
-	check('history lists 3 sightings', items.length === 3, items.join(' || '));
+	// BA, AA (nationwide), EL (CZ, EV), 1A2, ZA (manual), quick SK EV
+	check('history lists 6 sightings', items.length === 6, items.join(' || '));
 	check('history shows location pin', items.some((i) => i.includes('📍')));
-	await shot('04-history');
+	check('history highlights EV plates', items.filter((i) => i.includes('⚡')).length === 2);
+	check('history labels nationwide plates', items.some((i) => i.includes('AA-123BC') && i.includes('Nationwide')));
+	await shot('05-history');
 	await page.click('ul li:last-child a');
 	await page.waitForFunction(
 		() =>
@@ -198,7 +229,7 @@ try {
 	);
 	t = await text();
 	check('edit page loads with location', t.includes('48.14860') && t.includes('±12 m'));
-	await shot('05-edit');
+	await shot('06-edit');
 	await page.type('input[placeholder^="e.g. highway"]', 'test note');
 	await page.evaluate(() => [...document.querySelectorAll('button')].find((b) => b.innerText === 'Save changes').click());
 	await page.waitForFunction(() => location.pathname.endsWith('/history'));
@@ -219,7 +250,7 @@ try {
 			.querySelector('input[role=switch]').checked
 	);
 	check('settings switch turns on', switchOn);
-	await shot('06-settings');
+	await shot('07-settings');
 	await page.goto(`${APP}/add`, { waitUntil: 'networkidle0' });
 	await page.evaluate(() => [...document.querySelectorAll('[role=tab]')].find((b) => b.innerText.includes('Plate')).click());
 	await page.waitForSelector(plateSel);
@@ -235,8 +266,9 @@ try {
 	await page.evaluate(() => localStorage.setItem('spz-ky.locale', 'sk'));
 	await page.goto(`${APP}/`, { waitUntil: 'networkidle0' });
 	t = await page.evaluate(() => document.body.innerText);
-	check('home in Slovak with plural form', t.includes('4 zaznamenané ŠPZ'), t.split('\n').slice(0, 6).join(' | '));
-	await shot('07-home-sk');
+	// 6 sightings above + KE-111AA → "many" plural form
+	check('home in Slovak with plural form', t.includes('7 zaznamenaných ŠPZ'), t.split('\n').slice(0, 6).join(' | '));
+	await shot('08-home-sk');
 
 	// Offline: every page must load from the service worker cache, incl. the edit page with ?id=
 	if (PREVIEW) {
@@ -254,7 +286,7 @@ try {
 			await page.goto(editUrl, { waitUntil: 'load' });
 			await page.waitForFunction(() => document.querySelector('main').innerText.includes('Upraviť záznam'));
 			check('offline: edit page with ?id= loads', true);
-			await shot('08-offline-edit');
+			await shot('09-offline-edit');
 		} finally {
 			await page.setOfflineMode(false);
 		}

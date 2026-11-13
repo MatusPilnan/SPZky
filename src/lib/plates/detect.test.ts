@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { detectPlate, type Detection } from './detect';
+import { detectPlate, orderByCountry, spansCountries, type Detection } from './detect';
 
 function regions(raw: string) {
 	return detectPlate(raw)
@@ -26,15 +26,18 @@ describe('detectPlate: Slovakia', () => {
 		expect(regions('ZV 001 YA')).toEqual(['sk:ZV']); // trailer
 	});
 
-	it('treats non-district prefixes as 2023 state-wide plates without region', () => {
+	it('treats non-district prefixes as nationwide plates since 2023', () => {
 		expect(detectPlate('AA-123BC')).toEqual([
-			{ type: 'no-region', country: 'SK', format: 'sk-2023', confidence: 'high' }
+			{ type: 'nationwide', collectionId: 'sk', format: 'sk-2023', confidence: 'high' }
 		]);
 	});
 
-	it('recognises EV plates as non-regional', () => {
-		expect(first('EL-123AB')).toMatchObject({ type: 'no-region', format: 'ev' });
-		expect(first('EV-456CD')).toMatchObject({ type: 'no-region', format: 'ev' });
+	it('recognises EV plates: EV is Slovak only, EL could be either country', () => {
+		expect(detectPlate('EV-456CD')).toEqual([{ type: 'nationwide', collectionId: 'sk', format: 'ev', confidence: 'high' }]);
+		expect(detectPlate('EL-123AB')).toEqual([
+			{ type: 'nationwide', collectionId: 'sk', format: 'ev', confidence: 'high' },
+			{ type: 'nationwide', collectionId: 'cz', format: 'ev', confidence: 'high' }
+		]);
 	});
 
 	it('detects special plates with a district code at medium confidence', () => {
@@ -44,8 +47,8 @@ describe('detectPlate: Slovakia', () => {
 		expect(first('ZA-HELLO')).toMatchObject({ regionCode: 'ZA', format: 'sk-district-special' });
 	});
 
-	it('marks personalised plates without a district as no-region', () => {
-		expect(first('XY-HELLO')).toMatchObject({ type: 'no-region', country: 'SK', format: 'sk-personalized' });
+	it('marks personalised plates without a district as nationwide', () => {
+		expect(first('XY-HELLO')).toMatchObject({ type: 'nationwide', collectionId: 'sk', format: 'sk-personalized' });
 	});
 });
 
@@ -73,8 +76,14 @@ describe('detectPlate: Czechia', () => {
 		expect(regions('15V 0001')).toEqual([]);
 	});
 
-	it('flags personalised plates as non-regional', () => {
-		expect(first('JIRKA123')).toMatchObject({ type: 'no-region', country: 'CZ', format: 'cz-personalized' });
+	it('treats personalised plates as nationwide, respecting the forbidden letters', () => {
+		expect(first('JIRKA123')).toMatchObject({ type: 'nationwide', collectionId: 'cz', format: 'cz-personalized' });
+		expect(detectPlate('HOLKA123')).toEqual([]); // O is not allowed on CZ personalised plates
+	});
+
+	it('detects CZ EV plates (EL + 3 digits + 2 letters)', () => {
+		expect(detectPlate('EL 012 AB').map((d) => `${d.collectionId}:${d.format}`)).toEqual(['sk:ev', 'cz:ev']);
+		expect(detectPlate('EL 0123 A').every((d) => d.format !== 'ev')).toBe(true);
 	});
 });
 
@@ -108,8 +117,33 @@ describe('detectPlate: general', () => {
 		expect(detectPlate('123456789')).toEqual([]);
 	});
 
-	it('orders region matches before no-region ones and by confidence', () => {
-		const result = detectPlate('BA-123AB');
-		expect(result[0].type).toBe('region');
+	it('orders by confidence, regional before nationwide on a tie', () => {
+		expect(detectPlate('BA-123AB')[0].type).toBe('region');
+		expect(detectPlate('ZA-HELLO')[0]).toMatchObject({ type: 'region', confidence: 'medium' });
+	});
+});
+
+describe('orderByCountry', () => {
+	const el = detectPlate('EL-123AB'); // [sk, cz]
+	const countries = (list: { collectionId: string }[]) => list.map((d) => d.collectionId).join(',');
+
+	it('puts the GPS country first, then the last used one', () => {
+		expect(countries(orderByCountry(el, ['CZ', 'SK']))).toBe('cz,sk');
+		expect(countries(orderByCountry(el, [null, 'CZ']))).toBe('cz,sk'); // no GPS → last used
+		expect(countries(orderByCountry(el, ['SK', 'CZ']))).toBe('sk,cz');
+		expect(countries(orderByCountry(el, [undefined, null]))).toBe('sk,cz'); // default order
+		expect(countries(orderByCountry(el, ['AT', 'CZ']))).toBe('cz,sk'); // unsupported GPS country ignored
+	});
+
+	it('leaves single-country results alone', () => {
+		const ba = detectPlate('BA-123AB');
+		expect(orderByCountry(ba, ['CZ'])).toBe(ba);
+		expect(spansCountries(ba)).toBe(false);
+		expect(spansCountries(el)).toBe(true);
+	});
+
+	it('treats the CZ pre-2001 bonus collection as Czechia', () => {
+		const mixed = [{ collectionId: 'sk' }, { collectionId: 'cz-vintage' }];
+		expect(countries(orderByCountry(mixed, ['CZ']))).toBe('cz-vintage,sk');
 	});
 });
