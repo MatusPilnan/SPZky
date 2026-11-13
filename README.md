@@ -2,6 +2,8 @@
 
 Offline-first PWA for hunting license plates: log plates you spot and track progress per country by regional code.
 
+Plan, decisions and phase status: [docs/PLAN.md](docs/PLAN.md). Notes for Claude Code: [CLAUDE.md](CLAUDE.md).
+
 ## Requirements
 
 Node **22.17+** (see `.nvmrc`). On an older Node the npm scripts stop with a version error.
@@ -35,6 +37,7 @@ fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
 | `npm run preview` | Serve the production build (use this to test offline/install) |
 | `npm run check`   | Type-check (svelte-check)                                     |
 | `npm test`        | Unit tests (Vitest, IndexedDB via fake-indexeddb)             |
+| `npm run smoke`   | Build + browser smoke test in headless Edge/Chrome (`BROWSER_PATH` to override) |
 | `npm run icons`   | Regenerate PWA icons from `static/favicon.svg`                |
 
 ## Stack
@@ -57,10 +60,4 @@ fnm env --use-on-cd --shell powershell | Out-String | Invoke-Expression
 
 ## Layout
 
-```
-src/lib/db/          Dexie schema + sighting repository
-src/lib/plates/      plate normalization (detection comes in phase 2)
-src/lib/i18n/        messages (sk/en), formatter, reactive locale
-src/lib/components/  PlateBadge, UpdatePrompt
-src/routes/          home, add, history, settings
-```
+See the code map in [CLAUDE.md](CLAUDE.md#code-map).
