@@ -5,13 +5,20 @@ const STORAGE_KEY = 'spz-ky.prefs';
 interface Prefs {
 	/** Attach the device location to new sightings. */
 	saveLocation: boolean;
+	/** Go back to the home screen after a sighting has been saved. */
+	returnHomeAfterAdd: boolean;
 	/** Last used tab on the Add screen. */
 	addMode: 'plate' | 'quick';
 	/** Last collection picked in quick mode. */
 	quickCollection: string;
 }
 
-const defaults: Prefs = { saveLocation: false, addMode: 'plate', quickCollection: 'sk' };
+const defaults: Prefs = {
+	saveLocation: false,
+	returnHomeAfterAdd: false,
+	addMode: 'plate',
+	quickCollection: 'sk'
+};
 
 function load(): Prefs {
 	try {

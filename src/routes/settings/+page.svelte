@@ -3,22 +3,21 @@
 	import { formatBytes, i18n, localeNames, locales, t, type Locale } from '#lib/i18n/i18n.svelte.js';
 	import { isStoragePersisted, requestPersistentStorage, storageEstimate } from '#lib/storage.js';
 	import { prefs } from '#lib/prefs.svelte.js';
+	import Switch from '#lib/components/Switch.svelte';
 
 	let persisted = $state<boolean | null>(null);
 	let locationDenied = $state(false);
 
+	/** Runs after the switch has updated prefs.saveLocation. */
 	function toggleLocation(enabled: boolean) {
 		locationDenied = false;
-		if (!enabled) {
-			prefs.saveLocation = false;
-			return;
-		}
+		if (!enabled) return;
 		if (!('geolocation' in navigator)) {
+			prefs.saveLocation = false;
 			locationDenied = true;
 			return;
 		}
 		// Ask for permission right away (in response to the tap), not later on the Add screen.
-		prefs.saveLocation = true;
 		navigator.geolocation.getCurrentPosition(
 			() => {},
 			(err) => {
@@ -60,15 +59,14 @@
 	</section>
 
 	<section class="card">
+		<h2>{t('settings.adding')}</h2>
+		<Switch bind:checked={prefs.returnHomeAfterAdd}>{t('settings.returnHomeAfterAdd')}</Switch>
+		<p class="muted small">{t('settings.returnHomeAfterAddHint')}</p>
+	</section>
+
+	<section class="card">
 		<h2>{t('settings.location')}</h2>
-		<label class="toggle">
-			<input
-				type="checkbox"
-				checked={prefs.saveLocation}
-				onchange={(e) => toggleLocation(e.currentTarget.checked)}
-			/>
-			<span>{t('settings.saveLocation')}</span>
-		</label>
+		<Switch bind:checked={prefs.saveLocation} onchange={toggleLocation}>{t('settings.saveLocation')}</Switch>
 		<p class="muted small">{t('settings.saveLocationHint')}</p>
 		{#if locationDenied}<p class="error">{t('location.denied')}</p>{/if}
 	</section>
@@ -102,19 +100,6 @@
 	}
 	section p {
 		margin: 0 0 0.5rem;
-	}
-	.toggle {
-		display: flex;
-		align-items: center;
-		gap: 0.6rem;
-		font-weight: 600;
-		cursor: pointer;
-	}
-	.toggle input {
-		width: 1.3rem;
-		height: 1.3rem;
-		min-height: 0;
-		accent-color: var(--accent);
 	}
 	.small {
 		margin-top: 0.5rem;

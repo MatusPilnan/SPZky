@@ -86,6 +86,10 @@ export const en = {
 
 	'settings.title': 'Settings',
 	'settings.language': 'Language',
+	'settings.adding': 'Adding plates',
+	'settings.returnHomeAfterAdd': 'Return to the home screen after adding a plate',
+	'settings.returnHomeAfterAddHint':
+		'When off, the Add screen stays open so you can log the next plate right away.',
 	'settings.location': 'Location',
 	'settings.saveLocation': 'Save location with new sightings',
 	'settings.saveLocationHint':
@@ -197,6 +201,10 @@ export const sk: Messages = {
 
 	'settings.title': 'Nastavenia',
 	'settings.language': 'Jazyk',
+	'settings.adding': 'Pridávanie ŠPZ',
+	'settings.returnHomeAfterAdd': 'Po pridaní ŠPZ sa vrátiť na domovskú obrazovku',
+	'settings.returnHomeAfterAddHint':
+		'Keď je vypnuté, obrazovka Pridať zostane otvorená, aby si mohol(a) hneď zapísať ďalšiu ŠPZ.',
 	'settings.location': 'Poloha',
 	'settings.saveLocation': 'Ukladať polohu k novým záznamom',
 	'settings.saveLocationHint':

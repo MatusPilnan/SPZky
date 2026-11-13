@@ -205,12 +205,38 @@ try {
 	await page.waitForFunction(() => document.querySelector('main').innerText.includes('test note'));
 	check('edit saved note', true);
 
+	// Setting: return home after adding a plate
+	await page.goto(`${APP}/settings`, { waitUntil: 'networkidle0' });
+	await page.evaluate(() =>
+		[...document.querySelectorAll('label.switch')]
+			.find((l) => l.innerText.includes('Return to the home screen'))
+			.querySelector('input[role=switch]')
+			.click()
+	);
+	const switchOn = await page.evaluate(() =>
+		[...document.querySelectorAll('label.switch')]
+			.find((l) => l.innerText.includes('Return to the home screen'))
+			.querySelector('input[role=switch]').checked
+	);
+	check('settings switch turns on', switchOn);
+	await shot('06-settings');
+	await page.goto(`${APP}/add`, { waitUntil: 'networkidle0' });
+	await page.evaluate(() => [...document.querySelectorAll('[role=tab]')].find((b) => b.innerText.includes('Plate')).click());
+	await page.waitForSelector(plateSel);
+	await typePlate('KE-111AA');
+	await page.keyboard.press('Enter');
+	const wentHome = await page
+		.waitForFunction((home) => location.pathname === home, { timeout: 5000 }, `${BASE_PATH}/`)
+		.then(() => true, () => false);
+	const toastOnHome = await page.$eval('.toasts', (e) => e.innerText).catch(() => '');
+	check('returns home after adding (setting on)', wentHome && toastOnHome.includes('KE'), toastOnHome);
+
 	// Slovak UI
 	await page.evaluate(() => localStorage.setItem('spz-ky.locale', 'sk'));
 	await page.goto(`${APP}/`, { waitUntil: 'networkidle0' });
 	t = await page.evaluate(() => document.body.innerText);
-	check('home in Slovak with plural form', t.includes('3 zaznamenané ŠPZ'), t.split('\n').slice(0, 6).join(' | '));
-	await shot('06-home-sk');
+	check('home in Slovak with plural form', t.includes('4 zaznamenané ŠPZ'), t.split('\n').slice(0, 6).join(' | '));
+	await shot('07-home-sk');
 
 	// Offline: every page must load from the service worker cache, incl. the edit page with ?id=
 	if (PREVIEW) {
@@ -228,7 +254,7 @@ try {
 			await page.goto(editUrl, { waitUntil: 'load' });
 			await page.waitForFunction(() => document.querySelector('main').innerText.includes('Upraviť záznam'));
 			check('offline: edit page with ?id= loads', true);
-			await shot('07-offline-edit');
+			await shot('08-offline-edit');
 		} finally {
 			await page.setOfflineMode(false);
 		}

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { liveQuery } from 'dexie';
 	import { db } from '#lib/db/db.js';
 	import { addSighting, deleteSighting } from '#lib/db/sightings.js';
@@ -83,6 +85,14 @@
 		return regionCount(counts, sel.collectionId, sel.regionCode) === 0;
 	}
 
+	/** After a save: stay for the next plate, or go home if the user chose so in Settings. */
+	async function afterSave(): Promise<boolean> {
+		void requestPersistentStorage();
+		if (!prefs.returnHomeAfterAdd) return false;
+		await goto(resolve('/')); // toasts live in the layout, so they stay visible
+		return true;
+	}
+
 	async function save(event: SubmitEvent) {
 		event.preventDefault();
 		if (!canSave || !selection) return;
@@ -104,12 +114,12 @@
 					? { kind: 'celebrate', text: t('add.newRegionToast', { code: sel.regionCode, name: region?.name ?? '' }) }
 					: { kind: 'success', text: t('add.saved', { plate: saved.plate ?? '' }) }
 			);
+			if (await afterSave()) return;
 			plate = '';
 			note = '';
 			seenAtInput = '';
 			onPlateInput();
 			plateInput?.focus();
-			void requestPersistentStorage();
 		} finally {
 			saving = false;
 		}
@@ -132,7 +142,7 @@
 			text: wasNew ? t('add.newRegionToast', { code, name }) : t('add.quickSaved', { code, name }),
 			action: { label: t('add.undo'), run: () => void deleteSighting(saved.id) }
 		});
-		void requestPersistentStorage();
+		await afterSave();
 	}
 </script>
 
