@@ -88,6 +88,17 @@ removed (e.g. when GPS and last used are the same country).
   candidates stay ordered by detection confidence. Implemented in `orderByCountry()`
   (`src/lib/plates/detect.ts`).
 
+## Progress screens — phase 5
+
+- **Home:** per-collection cards (flag, % and progress bar, "found of total", "+ N nationwide
+  plates"); the pre-2001 CZ collection is listed separately as the bonus collection; the three
+  most recent sightings with a link to History.
+- **Country screen** `/country?id=<collection>` (query param, so it is one precached shell):
+  progress header, code grid with All / Found / Missing filter, nationwide section. Tapping a
+  code or nationwide type opens a detail sheet (`<dialog>`) with count, first/last seen and
+  the sightings (each opens the edit screen).
+- Helpers in `src/lib/progress.ts`: `collectionProgress()`, `regionStats()`.
+
 ## Data model
 
 `Sighting` (see `src/lib/db/types.ts`): client UUID, `collectionId`, `regionCode` (`null` =
@@ -112,8 +123,8 @@ by `updatedAt`. On first sign-in, local anonymous data is attached to the accoun
 | 2   | SK + CZ data, plate detection, plate + quick entry, history/edit, date + GPS              | ✅ done (v0.2.0)          |
 | 3   | Deploy: GitHub Pages under `/SPZky/`, CI on `main`, release-tag publishing (see below)     | ✅ done (v0.2.0, live at https://matuspilnan.github.io/SPZky/) |
 | 4   | Nationwide plates: save plates without region per country, plate types + highlighting; country choice ordered by GPS, then last used (see above) | ✅ done (not released yet) |
-| 5   | Progress: per-country screens incl. nationwide subcollection, code grids, home overview    | next                      |
-| 6   | Maps: boundary data → SVG, colored map views                                               |                           |
+| 5   | Progress: per-country screens incl. nationwide subcollection, code grids, home overview    | ✅ done (not released yet) |
+| 6   | Maps: boundary data → SVG, colored map views                                               | next                      |
 | 7   | Sync: Supabase project, schema + RLS, auth screens, sync engine, first-login merge         | needs Supabase URL + anon key from the user |
 | 8   | Vintage CZ polish                                                                          |                           |
 

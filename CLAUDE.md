@@ -92,12 +92,13 @@ src/lib/collections.ts collection registry, nationwide types per country, highli
 src/lib/plates/       normalizePlate, detectPlate (region + nationwide candidates), orderByCountry
 src/lib/geo/          countryAt (offline point-in-polygon); borders.ts is GENERATED
 src/lib/db/           Dexie schema (v2: plateType), sighting repository (soft delete, sync fields)
-src/lib/progress.ts   region counts + nationwide counts (computed, never stored)
+src/lib/progress.ts   region/nationwide counts, collectionProgress, regionStats (computed, never stored)
 src/lib/i18n/         typed sk/en messages, plural-aware formatter, reactive locale
 src/lib/*.svelte.ts   prefs (localStorage), location tracker, toasts
-src/lib/components/   PlateInput, PlateBadge, RegionGrid, NationwidePicker, TypeChip, Switch,
-                      CollectionSwitch, Toasts, UpdatePrompt
-src/routes/           home, add (plate + quick), history, sighting (edit), settings
+src/lib/components/   PlateInput, PlateBadge, RegionGrid (filterable), NationwidePicker, TypeChip,
+                      SightingList, ProgressBar, Switch, CollectionSwitch, Toasts, UpdatePrompt
+src/routes/           home (overview), country (?id=), add (plate + quick), history,
+                      sighting (edit, ?id=), settings
 scripts/              check-node.cjs, smoke.mjs, release-notes.mjs (+ test),
                       build-borders.mjs (regenerates src/lib/geo/borders.ts)
 .github/workflows/    ci.yml, release.yml
