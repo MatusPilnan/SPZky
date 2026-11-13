@@ -3,6 +3,27 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.3.0](https://github.com/MatusPilnan/SPZky/compare/v0.2.0...v0.3.0) - 2026-11-13
+
+### Features
+
+- **progress:** home overview and per-country progress screens ([88a789a](https://github.com/MatusPilnan/SPZky/commit/88a789ad9faad832d53748ddfc461cc413b80e17))
+- **plates:** nationwide plates, plate types and country choice by GPS ([0417178](https://github.com/MatusPilnan/SPZky/commit/0417178e6bbbffd86df93e1db2beae93c866c920))
+- **geo:** offline country lookup from SK/CZ outlines ([53e0ef6](https://github.com/MatusPilnan/SPZky/commit/53e0ef6d9b23ff3502f54bc773bc90aafd7e03f4))
+- **settings:** option to return home after adding, switch controls ([ca458fe](https://github.com/MatusPilnan/SPZky/commit/ca458feeb49bf608c718cf115e0860bc57a0d862))
+- **pwa:** auto-close the offline-ready message with a countdown bar ([f08bddd](https://github.com/MatusPilnan/SPZky/commit/f08bddddf4329df4dcaf49dcf96fa7f4d9d76504))
+
+### Bug fixes
+
+- **progress:** keep a details sheet open when reopened right after closing ([b2985f1](https://github.com/MatusPilnan/SPZky/commit/b2985f1f5a069006b1d09ad9187f21099a678a03))
+
+### Other changes
+
+- **smoke:** fix race conditions on slow CI runners ([c0bd59c](https://github.com/MatusPilnan/SPZky/commit/c0bd59ce4644e64159c220e795d3557143825cc5))
+- describe the progress screens and mark phase 5 done ([e3dc5de](https://github.com/MatusPilnan/SPZky/commit/e3dc5def44fb9be69a2e11537c39a11dfde613e2))
+- describe nationwide plates, country choice and new pitfalls ([c2ad789](https://github.com/MatusPilnan/SPZky/commit/c2ad789214b6094f971d652fe296910b58a67905))
+- **plan:** mark phases 2 and 3 as released in v0.2.0 ([1b669ae](https://github.com/MatusPilnan/SPZky/commit/1b669aeea796ec815e0e61f92897325030854d45))
+
 ## [0.2.0](https://github.com/MatusPilnan/SPZky/compare/v0.1.0...v0.2.0) - 2026-11-13
 
 ### Features
