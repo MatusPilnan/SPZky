@@ -34,6 +34,7 @@
 		"@vite-pwa/sveltekit": "^2.0.1",
 		"fake-indexeddb": "^6.2.8",
 		"magicast": "^0.5.5",
+		"mapshaper": "^0.7.101",
 		"puppeteer-core": "^24.43.1",
 		"svelte": "^5.57.3",
 		"svelte-check": "^4.7.8",

@@ -312,6 +312,8 @@ try {
 		cards.join(' || ')
 	);
 	check('home lists recent sightings', (await page.$$('main ul li')).length === 3);
+	await page.waitForFunction(() => document.querySelectorAll('a.collection svg.map').length === 3, { timeout: 5000 }).catch(() => {});
+	check('home cards show map thumbnails', (await page.$$('a.collection svg.map')).length === 3);
 	await shot('09-home');
 	await page.evaluate(() => [...document.querySelectorAll('a.collection')].find((a) => a.innerText.includes('Slovakia')).click());
 	await page.waitForFunction(() => location.pathname.endsWith('/country') && document.querySelector('main h1'));
@@ -356,6 +358,10 @@ try {
 
 	// Collapsible history: closed by default, then only this country's plates
 	check('country history starts collapsed', await page.$eval('details.history', (d) => !d.open));
+	// Centre it first: scrolled only just into view it would sit under the fixed bottom nav.
+	await page.$eval('details.history summary', (s) => s.scrollIntoView({ block: 'center' }));
+	// Toasts (e.g. "New region: KE") sit above the bottom nav for a few seconds and catch taps.
+	await page.waitForFunction(() => !document.querySelector('.toasts .toast'), { timeout: 8000 });
 	await page.click('details.history summary');
 	await page.waitForSelector('details.history[open] li');
 	const countryHistory = await page.$$eval('details.history li', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ')));
@@ -365,6 +371,41 @@ try {
 		countryHistory.length === 6 && summaryCount === '6' && countryHistory.every((i) => !i.includes('CZ ') && !i.includes('Czechia')),
 		countryHistory.join(' || ')
 	);
+
+	// Map: 79 SK districts; Bratislava I–V partial (only BA of BA/BL/BT), Košice I–IV + Žilina found
+	await page.waitForSelector('svg.map.interactive path[role=button]');
+	const mapState = await page.$$eval('svg.map.interactive path[role=button]', (ps) => ({
+		total: ps.length,
+		found: ps.filter((p) => p.classList.contains('found')).map((p) => p.dataset.area).sort(),
+		partial: ps.filter((p) => p.classList.contains('partial')).map((p) => p.dataset.area).sort()
+	}));
+	check(
+		'map colours found and partial districts',
+		mapState.total === 79 &&
+			mapState.found.join() === 'Košice I,Košice II,Košice III,Košice IV,Žilina' &&
+			mapState.partial.join() === 'Bratislava I,Bratislava II,Bratislava III,Bratislava IV,Bratislava V',
+		JSON.stringify(mapState)
+	);
+	check('map credits its data source', (await text()).includes('Map: Geoportal.SK'));
+	await page.click('svg.map path[data-area="Bratislava I"]');
+	await page.waitForSelector('dialog[open] .area-codes');
+	sheet = await page.$eval('dialog[open]', (d) => d.innerText.replace(/\s+/g, ' '));
+	check(
+		'tapping a shared-code area lists its codes and plates',
+		['BA', 'BL', 'BT', 'Seen once', 'Not spotted yet', 'BA-123AB'].every((s) => sheet.includes(s)),
+		sheet
+	);
+	const outlined = await page.$$eval('svg.map path.outline', (ps) => ps.length);
+	check('selected area is outlined on the map (all of Bratislava)', outlined === 5, String(outlined));
+	await shot('11b-country-map');
+	await page.keyboard.press('Escape');
+	await page.waitForFunction(() => !document.querySelector('dialog[open]'));
+	await page.click('svg.map path[data-area="Žilina"]');
+	await page.waitForSelector('dialog[open]');
+	sheet = await page.$eval('dialog[open]', (d) => d.innerText.replace(/\s+/g, ' '));
+	check('tapping a single-code area opens that code', sheet.includes('ZA') && sheet.includes('Žilina') && sheet.includes('1234567'), sheet);
+	await page.keyboard.press('Escape');
+	await page.waitForFunction(() => !document.querySelector('dialog[open]'));
 	await shot('11-country');
 
 	// Slovak UI
@@ -428,6 +469,12 @@ try {
 			await page.goto(editUrl, { waitUntil: 'load' });
 			await page.waitForFunction(() => document.querySelector('main')?.innerText.includes('Upraviť záznam'));
 			check('offline: edit page with ?id= loads', true);
+			// Map data is loaded on demand: it must come from the cache, too.
+			await page.goto(`${APP}/country?id=cz-vintage`, { waitUntil: 'load' });
+			const offlineMap = await page
+				.waitForFunction(() => document.querySelectorAll('svg.map path[role=button]').length === 77, { timeout: 5000 })
+				.then(() => true, () => false);
+			check('offline: country map loads (77 CZ districts)', offlineMap);
 			await shot('09-offline-edit');
 		} finally {
 			await page.setOfflineMode(false);

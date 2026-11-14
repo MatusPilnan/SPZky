@@ -34,6 +34,10 @@ export const en = {
 	'country.allFound': 'All found! 🎉',
 	'country.history': 'History',
 
+	'map.label': 'Map of {name}: found regions are green',
+	'map.area': '{name}: {found} of {total} found',
+	'map.credit': 'Map: {source}',
+
 	'region.notSeen': 'Not spotted yet.',
 	'region.seen': { one: 'Seen once', other: 'Seen {count} times' },
 	'region.firstSeen': 'First: {date}',
@@ -131,6 +135,8 @@ export const en = {
 	'settings.account': 'Account & sync',
 	'settings.accountSoon': 'Signing in and syncing between devices is coming in a later phase.',
 	'settings.version': 'Version {version}',
+	'settings.mapData': 'Map data',
+	'settings.mapDataBorders': 'Country outlines (GPS country): Natural Earth (public domain)',
 
 	'pwa.offlineReady': 'The app is ready to work offline.',
 	'pwa.needRefresh': 'A new version is available.',
@@ -181,6 +187,10 @@ export const sk: Messages = {
 	'country.noneFound': 'Zatiaľ nič nenájdené.',
 	'country.allFound': 'Všetko nájdené! 🎉',
 	'country.history': 'História',
+
+	'map.label': 'Mapa – {name}: nájdené oblasti sú zelené',
+	'map.area': '{name}: nájdené {found} z {total}',
+	'map.credit': 'Mapa: {source}',
 
 	'region.notSeen': 'Zatiaľ nevidené.',
 	'region.seen': { one: 'Videné raz', few: 'Videné {count}-krát', other: 'Videné {count}-krát' },
@@ -279,6 +289,8 @@ export const sk: Messages = {
 	'settings.account': 'Účet a synchronizácia',
 	'settings.accountSoon': 'Prihlásenie a synchronizácia medzi zariadeniami prídu v neskoršej fáze.',
 	'settings.version': 'Verzia {version}',
+	'settings.mapData': 'Mapové podklady',
+	'settings.mapDataBorders': 'Obrysy krajín (krajina podľa GPS): Natural Earth (voľné dielo)',
 
 	'pwa.offlineReady': 'Aplikácia je pripravená fungovať offline.',
 	'pwa.needRefresh': 'Je dostupná nová verzia.',

@@ -4,6 +4,8 @@
 	import { isStoragePersisted, requestPersistentStorage, storageEstimate } from '#lib/storage.js';
 	import { prefs } from '#lib/prefs.svelte.js';
 	import Switch from '#lib/components/Switch.svelte';
+	import { collections, type CollectionId } from '#lib/collections.js';
+	import { loadMap } from '#lib/geo/maps/index.js';
 
 	let persisted = $state<boolean | null>(null);
 	let locationDenied = $state(false);
@@ -42,6 +44,17 @@
 	}
 
 	onMount(refresh);
+
+	/** Map data credits (required by the CC BY licences). */
+	let mapCredits = $state<{ collection: CollectionId; text: string }[]>([]);
+	onMount(async () => {
+		mapCredits = await Promise.all(
+			collections.map(async (c) => {
+				const m = await loadMap(c.id);
+				return { collection: c.id, text: `${m.attribution} (${m.license})` };
+			})
+		);
+	});
 </script>
 
 <div class="stack">
@@ -91,6 +104,16 @@
 		<p class="muted">{t('settings.accountSoon')}</p>
 	</section>
 
+	<section class="card credits">
+		<h2>{t('settings.mapData')}</h2>
+		<ul>
+			{#each mapCredits as m (m.collection)}
+				<li><strong>{t(`collection.${m.collection}`)}:</strong> {m.text}</li>
+			{/each}
+			<li>{t('settings.mapDataBorders')}</li>
+		</ul>
+	</section>
+
 	<p class="muted version">{t('settings.version', { version: __APP_VERSION__ })}</p>
 </div>
 
@@ -108,6 +131,15 @@
 	.error {
 		color: var(--danger);
 		font-weight: 600;
+	}
+	.credits ul {
+		margin: 0;
+		padding-left: 1.1rem;
+		font-size: 0.85rem;
+		color: var(--text-muted);
+	}
+	.credits li + li {
+		margin-top: 0.25rem;
 	}
 	.version {
 		text-align: center;

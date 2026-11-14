@@ -12,6 +12,15 @@
 	import NationwidePicker from '#lib/components/NationwidePicker.svelte';
 	import SightingList from '#lib/components/SightingList.svelte';
 	import TypeChip from '#lib/components/TypeChip.svelte';
+	import RegionMap from '#lib/components/RegionMap.svelte';
+	import { loadMap } from '#lib/geo/maps/index.js';
+
+	function pickArea(area: { name: string; codes: string[] }) {
+		detail = area.codes.length === 1 ? { kind: 'region', code: area.codes[0] } : { kind: 'area', ...area };
+	}
+
+	/** Credit for the map data (required by its licence), shown under the map. */
+	let mapCredit = $state('');
 
 	// ?id= instead of a dynamic route, so the page is one prerendered (and precached) shell.
 	const collection = getCollection(page.url.searchParams.get('id') ?? '');
@@ -24,8 +33,20 @@
 
 	let filter = $state<'all' | 'found' | 'missing'>('all');
 
-	/** What the detail sheet shows: one region code, or one nationwide plate type. */
-	let detail = $state<{ kind: 'region'; code: string } | { kind: 'nationwide'; type: NationwideFormat } | null>(null);
+	/**
+	 * What the detail sheet shows: one region code, one map area with several codes
+	 * (e.g. Bratislava I: BA/BL/BT), or one nationwide plate type.
+	 */
+	let detail = $state<
+		| { kind: 'region'; code: string }
+		| { kind: 'area'; name: string; codes: string[] }
+		| { kind: 'nationwide'; type: NationwideFormat }
+		| null
+	>(null);
+
+	const selectedCodes = $derived(
+		detail?.kind === 'region' ? [detail.code] : detail?.kind === 'area' ? detail.codes : []
+	);
 	let dialog = $state<HTMLDialogElement | null>(null);
 
 	$effect(() => {
@@ -40,7 +61,11 @@
 		return $sightings.filter(
 			(s) =>
 				s.collectionId === collection.id &&
-				(d.kind === 'region' ? s.regionCode === d.code : s.regionCode === null && s.plateType === d.type)
+				(d.kind === 'region'
+					? s.regionCode === d.code
+					: d.kind === 'area'
+						? s.regionCode !== null && d.codes.includes(s.regionCode)
+						: s.regionCode === null && s.plateType === d.type)
 		);
 	});
 	const detailStats = $derived(detail?.kind === 'region' ? stats.get(detail.code) : undefined);
@@ -49,6 +74,10 @@
 	const collectionSightings = $derived(
 		collection ? ($sightings ?? []).filter((s) => s.collectionId === collection.id) : []
 	);
+
+	$effect(() => {
+		if (collection) loadMap(collection.id).then((m) => (mapCredit = `${m.attribution} (${m.license})`));
+	});
 
 	const filters = ['all', 'found', 'missing'] as const;
 	const filterLabel = { all: 'country.filterAll', found: 'country.filterFound', missing: 'country.filterMissing' } as const;
@@ -72,6 +101,17 @@
 				<span class="pct">{Math.round(progress.ratio * 100)} %</span>
 			</div>
 		</header>
+
+		<section class="card map-card">
+			<RegionMap
+				{collection}
+				counts={counts.get(collection.id)}
+				{selectedCodes}
+				interactive
+				onpick={pickArea}
+			/>
+			{#if mapCredit}<p class="credit muted">{t('map.credit', { source: mapCredit })}</p>{/if}
+		</section>
 
 		<section class="card">
 			<div class="filters" role="tablist">
@@ -133,6 +173,8 @@
 						<span class="code">{detail.code}</span>
 						{getRegion(collection.id, detail.code)?.name}
 					</h2>
+				{:else if detail.kind === 'area'}
+					<h2 id="detail-title">{detail.name}</h2>
 				{:else}
 					<h2 id="detail-title">{t('nationwide.title')} <TypeChip type={detail.type} showPlain /></h2>
 				{/if}
@@ -149,13 +191,24 @@
 				{:else}
 					<p class="muted">{t('region.notSeen')}</p>
 				{/if}
+			{:else if detail.kind === 'area'}
+				<!-- Several codes share this area: show each, tap one for its own details. -->
+				<div class="area-codes">
+					{#each detail.codes as code (code)}
+						{@const s = stats.get(code)}
+						<button class="area-code" class:seen={!!s} onclick={() => (detail = { kind: 'region', code })}>
+							<span class="code">{code}</span>
+							<small>{s ? t('region.seen', { count: s.count }) : t('region.notSeen')}</small>
+						</button>
+					{/each}
+				</div>
 			{:else}
 				<p class="muted">{t('nationwide.hint')}</p>
 			{/if}
 
 			{#if detailSightings.length}
 				<div class="list">
-					<SightingList sightings={detailSightings} compact />
+					<SightingList sightings={detailSightings} compact={detail.kind !== 'area'} />
 				</div>
 			{/if}
 		</div>
@@ -210,6 +263,43 @@
 	.empty {
 		margin: 0.5rem 0;
 		text-align: center;
+	}
+	.map-card {
+		padding: 0.75rem;
+	}
+	.credit {
+		margin: 0.4rem 0 0;
+		font-size: 0.7rem;
+		text-align: right;
+	}
+	.area-codes {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+	.area-code {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		min-width: 5.5rem;
+		padding: 0.35rem 0.6rem;
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		background: var(--surface);
+		color: var(--text-muted);
+		font: inherit;
+		cursor: pointer;
+	}
+	.area-code.seen {
+		border-color: color-mix(in srgb, var(--success) 55%, var(--border));
+		background: color-mix(in srgb, var(--success) 18%, var(--surface));
+		color: var(--text);
+	}
+	.area-code .code {
+		font-family: var(--font-plate);
+		font-size: 1.2rem;
+		font-weight: 700;
+		color: var(--text);
 	}
 	.history summary {
 		display: flex;

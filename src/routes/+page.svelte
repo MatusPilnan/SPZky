@@ -7,6 +7,7 @@
 	import { t } from '#lib/i18n/i18n.svelte.js';
 	import ProgressBar from '#lib/components/ProgressBar.svelte';
 	import SightingList from '#lib/components/SightingList.svelte';
+	import RegionMap from '#lib/components/RegionMap.svelte';
 
 	const sightings = liveQuery(() => listSightings());
 	const counts = $derived(countByRegion($sightings ?? []));
@@ -20,16 +21,19 @@
 	{@const p = collectionProgress(c, counts, nationwide)}
 	{@const name = t(`collection.${c.id}`)}
 	<a class="card collection" href="{resolve('/country')}?id={c.id}">
-		<div class="title">
-			<span class="flag" aria-hidden="true">{c.flag}</span>
-			<strong>{name}</strong>
-			<span class="pct">{Math.round(p.ratio * 100)} %</span>
+		<div class="info">
+			<div class="title">
+				<span class="flag" aria-hidden="true">{c.flag}</span>
+				<strong>{name}</strong>
+				<span class="pct">{Math.round(p.ratio * 100)} %</span>
+			</div>
+			<ProgressBar value={p.ratio} label={t('progress.label', { name, found: p.found, total: p.total })} />
+			<div class="sub muted">
+				<span>{t('progress.found', { found: p.found, total: p.total })}</span>
+				{#if p.nationwide > 0}<span>{t('progress.nationwide', { count: p.nationwide })}</span>{/if}
+			</div>
 		</div>
-		<ProgressBar value={p.ratio} label={t('progress.label', { name, found: p.found, total: p.total })} />
-		<div class="sub muted">
-			<span>{t('progress.found', { found: p.found, total: p.total })}</span>
-			{#if p.nationwide > 0}<span>{t('progress.nationwide', { count: p.nationwide })}</span>{/if}
-		</div>
+		<div class="thumb"><RegionMap collection={c} counts={counts.get(c.id)} /></div>
 	</a>
 {/snippet}
 
@@ -99,10 +103,21 @@
 	}
 	.collection {
 		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
+		align-items: center;
+		gap: 0.9rem;
 		color: inherit;
 		text-decoration: none;
+	}
+	.info {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.thumb {
+		flex: none;
+		width: 6.5rem;
 	}
 	.title {
 		display: flex;
