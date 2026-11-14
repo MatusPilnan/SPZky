@@ -20,24 +20,38 @@ per country by how many regional codes have been found.
 
 ## Facts about the plate systems
 
-- **Slovakia:** 93 district codes (1997–2022). **Plates issued since 2023 have no district
-  code**: same `XX-NNNLL` layout, but the first two letters are a state-wide series starting at
-  `AA`. No district code starts with `A`, so `A?` prefixes are treated as "no region" (revisit
-  if the series ever reaches `B?`). EV plates use `EL`/`EV` prefixes. Plates without a region
-  go to the nationwide subcollection (see below).
-- **Czechia:** region letter at position 2 (`1A2 3456`), 14 regions. Historic plates `NNV XXXX`
-  carry the numeric region code (01–14). Personalised plates (8 characters) have no region.
-- **Czech pre-2001:** `XX NN-NN` / `XXX NN-NN`, first two letters = district. All Prague `A?`
-  codes (except `AA` government) count as one region `A`.
-- Source: Wikipedia "Vehicle registration plates of Slovakia / of the Czech Republic".
-  Data lives in `src/lib/data/`.
+Rule (2026-11-14): a collection contains only codes that were **actually issued and can be
+seen on cars today**. Codes that were only reserved or never used are left out. Follow the
+checklist "Region data" in `CLAUDE.md` for every country added later.
+
+- **Slovakia:** **74** district codes that were actually issued (1997–2022; those plates stay
+  valid). Only Bratislava used more than one code (BA → BL from 2010 → BT from 2019). The
+  decree's other secondary codes (BD, BE, BI, BC, BK, KC, KI, LL, NI, NT, NC, PV, PS, TC, TE,
+  TA, TB, ZI, ZL) were only reserved, never issued, and never will be (district codes ended in
+  2023), so they were removed in v0.3.x; the DB v3 upgrade re-detects sightings saved under
+  them. **Plates issued since 2023 have no district code**: same `XX-NNNLL` layout, but the
+  first two letters are a state-wide series starting at `AA`. No district code starts with
+  `A`, so `A?` prefixes are treated as "no region" (revisit if the series ever reaches `B?`).
+  EV plates use `EL`/`EV` prefixes. Plates without a region go to the nationwide
+  subcollection (see below).
+- **Czechia:** region letter at position 2 (`1A2 3456`), 14 regions, all current. Historic
+  plates `NNV XXXX` carry the numeric region code (01–14). Personalised plates (8 characters)
+  have no region.
+- **Czech pre-2001:** `XX NN-NN` / `XXX NN-NN`, first two letters = district; 96 codes. These
+  plates are still valid but getting rare; GT/GV (Gottwaldov, until 1990) and BI (trucks only)
+  are the rarest. FI and US were allocated but never used and are left out. Prague's codes
+  AB–AZ count as one region `A` (`AA` = government).
+- Sources, with details in the header of each file in `src/lib/data/`: en.wikipedia (plates
+  of Slovakia / Czech Republic), sk.wikipedia "Zoznam skratiek okresov Slovenska" (reserved
+  codes) and "Evidenčné číslo vozidiel na Slovensku", cs.wikipedia "Státní poznávací značky v
+  Československu" (pre-2001 table, validity).
 
 ## Nationwide plates (plates without a region) — phase 4
 
 Plates whose format carries no region are saved into a per-country subcollection labelled
 **Nationwide** (*Celoštátne* in the Slovak UI). Pre-2001 CZ plates have no nationwide part.
 
-- **Not part of progress:** the region count (e.g. "47 / 93") ignores them. The nationwide
+- **Not part of progress:** the region count (e.g. "47 / 74") ignores them. The nationwide
   section shows its own counter (total and per type) below the region grid.
 - **Plates with a region keep their region,** e.g. a pre-2023 SK personalised plate `ZA-HELLO`
   stays in Žilina (highlighted as special). Only plates without a region are nationwide.

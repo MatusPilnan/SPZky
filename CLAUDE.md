@@ -53,6 +53,33 @@ Setup and scripts for humans: [README.md](README.md).
 - TS narrows arrays through inferred type predicates (`arr.every(x => x === null)` makes
   `arr` a `null[]`). Use `some` or a separate variable.
 
+## Region data: checklist for new or changed countries
+
+Collections may contain **only codes that were actually issued and can still be seen on
+cars today** (rule since 2026-11-14). The first SK list had 19 codes that were only
+*reserved* in the decree and never issued (BD, KC, TA, ZI, …); English Wikipedia listed them
+like normal codes. For every country added or changed in `src/lib/data/`:
+
+1. **Issued, not just reserved.** Check each secondary/reserve code. Lists in decrees and
+   on wikis often include reserved codes; national-language Wikipedia lists mark them
+   differently (e.g. in parentheses). Look for evidence that each extra code really went
+   into use (news about the switch, a date).
+2. **Still on the road.** Are plates of that system still valid (no mandatory replacement)?
+   Drop codes of systems whose plates expired. Note very rare but valid codes in the file
+   header.
+3. **Never-used and non-regional codes out:** codes allocated but never issued, government,
+   diplomatic and military series.
+4. **At least two sources, preferably one in the country's language.** Cite them with the
+   check date in the data file's header, along with what was left out and why.
+5. **Plausibility check:** compare the count with the number of districts/regions (shared
+   codes, cities split into several districts) and write it in the header.
+6. **Tests:** `src/lib/data/data.test.ts` pins the size and includes known traps (e.g. "no
+   reserved codes", "only Bratislava has several codes").
+7. **Existing user data:** if codes are removed or renamed, add a Dexie schema version whose
+   upgrade re-detects affected sightings (see v3 and `reassignUnknownRegion` in
+   `src/lib/db/db.ts`), and update the counts in `scripts/smoke.mjs`.
+8. Record the facts and sources in `docs/PLAN.md` ("Facts about the plate systems").
+
 ## Checks before committing
 
 ```sh
