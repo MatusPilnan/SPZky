@@ -67,11 +67,15 @@
 	}
 	.types {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+		/* Wide enough for the longest labels ("Personalizovaná" + icon + count); on narrow
+		   phones the tiles stack one per row instead of breaking words. */
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr));
 		gap: 0.4rem;
 	}
 	.type {
 		position: relative;
+		/* Allow the tile to be narrower than its longest word (e.g. "Personalizovaná"). */
+		min-width: 0;
 		display: flex;
 		align-items: center;
 		gap: 0.45rem;
@@ -100,13 +104,19 @@
 		outline-offset: -1px;
 	}
 	.icon {
+		flex: none;
 		font-size: 1.1rem;
 	}
 	.label {
 		flex: 1;
+		min-width: 0;
 		line-height: 1.2;
+		/* Last resort for very narrow screens: hyphenate by the page language, else break. */
+		hyphens: auto;
+		overflow-wrap: break-word;
 	}
 	.count {
+		flex: none;
 		font-size: 0.75rem;
 		font-weight: 700;
 		color: var(--text-muted);

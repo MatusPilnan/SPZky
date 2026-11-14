@@ -353,6 +353,18 @@ try {
 	await page.keyboard.press('Escape');
 	await page.waitForFunction(() => !document.querySelector('dialog[open]'));
 	check('details close with Escape', true);
+
+	// Collapsible history: closed by default, then only this country's plates
+	check('country history starts collapsed', await page.$eval('details.history', (d) => !d.open));
+	await page.click('details.history summary');
+	await page.waitForSelector('details.history[open] li');
+	const countryHistory = await page.$$eval('details.history li', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ')));
+	const summaryCount = await page.$eval('details.history summary .badge', (e) => e.innerText);
+	check(
+		'country history lists only this country',
+		countryHistory.length === 6 && summaryCount === '6' && countryHistory.every((i) => !i.includes('CZ ') && !i.includes('Czechia')),
+		countryHistory.join(' || ')
+	);
 	await shot('11-country');
 
 	// Slovak UI
@@ -362,6 +374,43 @@ try {
 	// 7 sightings above + KE-111AA → "many" plural form
 	check('home in Slovak with plural form', t.includes('8 zaznamenaných ŠPZ'), t.split('\n').slice(0, 6).join(' | '));
 	await shot('08-home-sk');
+
+	// Nationwide tiles in Slovak (long words like "Personalizovaná"): nothing may overflow the
+	// tile, and the count must keep its distance from the right edge.
+	await page.goto(`${APP}/country?id=sk`, { waitUntil: 'networkidle0' });
+	await page.waitForSelector('.nationwide .type');
+	for (const width of [400, 360]) {
+		await page.setViewport({ width, height: 860, deviceScaleFactor: 1 });
+		await sleep(150);
+		const tiles = await page.$$eval('.nationwide .type', (els) =>
+			els.map((b) => {
+				const box = b.getBoundingClientRect();
+				const count = b.querySelector('.count')?.getBoundingClientRect();
+				// A word split across lines has more than one client rect.
+				const textNode = b.querySelector('.label')?.firstChild;
+				const brokenWords = [];
+				if (textNode?.nodeType === Node.TEXT_NODE) {
+					for (const m of textNode.textContent.matchAll(/\S+/g)) {
+						const range = document.createRange();
+						range.setStart(textNode, m.index);
+						range.setEnd(textNode, m.index + m[0].length);
+						const lines = new Set([...range.getClientRects()].map((r) => Math.round(r.top)));
+						if (lines.size > 1) brokenWords.push(m[0]);
+					}
+				}
+				return {
+					label: b.innerText.replace(/\s+/g, ' '),
+					overflow: b.scrollWidth > b.clientWidth + 1,
+					countGap: count ? Math.round(box.right - count.right) : null,
+					brokenWords
+				};
+			})
+		);
+		const bad = tiles.filter((x) => x.overflow || (x.countGap !== null && x.countGap < 4) || x.brokenWords.length);
+		check(`nationwide tiles fit in Slovak (${width} px)`, bad.length === 0, JSON.stringify(bad.length ? bad : tiles));
+	}
+	await shot('08b-country-sk');
+	await page.setViewport({ width: 400, height: 860, deviceScaleFactor: 1 });
 
 	// Offline: every page must load from the service worker cache, incl. the edit page with ?id=
 	if (PREVIEW) {
