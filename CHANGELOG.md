@@ -3,6 +3,12 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.3.2](https://github.com/MatusPilnan/SPZky/compare/v0.3.1...v0.3.2) - 2026-11-14
+
+### Bug fixes
+
+- **ui:** give all plate badges the same width without clipping ([26c078f](https://github.com/MatusPilnan/SPZky/commit/26c078f313b97b639fe275442064b4d05af0d3d7))
+
 ## [0.3.1](https://github.com/MatusPilnan/SPZky/compare/v0.3.0...v0.3.1) - 2026-11-14
 
 ### Bug fixes
