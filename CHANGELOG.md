@@ -3,6 +3,17 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.3.1](https://github.com/MatusPilnan/SPZky/compare/v0.3.0...v0.3.1) - 2026-11-14
+
+### Bug fixes
+
+- **data:** remove Slovak district codes that were never issued ([838fb70](https://github.com/MatusPilnan/SPZky/commit/838fb70f4947fb532a74810e831f3faa615571e7))
+
+### Other changes
+
+- add a region data checklist for new countries ([9c54ac1](https://github.com/MatusPilnan/SPZky/commit/9c54ac1ced282e236e5401251c3888c121054034))
+- **plan:** mark phases 4 and 5 as released in v0.3.0 ([92d02a7](https://github.com/MatusPilnan/SPZky/commit/92d02a7bf1d7e0d7fee1826ff2f5c2e154d2dcd1))
+
 ## [0.3.0](https://github.com/MatusPilnan/SPZky/compare/v0.2.0...v0.3.0) - 2026-11-13
 
 ### Features
