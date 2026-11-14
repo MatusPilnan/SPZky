@@ -199,20 +199,20 @@ try {
 	await page.waitForSelector('.grid button');
 	t = await text();
 	// BA + ZA; the nationwide AA-123BC is not counted
-	check('quick grid counts found (nationwide not counted)', t.includes('2 / 93 found'), t.match(/\d+ \/ \d+ found/)?.[0]);
+	check('quick grid counts found (nationwide not counted)', t.includes('2 / 74 found'), t.match(/\d+ \/ \d+ found/)?.[0]);
 	check('quick mode shows the nationwide section', t.includes('Nationwide') && t.includes('1 plate'));
 	await page.evaluate(() => [...document.querySelectorAll('.grid button')].find((b) => b.innerText.startsWith('KE')).click());
-	await page.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('3 / 93 found'));
+	await page.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('3 / 74 found'));
 	check('quick tap logged', true);
 	await page.evaluate(() =>
 		[...document.querySelectorAll('.toasts .toast button')].find((b) => b.innerText.toUpperCase().includes('UNDO')).click()
 	);
-	await page.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('2 / 93 found'));
+	await page.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('2 / 74 found'));
 	check('undo removed quick entry', true);
 	await page.evaluate(() => [...document.querySelectorAll('.nationwide button')].find((b) => b.innerText.includes('Electric')).click());
 	await page.waitForFunction(() => document.querySelector('.nationwide').innerText.includes('2 plates'));
 	t = await text();
-	check('quick nationwide EV logged, region count unchanged', t.includes('2 / 93 found'));
+	check('quick nationwide EV logged, region count unchanged', t.includes('2 / 74 found'));
 	await shot('04-quick');
 
 	// history + edit
@@ -271,14 +271,14 @@ try {
 	// Wait for the data (cards render before the database query delivers it).
 	await page
 		.waitForFunction(
-			() => document.querySelectorAll('main ul li').length === 3 && document.querySelector('a.collection')?.innerText.includes('3 of 93'),
+			() => document.querySelectorAll('main ul li').length === 3 && document.querySelector('a.collection')?.innerText.includes('3 of 74'),
 			{ timeout: 10000 }
 		)
 		.catch(() => {});
 	const cards = await page.$$eval('a.collection', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ')));
 	check(
 		'home shows progress per country',
-		cards.some((c) => c.includes('Slovakia') && c.includes('3 of 93 found') && c.includes('+ 2 nationwide plates')) &&
+		cards.some((c) => c.includes('Slovakia') && c.includes('3 of 74 found') && c.includes('+ 2 nationwide plates')) &&
 			cards.some((c) => c.includes('Czechia') && c.includes('1 of 14 found') && c.includes('+ 1 nationwide plate')) &&
 			cards.some((c) => c.includes('pre-2001') && c.includes('0 of 96 found')),
 		cards.join(' || ')
@@ -291,16 +291,16 @@ try {
 	const filterTo = (label) =>
 		page.evaluate((l) => [...document.querySelectorAll('.filters button')].find((b) => b.innerText === l).click(), label);
 	const progressShown = await page
-		.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('3 of 93 found'), { timeout: 5000 })
+		.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('3 of 74 found'), { timeout: 5000 })
 		.then(() => true, () => false);
 	check('country screen shows progress', progressShown);
-	check('country grid shows all codes', (await gridSize()) === 93);
+	check('country grid shows all codes', (await gridSize()) === 74);
 	await filterTo('Found');
 	await sleep(100);
 	check('filter: found', (await gridSize()) === 3);
 	await filterTo('Missing');
 	await sleep(100);
-	check('filter: missing', (await gridSize()) === 90);
+	check('filter: missing', (await gridSize()) === 71);
 	await filterTo('Found');
 	await sleep(100);
 	await page.evaluate(() => [...document.querySelectorAll('.grid button')].find((b) => b.innerText.startsWith('BA')).click());

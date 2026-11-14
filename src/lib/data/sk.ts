@@ -1,19 +1,26 @@
 import type { Region } from './types';
 
-// Slovak district codes (EČV, 1997–2022). Several districts have more than one
-// code; each code is collected separately. Since 2023 newly issued plates carry
-// no district code (series starting at "AA"), see plates/detect.ts.
-// Source: https://en.wikipedia.org/wiki/Vehicle_registration_plates_of_Slovakia
+// Slovak district codes (EČV) that were actually issued, 1997–2022. Plates issued
+// until 2022 stay valid, so all of these are on the road today. Since 2023 new plates
+// carry no district code (series starting at "AA"), see plates/detect.ts.
+//
+// Only Bratislava ever needed more than one code: BA, then BL (from 2010), then BT
+// (from autumn 2019, chosen in a public vote). The other secondary codes in the
+// decree (Bratislava BD/BE/BI, Banská Bystrica BC/BK, Košice KC/KI, Levice LL,
+// Nitra NI/NT, Nové Zámky NC, Prešov PV/PS, Trenčín TC/TE, Trnava TA/TB,
+// Žilina ZI/ZL) were only reserved and never issued, and with district codes
+// discontinued in 2023 they never will be, so they are not collectable.
+// Bratislava I–V share BA/BL/BT and Košice I–IV share KE: 70 + 3 + 1 = 74 codes.
+//
+// Sources (checked 2026-11-14):
+// - https://sk.wikipedia.org/wiki/Zoznam_skratiek_okresov_Slovenska (reserved codes in parentheses)
+// - https://sk.wikipedia.org/wiki/Evidenčné_číslo_vozidiel_na_Slovensku (Bratislava BA → BL → BT)
+// - https://www.startitup.sk/auta-s-novou-bratislavskou-ecv-su-uz-na-cestach-za-tuto-skratku-hlasovali-desattisice-ludi/
 export const skRegions: Region[] = [
 	{ code: 'BA', name: 'Bratislava' },
-	{ code: 'BD', name: 'Bratislava' },
-	{ code: 'BE', name: 'Bratislava' },
-	{ code: 'BI', name: 'Bratislava' },
 	{ code: 'BL', name: 'Bratislava' },
 	{ code: 'BT', name: 'Bratislava' },
 	{ code: 'BB', name: 'Banská Bystrica' },
-	{ code: 'BC', name: 'Banská Bystrica' },
-	{ code: 'BK', name: 'Banská Bystrica' },
 	{ code: 'BJ', name: 'Bardejov' },
 	{ code: 'BN', name: 'Bánovce nad Bebravou' },
 	{ code: 'BR', name: 'Brezno' },
@@ -30,8 +37,6 @@ export const skRegions: Region[] = [
 	{ code: 'IL', name: 'Ilava' },
 	{ code: 'KA', name: 'Krupina' },
 	{ code: 'KE', name: 'Košice' },
-	{ code: 'KC', name: 'Košice' },
-	{ code: 'KI', name: 'Košice' },
 	{ code: 'KK', name: 'Kežmarok' },
 	{ code: 'KM', name: 'Kysucké Nové Mesto' },
 	{ code: 'KN', name: 'Komárno' },
@@ -40,27 +45,21 @@ export const skRegions: Region[] = [
 	{ code: 'LE', name: 'Levoča' },
 	{ code: 'LM', name: 'Liptovský Mikuláš' },
 	{ code: 'LV', name: 'Levice' },
-	{ code: 'LL', name: 'Levice' },
 	{ code: 'MA', name: 'Malacky' },
 	{ code: 'MI', name: 'Michalovce' },
 	{ code: 'ML', name: 'Medzilaborce' },
 	{ code: 'MT', name: 'Martin' },
 	{ code: 'MY', name: 'Myjava' },
-	{ code: 'NR', name: 'Nitra' },
-	{ code: 'NI', name: 'Nitra' },
-	{ code: 'NT', name: 'Nitra' },
 	{ code: 'NM', name: 'Nové Mesto nad Váhom' },
 	{ code: 'NO', name: 'Námestovo' },
+	{ code: 'NR', name: 'Nitra' },
 	{ code: 'NZ', name: 'Nové Zámky' },
-	{ code: 'NC', name: 'Nové Zámky' },
 	{ code: 'PB', name: 'Považská Bystrica' },
 	{ code: 'PD', name: 'Prievidza' },
 	{ code: 'PE', name: 'Partizánske' },
 	{ code: 'PK', name: 'Pezinok' },
 	{ code: 'PN', name: 'Piešťany' },
 	{ code: 'PO', name: 'Prešov' },
-	{ code: 'PV', name: 'Prešov' },
-	{ code: 'PS', name: 'Prešov' },
 	{ code: 'PP', name: 'Poprad' },
 	{ code: 'PT', name: 'Poltár' },
 	{ code: 'PU', name: 'Púchov' },
@@ -79,21 +78,15 @@ export const skRegions: Region[] = [
 	{ code: 'SO', name: 'Sobrance' },
 	{ code: 'SP', name: 'Stropkov' },
 	{ code: 'SV', name: 'Snina' },
-	{ code: 'TT', name: 'Trnava' },
-	{ code: 'TA', name: 'Trnava' },
-	{ code: 'TB', name: 'Trnava' },
 	{ code: 'TN', name: 'Trenčín' },
-	{ code: 'TC', name: 'Trenčín' },
-	{ code: 'TE', name: 'Trenčín' },
 	{ code: 'TO', name: 'Topoľčany' },
 	{ code: 'TR', name: 'Turčianske Teplice' },
 	{ code: 'TS', name: 'Tvrdošín' },
+	{ code: 'TT', name: 'Trnava' },
 	{ code: 'TV', name: 'Trebišov' },
 	{ code: 'VK', name: 'Veľký Krtíš' },
 	{ code: 'VT', name: 'Vranov nad Topľou' },
 	{ code: 'ZA', name: 'Žilina' },
-	{ code: 'ZI', name: 'Žilina' },
-	{ code: 'ZL', name: 'Žilina' },
 	{ code: 'ZC', name: 'Žarnovica' },
 	{ code: 'ZH', name: 'Žiar nad Hronom' },
 	{ code: 'ZM', name: 'Zlaté Moravce' },

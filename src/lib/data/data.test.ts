@@ -14,7 +14,18 @@ describe('collection data', () => {
 
 	it('has the expected sizes', () => {
 		const size = Object.fromEntries(collections.map((c) => [c.id, c.regions.length]));
-		expect(size).toEqual({ sk: 93, cz: 14, 'cz-vintage': 96 });
+		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96 });
+	});
+
+	it('contains only Slovak codes that were actually issued (no reserved ones)', () => {
+		const sk = collections.find((c) => c.id === 'sk')!.regions;
+		const neverIssued = ['BD', 'BE', 'BI', 'BC', 'BK', 'KC', 'KI', 'LL', 'NI', 'NT', 'NC', 'PV', 'PS', 'TC', 'TE', 'TA', 'TB', 'ZI', 'ZL'];
+		expect(sk.filter((r) => neverIssued.includes(r.code))).toEqual([]);
+		// Only Bratislava ever used more than one code; every other district has exactly one.
+		const codesOf = (name: string) => sk.filter((r) => r.name === name).map((r) => r.code);
+		expect(codesOf('Bratislava')).toEqual(['BA', 'BL', 'BT']);
+		const names = new Set(sk.map((r) => r.name));
+		for (const name of names) if (name !== 'Bratislava') expect(codesOf(name)).toHaveLength(1);
 	});
 
 	it('maps CZ numeric codes 01–14 to letters', () => {

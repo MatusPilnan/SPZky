@@ -1,10 +1,15 @@
 import type { Region } from './types';
 
 // Czech district codes of the pre-2001 system (format XX NN-NN / XXX NN-NN).
-// Prague used every two-letter code starting with "A" (except AA), collected
-// here as the single code "A". Codes never issued (FI, US) and non-regional
-// codes (AA government, DD diplomatic, XX consular) are left out.
-// Source: https://en.wikipedia.org/wiki/Vehicle_registration_plates_of_the_Czech_Republic
+// These plates are still valid ("stále platné") and can be seen on older cars, but
+// they get rarer every year. Very rare: GT/GV (Gottwaldov, issued until the 1990
+// rename to Zlín, then ZL) and BI (Brno-venkov, trucks only).
+// Prague used the codes AB–AZ (A + series letter), collected here as the single
+// code "A". Left out: FI and US (allocated but never used, per en.wikipedia) and
+// non-regional codes (AA government, DD diplomatic, XX consular).
+// Sources (checked 2026-11-14, both lists agree apart from FI/US):
+// - https://en.wikipedia.org/wiki/Vehicle_registration_plates_of_the_Czech_Republic
+// - https://cs.wikipedia.org/wiki/Státní_poznávací_značky_v_Československu
 export const czVintageRegions: Region[] = [
 	{ code: 'A', name: 'Praha' },
 	{ code: 'BE', name: 'Beroun' },

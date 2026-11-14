@@ -122,3 +122,32 @@ describe('schema upgrade v1 → v2', () => {
 		await v2.delete();
 	});
 });
+
+describe('schema upgrade v2 → v3', () => {
+	it('re-detects sightings saved under SK codes that were never issued', async () => {
+		const name = `upgrade3-${crypto.randomUUID()}`;
+		const v2 = new Dexie(name);
+		const stores = { sightings: 'id, collectionId, [collectionId+regionCode], plateNormalized, seenAt, updatedAt, dirty' };
+		v2.version(1).stores(stores);
+		v2.version(2).stores(stores);
+		const base = { seenAt: 1, location: null, note: '', createdAt: 1, updatedAt: 1, deleted: 0, userId: null, dirty: 0 };
+		await v2.table('sightings').bulkAdd([
+			// BD was only reserved: as a standard plate it is a post-2023 nationwide plate
+			{ ...base, id: 'bd', collectionId: 'sk', regionCode: 'BD', plateType: 'sk-district', plate: 'BD-123AB', plateNormalized: 'BD123AB' },
+			{ ...base, id: 'ta', collectionId: 'sk', regionCode: 'TA', plateType: 'sk-district-special', plate: 'TA-HELLO', plateNormalized: 'TAHELLO' },
+			// quick tap on a removed code: nothing to re-detect, left for the user to fix
+			{ ...base, id: 'kc', collectionId: 'sk', regionCode: 'KC', plateType: null, plate: null, plateNormalized: null },
+			// valid data is untouched
+			{ ...base, id: 'ba', collectionId: 'sk', regionCode: 'BA', plateType: 'sk-district', plate: 'BA-123AB', plateNormalized: 'BA123AB' }
+		]);
+		v2.close();
+
+		const v3 = new SpzDatabase(name);
+		const rows = Object.fromEntries((await v3.sightings.toArray()).map((s) => [s.id, s]));
+		expect(rows.bd).toMatchObject({ regionCode: null, plateType: 'sk-2023', dirty: 1 });
+		expect(rows.ta).toMatchObject({ regionCode: null, plateType: 'sk-personalized', dirty: 1 });
+		expect(rows.kc).toMatchObject({ regionCode: 'KC', plateType: null, dirty: 0 });
+		expect(rows.ba).toMatchObject({ regionCode: 'BA', plateType: 'sk-district', dirty: 0, updatedAt: 1 });
+		await v3.delete();
+	});
+});
