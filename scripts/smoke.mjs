@@ -154,6 +154,10 @@ try {
 	await page.keyboard.press('Enter');
 	await page.waitForFunction(() => document.querySelector('.toasts')?.innerText.includes('(nationwide)'));
 	check('nationwide plate saved', true);
+	// Personalised SK plate since 2023 (long badge text; used for the badge width check in History)
+	await typePlate('AF66666');
+	await page.keyboard.press('Enter');
+	await page.waitForFunction(() => document.querySelector('.toasts')?.innerText.includes('AF66666'));
 
 	// EL plates fit SK and CZ: GPS country first (Bratislava → SK, Praha → CZ)
 	const firstCandidate = () => page.$eval('.candidates .candidate', (e) => e.innerText.replace(/\s+/g, ' '));
@@ -200,7 +204,7 @@ try {
 	t = await text();
 	// BA + ZA; the nationwide AA-123BC is not counted
 	check('quick grid counts found (nationwide not counted)', t.includes('2 / 74 found'), t.match(/\d+ \/ \d+ found/)?.[0]);
-	check('quick mode shows the nationwide section', t.includes('Nationwide') && t.includes('1 plate'));
+	check('quick mode shows the nationwide section', t.includes('Nationwide') && t.includes('2 plates'));
 	await page.evaluate(() => [...document.querySelectorAll('.grid button')].find((b) => b.innerText.startsWith('KE')).click());
 	await page.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('3 / 74 found'));
 	check('quick tap logged', true);
@@ -210,7 +214,7 @@ try {
 	await page.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('2 / 74 found'));
 	check('undo removed quick entry', true);
 	await page.evaluate(() => [...document.querySelectorAll('.nationwide button')].find((b) => b.innerText.includes('Electric')).click());
-	await page.waitForFunction(() => document.querySelector('.nationwide').innerText.includes('2 plates'));
+	await page.waitForFunction(() => document.querySelector('.nationwide').innerText.includes('3 plates'));
 	t = await text();
 	check('quick nationwide EV logged, region count unchanged', t.includes('2 / 74 found'));
 	await shot('04-quick');
@@ -219,8 +223,32 @@ try {
 	await page.goto(`${APP}/history`, { waitUntil: 'networkidle0' });
 	await page.waitForSelector('ul li');
 	const items = await page.$$eval('ul li', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ')));
-	// BA, AA (nationwide), EL (CZ, EV), 1A2, ZA (manual), quick SK EV
-	check('history lists 6 sightings', items.length === 6, items.join(' || '));
+	// BA, AA (nationwide), AF66666 (nationwide), EL (CZ, EV), 1A2, ZA (manual), quick SK EV
+	check('history lists 7 sightings', items.length === 7, items.join(' || '));
+	// Plate badges: same size for every plate, and nothing cut off (AF66666 used to be clipped
+	// on narrow phones). Checked at the normal width and at 360 px (small Android phones).
+	for (const width of [400, 360]) {
+		await page.setViewport({ width, height: 860, deviceScaleFactor: 1 });
+		await sleep(150);
+		const badges = await page.$$eval('ul li .plate', (els) =>
+			els.map((e) => {
+				const text = e.querySelector('.text');
+				return {
+					label: text.innerText,
+					width: Math.round(e.getBoundingClientRect().width),
+					clipped: e.scrollWidth > e.clientWidth + 1 || text.scrollWidth > text.clientWidth + 1
+				};
+			})
+		);
+		const widths = new Set(badges.map((b) => b.width));
+		check(`plate badges all have the same width (${width} px)`, widths.size === 1, badges.map((b) => `${b.label}=${b.width}`).join(', '));
+		check(
+			`plate badges are not clipped (${width} px)`,
+			badges.every((b) => !b.clipped),
+			badges.filter((b) => b.clipped).map((b) => b.label).join(', ')
+		);
+	}
+	await page.setViewport({ width: 400, height: 860, deviceScaleFactor: 1 });
 	check('history shows location pin', items.some((i) => i.includes('📍')));
 	check('history highlights EV plates', items.filter((i) => i.includes('⚡')).length === 2);
 	check('history labels nationwide plates', items.some((i) => i.includes('AA-123BC') && i.includes('Nationwide')));
@@ -267,7 +295,7 @@ try {
 	check('returns home after adding (setting on)', wentHome && toastOnHome.includes('KE'), toastOnHome);
 
 	// Progress: home overview → country screen → region / nationwide details
-	// Data so far: SK BA, ZA, KE + 2 nationwide (AA-123BC, quick EV); CZ A + 1 nationwide (EL-123AB)
+	// Data so far: SK BA, ZA, KE + 3 nationwide (AA-123BC, AF66666, quick EV); CZ A + 1 nationwide (EL-123AB)
 	// Wait for the data (cards render before the database query delivers it).
 	await page
 		.waitForFunction(
@@ -278,7 +306,7 @@ try {
 	const cards = await page.$$eval('a.collection', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ')));
 	check(
 		'home shows progress per country',
-		cards.some((c) => c.includes('Slovakia') && c.includes('3 of 74 found') && c.includes('+ 2 nationwide plates')) &&
+		cards.some((c) => c.includes('Slovakia') && c.includes('3 of 74 found') && c.includes('+ 3 nationwide plates')) &&
 			cards.some((c) => c.includes('Czechia') && c.includes('1 of 14 found') && c.includes('+ 1 nationwide plate')) &&
 			cards.some((c) => c.includes('pre-2001') && c.includes('0 of 96 found')),
 		cards.join(' || ')
@@ -331,8 +359,8 @@ try {
 	await page.evaluate(() => localStorage.setItem('spz-ky.locale', 'sk'));
 	await page.goto(`${APP}/`, { waitUntil: 'networkidle0' });
 	t = await page.evaluate(() => document.body.innerText);
-	// 6 sightings above + KE-111AA → "many" plural form
-	check('home in Slovak with plural form', t.includes('7 zaznamenaných ŠPZ'), t.split('\n').slice(0, 6).join(' | '));
+	// 7 sightings above + KE-111AA → "many" plural form
+	check('home in Slovak with plural form', t.includes('8 zaznamenaných ŠPZ'), t.split('\n').slice(0, 6).join(' | '));
 	await shot('08-home-sk');
 
 	// Offline: every page must load from the service worker cache, incl. the edit page with ?id=

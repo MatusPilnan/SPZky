@@ -11,6 +11,10 @@
 	}
 
 	let { text, country, muted = false, ev = false }: Props = $props();
+
+	/** Characters that fit the fixed plate width at full size; longer text is scaled down. */
+	const FIT_CHARS = 9;
+	const scale = $derived(Math.min(1, FIT_CHARS / Math.max(1, [...text].length)));
 </script>
 
 <span class="plate" class:muted class:ev>
@@ -26,11 +30,13 @@
 		</svg>
 		<span class="cc">{country}</span>
 	</span>
-	<span class="text">{text}</span>
+	<span class="text"><span class="chars" style:font-size={scale < 1 ? `${scale}em` : undefined}>{text}</span></span>
 </span>
 
 <style>
+	/* All plates have the same size, whatever their text, and never shrink in a row. */
 	.plate {
+		flex: none;
 		display: inline-flex;
 		align-items: stretch;
 		height: 2.1em;
@@ -46,6 +52,7 @@
 		box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
 	}
 	.band {
+		flex: none;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -68,8 +75,15 @@
 	.text {
 		display: flex;
 		align-items: center;
-		padding: 0 0.5em;
+		justify-content: center;
+		/* Room for 9 characters of the plate font (e.g. "BA-123 AB", "ABC 12-34"). */
+		width: 6.6em;
+		padding: 0 0.35em;
+		overflow: hidden;
 		text-transform: uppercase;
+	}
+	.chars {
+		line-height: 1;
 	}
 	.ev .text {
 		color: #0f8a3c; /* plate background is always white */
