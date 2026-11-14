@@ -3,6 +3,16 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.5.0](https://github.com/MatusPilnan/SPZky/compare/v0.4.0...v0.5.0) - 2026-11-14
+
+### Features
+
+- **maps:** coloured region maps on country screens and home cards ([1d4f73d](https://github.com/MatusPilnan/SPZky/commit/1d4f73df6a7b6549f30fb2b153b837b478c1dbda))
+
+### Other changes
+
+- describe region maps, data licences and the map checklist step ([dda08c0](https://github.com/MatusPilnan/SPZky/commit/dda08c0f360191be14cead97c96d8b10d3d6b1ed))
+
 ## [0.4.0](https://github.com/MatusPilnan/SPZky/compare/v0.3.2...v0.4.0) - 2026-11-14
 
 ### Features
