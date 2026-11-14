@@ -32,6 +32,7 @@ export const en = {
 	'country.filterMissing': 'Missing',
 	'country.noneFound': 'Nothing found yet.',
 	'country.allFound': 'All found! 🎉',
+	'country.history': 'History',
 
 	'region.notSeen': 'Not spotted yet.',
 	'region.seen': { one: 'Seen once', other: 'Seen {count} times' },
@@ -179,6 +180,7 @@ export const sk: Messages = {
 	'country.filterMissing': 'Chýbajúce',
 	'country.noneFound': 'Zatiaľ nič nenájdené.',
 	'country.allFound': 'Všetko nájdené! 🎉',
+	'country.history': 'História',
 
 	'region.notSeen': 'Zatiaľ nevidené.',
 	'region.seen': { one: 'Videné raz', few: 'Videné {count}-krát', other: 'Videné {count}-krát' },

@@ -110,7 +110,10 @@ removed (e.g. when GPS and last used are the same country).
 - **Country screen** `/country?id=<collection>` (query param, so it is one precached shell):
   progress header, code grid with All / Found / Missing filter, nationwide section. Tapping a
   code or nationwide type opens a detail sheet (`<dialog>`) with count, first/last seen and
-  the sightings (each opens the edit screen).
+  the sightings (each opens the edit screen). Below, a collapsible **History** section
+  (closed by default, with a count) lists only that collection's sightings, regional and
+  nationwide (added after v0.3.2). Pre-2001 CZ plates are their own collection, so they
+  show on the bonus collection's screen, not under Czechia.
 - Helpers in `src/lib/progress.ts`: `collectionProgress()`, `regionStats()`.
 
 ## Data model

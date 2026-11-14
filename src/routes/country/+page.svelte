@@ -45,6 +45,11 @@
 	});
 	const detailStats = $derived(detail?.kind === 'region' ? stats.get(detail.code) : undefined);
 
+	/** All sightings of this collection (regional and nationwide), newest first. */
+	const collectionSightings = $derived(
+		collection ? ($sightings ?? []).filter((s) => s.collectionId === collection.id) : []
+	);
+
 	const filters = ['all', 'found', 'missing'] as const;
 	const filterLabel = { all: 'country.filterAll', found: 'country.filterFound', missing: 'country.filterMissing' } as const;
 	const emptyFiltered = $derived(
@@ -94,6 +99,20 @@
 				onpick={(type) => (detail = { kind: 'nationwide', type })}
 			/>
 		</section>
+
+		<details class="card history">
+			<summary>
+				<span>{t('country.history')}</span>
+				<span class="badge">{collectionSightings.length}</span>
+			</summary>
+			{#if collectionSightings.length}
+				<div class="history-list">
+					<SightingList sightings={collectionSightings} />
+				</div>
+			{:else}
+				<p class="muted">{t('history.empty')}</p>
+			{/if}
+		</details>
 	{/if}
 </div>
 
@@ -191,6 +210,47 @@
 	.empty {
 		margin: 0.5rem 0;
 		text-align: center;
+	}
+	.history summary {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-weight: 700;
+		cursor: pointer;
+		list-style: none;
+	}
+	.history summary::-webkit-details-marker {
+		display: none;
+	}
+	/* Chevron that turns when the section opens. */
+	.history summary::before {
+		content: '';
+		width: 0.5rem;
+		height: 0.5rem;
+		border-right: 2px solid currentColor;
+		border-bottom: 2px solid currentColor;
+		transform: rotate(-45deg);
+		transition: transform 0.15s ease;
+	}
+	.history[open] summary::before {
+		transform: rotate(45deg);
+	}
+	.badge {
+		padding: 0 0.5rem;
+		border-radius: 999px;
+		background: var(--surface-2);
+		color: var(--text-muted);
+		font-size: 0.8rem;
+		font-variant-numeric: tabular-nums;
+	}
+	.history-list,
+	.history p {
+		margin: 0.75rem 0 0;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.history summary::before {
+			transition: none;
+		}
 	}
 
 	/* Bottom sheet on phones, centred box on wider screens. */
