@@ -3,6 +3,16 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.4.0](https://github.com/MatusPilnan/SPZky/compare/v0.3.2...v0.4.0) - 2026-11-14
+
+### Features
+
+- **progress:** collapsible history on the country screen ([7a34a51](https://github.com/MatusPilnan/SPZky/commit/7a34a510a29719b8b720a4e25510dd35b3ae6993))
+
+### Bug fixes
+
+- **ui:** keep nationwide tiles inside their column in Slovak ([83acf16](https://github.com/MatusPilnan/SPZky/commit/83acf165e7b8e8e570809bd8706729fb0b2c068b))
+
 ## [0.3.2](https://github.com/MatusPilnan/SPZky/compare/v0.3.1...v0.3.2) - 2026-11-14
 
 ### Bug fixes
