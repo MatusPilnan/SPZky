@@ -166,7 +166,7 @@ by `updatedAt`. On first sign-in, local anonymous data is attached to the accoun
 | 3   | Deploy: GitHub Pages under `/SPZky/`, CI on `main`, release-tag publishing (see below)     | ✅ done (v0.2.0, live at https://matuspilnan.github.io/SPZky/) |
 | 4   | Nationwide plates: save plates without region per country, plate types + highlighting; country choice ordered by GPS, then last used (see above) | ✅ done (v0.3.0) |
 | 5   | Progress: per-country screens incl. nationwide subcollection, code grids, home overview    | ✅ done (v0.3.0) |
-| 6   | Maps: boundary data → SVG, colored map views                                               | ✅ done (not released yet) |
+| 6   | Maps: boundary data → SVG, colored map views                                               | ✅ done (v0.5.0)          |
 | 7   | Sync: Supabase project, schema + RLS, auth screens, sync engine, first-login merge         | next; needs Supabase URL + anon key from the user |
 | 8   | Vintage CZ polish                                                                          |                           |
 
