@@ -79,6 +79,10 @@ like normal codes. For every country added or changed in `src/lib/data/`:
    upgrade re-detects affected sightings (see v3 and `reassignUnknownRegion` in
    `src/lib/db/db.ts`), and update the counts in `scripts/smoke.mjs`.
 8. Record the facts and sources in `docs/PLAN.md` ("Facts about the plate systems").
+9. **Map:** add the country's boundaries to `scripts/build-maps.mjs` (check the licence per
+   dataset on geoBoundaries; prefer CC BY / public domain, check the names aren't garbled),
+   add name aliases in `src/lib/geo/maps/index.ts` where areas share codes, and run the
+   maps test (every area has codes, every code has an area).
 
 ## Checks before committing
 
@@ -118,15 +122,18 @@ src/lib/data/         region lists (sk, cz, cz-vintage) with sources
 src/lib/collections.ts collection registry, nationwide types per country, highlightOf, countryOf
 src/lib/plates/       normalizePlate, detectPlate (region + nationwide candidates), orderByCountry
 src/lib/geo/          countryAt (offline point-in-polygon); borders.ts is GENERATED
+src/lib/geo/maps/     region maps (GENERATED *.ts), loadMap, codesOfArea, areaStatus
 src/lib/db/           Dexie schema (v2: plateType), sighting repository (soft delete, sync fields)
 src/lib/progress.ts   region/nationwide counts, collectionProgress, regionStats (computed, never stored)
 src/lib/i18n/         typed sk/en messages, plural-aware formatter, reactive locale
 src/lib/*.svelte.ts   prefs (localStorage), location tracker, toasts
 src/lib/components/   PlateInput, PlateBadge, RegionGrid (filterable), NationwidePicker, TypeChip,
-                      SightingList, ProgressBar, Switch, CollectionSwitch, Toasts, UpdatePrompt
+                      SightingList, ProgressBar, RegionMap, Switch, CollectionSwitch, Toasts,
+                      UpdatePrompt
 src/routes/           home (overview), country (?id=), add (plate + quick), history,
                       sighting (edit, ?id=), settings
 scripts/              check-node.cjs, smoke.mjs, release-notes.mjs (+ test),
-                      build-borders.mjs (regenerates src/lib/geo/borders.ts)
+                      build-borders.mjs (regenerates src/lib/geo/borders.ts),
+                      build-maps.mjs (regenerates src/lib/geo/maps/*; keep attribution/licence)
 .github/workflows/    ci.yml, release.yml
 ```

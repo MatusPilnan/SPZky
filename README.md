@@ -77,6 +77,15 @@ git push --follow-tags        # pushes the commit and the tag → release workfl
 - Lightweight typed i18n (`src/lib/i18n`) for Slovak and English
 - Imports use Node subpath imports: `#lib/...` → `src/lib/...` (keep the `.js` extension for TS modules)
 
+## Data and licences
+
+- Region maps: Slovakia © Geoportal.SK (ÚGKK SR), CC BY 3.0 IGO; Czech regions © ČÚZK,
+  CC BY 4.0; Czech districts public domain. All via [geoBoundaries](https://www.geoboundaries.org/).
+- Country outlines: [Natural Earth](https://www.naturalearthdata.com/), public domain.
+- Plate formats and region codes: see the sources in each file of `src/lib/data/`.
+
+The app shows the map credits under each map and in Settings → Map data.
+
 ## Conventions
 
 - **Commits** follow [Conventional Commits](https://www.conventionalcommits.org/):
