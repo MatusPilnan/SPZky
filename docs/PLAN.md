@@ -217,6 +217,9 @@ supabase/
 - Index on `(user_id, server_updated_at)`.
 - RPC `push_sightings(rows jsonb)`: upsert where an existing row is only overwritten if the
   incoming `updated_at` is newer (last-write-wins enforced on the server, in one call).
+- RPC `replace_sightings(rows jsonb)`: for "use this device's data" at sign-in; upserts the
+  rows and soft-deletes all other rows of the caller, in one transaction (only own rows,
+  `security invoker`).
 
 ### Sync algorithm (client, `src/lib/sync/`)
 
@@ -227,8 +230,24 @@ supabase/
    in a new local `meta` table (Dexie schema v4).
 3. **When:** on app start, when coming back online, a few seconds after a local change
    (debounced), when the app returns to the foreground, and via "Sync now" in Settings.
-4. **First sign-in on a device:** local rows without a user are assigned to the account,
-   marked dirty and pushed; then everything is pulled.
+4. **Sign-in on a device: conflict check** (decided 2026-11-16). Before anything is pushed,
+   the client fetches all of the account's cloud rows into memory (not yet into Dexie) and
+   compares them with the local rows that have no account (never synced, or kept at
+   sign-out):
+   - **One side empty, or both hold the same sightings** (same set of `plate_normalized`;
+     quick entries by collection + region + `seen_at`): no question; the local rows are
+     assigned to the account, pushed, and the cloud rows pulled (merge).
+   - **Both sides hold different sightings:** a dialog shows the counts ("on this device:
+     N, in the cloud: M, only here: X, only in the cloud: Y") and offers:
+     - **Merge both** (preselected): as above; duplicates are resolved by rule 5.
+     - **Use the cloud data:** local rows are removed from this device, then the cloud
+       rows are pulled.
+     - **Use this device's data:** RPC `replace_sightings(rows jsonb)` in one transaction
+       upserts the local rows and soft-deletes every other cloud row of the user (so other
+       devices drop them on their next pull). The dialog warns that this also removes the
+       plates from the account's other devices, and asks for a second confirmation.
+     - **Cancel:** signs out again; nothing changes on either side.
+   - The check runs only at sign-in, never on later syncs.
 5. **Same plate logged on two devices while offline:** after a pull, for duplicates of the
    same `plate_normalized` the oldest (`created_at`, then `id`) is kept and the others are
    soft-deleted, so every device ends up with the same result. Quick entries without a
@@ -252,7 +271,8 @@ supabase/
   (Docker), apply all migrations, run `supabase test db` (RLS tests) and the linter.
 - **Sync end-to-end test** against the local Supabase stack in CI (it includes a mail
   catcher, so the smoke test can read the sign-in code): two browser profiles act as two
-  devices, log plates offline, sync, and must end up identical.
+  devices, log plates offline, sync, and must end up identical. It also covers the sign-in
+  conflict dialog: merge, use cloud, use this device, cancel.
 - **release.yml**, new job *migrate* after the tests and before the deploy: `supabase link`,
   `supabase db push`, `supabase config push` (auth settings and SMTP). The build gets the
   public URL and key from repo variables.
@@ -281,9 +301,10 @@ supabase/
 
 ### Open points (decide before or during building)
 
-- **Sign-out:** keep the local data on the device, or remove it after making sure
-  everything is synced? (Proposal: ask the user, default "remove", blocked while unsynced
-  changes exist.)
+- **Sign-out:** decided 2026-11-16: the app **asks** whether to keep the plates on this
+  device or remove them, with **"remove from this device"** preselected. Sign-out is
+  **blocked while unsynced changes exist** (offer "Sync now" instead). Kept plates stay as
+  local-only data; the next sign-in runs the conflict check (sync algorithm, step 4).
 - **Delete account completely** (including the email in Supabase Auth) needs a server-side
   function with admin rights (Edge Function). Decided 2026-11-15: **later**, not in phase 7;
   phase 7 has "Delete my cloud data" (the rows).
@@ -300,7 +321,7 @@ supabase/
 | 4   | Nationwide plates: save plates without region per country, plate types + highlighting; country choice ordered by GPS, then last used (see above) | ✅ done (v0.3.0) |
 | 5   | Progress: per-country screens incl. nationwide subcollection, code grids, home overview    | ✅ done (v0.3.0) |
 | 6   | Maps: boundary data → SVG, colored map views                                               | ✅ done (v0.5.0)          |
-| 7   | Sync: Supabase project, schema + RLS, email-code sign-in, sync engine, first-login merge  | next; planned in "Sync — phase 7"; needs the owner's setup steps first |
+| 7   | Sync: Supabase project, schema + RLS, email-code sign-in, sync engine, first-login merge  | next; planned in "Sync — phase 7"; owner's setup steps done 2026-11-16 |
 | 8   | Vintage CZ polish                                                                          |                           |
 
 Deploy comes before the remaining features so the app can be installed and tested on a phone
