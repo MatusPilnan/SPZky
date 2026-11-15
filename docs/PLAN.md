@@ -14,6 +14,8 @@ per country by how many regional codes have been found.
 | Extras                 | Region maps, date + GPS per sighting, cloud sync with accounts. Export/import was **not** requested     |
 | Stack                  | SvelteKit (static, prerendered client-only shells) + `@vite-pwa/sveltekit`, Dexie (IndexedDB)           |
 | Sync backend           | Supabase (auth + Postgres + row-level security); local DB stays the source of truth (offline-first)     |
+| Sync setup             | Database setup in the repo (`supabase/`), applied by GitHub Actions with the Supabase CLI on release tags; free plan, no keep-alive workflow (a paused project shows "sync unavailable") (decided 2026-11-15) |
+| Sign-in                | 6-digit **email code** typed in the app (works in installed PWAs on iPhone and Android); sent through a dedicated Gmail mailbox via SMTP with an app password, as there is no own domain (decided 2026-11-15) |
 | UI language            | Slovak + English with a switch (own lightweight typed i18n instead of Paraglide)                        |
 | Hosting & CI           | GitHub Pages at the repo-name URL `matuspilnan.github.io/SPZky/`. Tests on every push to `main`, deploy only on release tags (decided 2026-11-13) |
 | Plates without region  | Saved into a per-country **nationwide** subcollection that does **not** count toward country progress. Special plates (EV, personalised, …) are highlighted (decided 2026-11-13, replaces the earlier "not saved") |
@@ -154,8 +156,139 @@ Dexie schema v2 (phase 4) fills `plateType` for existing rows from their plate. 
 repository rejects a nationwide sighting without a valid nationwide type of its collection.
 Sync (phase 7) must include `plateType` and a nullable `region_code`.
 
-Planned sync: push dirty rows, then pull rows changed since the last sync, last write wins
-by `updatedAt`. On first sign-in, local anonymous data is attached to the account and uploaded.
+Sync: see "Sync — phase 7" below.
+
+## Sync — phase 7 (plan, 2026-11-15)
+
+Goal: the same collection on every device of a user, while the app stays fully usable
+offline and without an account. The local IndexedDB stays the source of truth; Supabase is
+a sync target, not a dependency.
+
+### Decisions and why
+
+- **Supabase free plan.** Inactive projects (too little database activity in a rolling
+  week) get paused; data is kept and the project can be restored in the dashboard. No
+  keep-alive workflow: normal sync traffic keeps it active while the app is used. When the
+  project is paused or unreachable, the app shows "sync unavailable, data is stored on this
+  device" instead of an error dialog.
+- **Database as code in the repo**, applied by our own GitHub Actions (Supabase CLI), not
+  Supabase's GitHub integration: it deploys on release tags together with the app, works on
+  the free plan, and CI can test it. (The integration deploys on every push to `main`, ignores
+  auth config by default, and its preview branches are paid.)
+- **Email code (OTP), not a magic link or Google:** in an installed PWA on iPhone, links and
+  OAuth redirects open Safari, which has separate storage, so the user ends up signed in in
+  Safari, not in the app. A 6-digit code typed into the app works the same everywhere.
+- **Gmail SMTP:** Supabase's built-in mail sends only 2 emails/hour and only to project team
+  members, so a real SMTP service is required. Without an own domain, a dedicated Gmail
+  account with an app password (smtp.gmail.com:587, ~500 emails/day) is the reliable free
+  option. With a domain later, switch to a mail service (e.g. Resend, Brevo) by changing
+  config only. "Sign in with Google" may be added later as a second option.
+
+### Repository structure
+
+```
+supabase/
+  config.toml                     auth settings (site URL, OTP length/expiry, rate limits,
+                                  email template, SMTP with env(SUPABASE_SMTP_PASSWORD)),
+                                  [remotes.production] for the hosted project
+  templates/sign-in-code.html     email with {{ .Token }} (sk + en text)
+  migrations/<timestamp>_sightings.sql
+  tests/rls.test.sql              pgTAP: user A can't see/change user B's rows, etc.
+```
+
+### Database schema (migration)
+
+`public.sightings`, one row per sighting, mirroring the local `Sighting`:
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `id` | uuid PK | generated on the device |
+| `user_id` | uuid, not null, default `auth.uid()` | references `auth.users`, on delete cascade |
+| `collection_id`, `region_code`, `plate_type` | text | `region_code` null = nationwide (then `plate_type` required, check constraint) |
+| `plate`, `plate_normalized` | text, nullable | null for quick entries |
+| `seen_at`, `created_at`, `updated_at` | timestamptz | `updated_at` from the device (last-write-wins) |
+| `lat`, `lng`, `accuracy` | double / real, nullable | location |
+| `note` | text | |
+| `deleted` | boolean | soft delete, so deletions sync |
+| `server_updated_at` | timestamptz | set by a trigger on every write; the pull cursor (independent of device clocks) |
+
+- Row-level security on: a user can select/insert/update only rows with `user_id =
+  auth.uid()`; hard delete only for their own rows (used by "delete my cloud data").
+- Index on `(user_id, server_updated_at)`.
+- RPC `push_sightings(rows jsonb)`: upsert where an existing row is only overwritten if the
+  incoming `updated_at` is newer (last-write-wins enforced on the server, in one call).
+
+### Sync algorithm (client, `src/lib/sync/`)
+
+1. **Push:** send all local rows with `dirty = 1` (batches of ~200) via `push_sightings`;
+   then mark them clean (a rejected, older row is corrected by the pull).
+2. **Pull:** fetch rows with `server_updated_at > cursor` (pages of 500), apply each one
+   locally if it is new or its `updated_at` is newer than the local row; store the cursor
+   in a new local `meta` table (Dexie schema v4).
+3. **When:** on app start, when coming back online, a few seconds after a local change
+   (debounced), when the app returns to the foreground, and via "Sync now" in Settings.
+4. **First sign-in on a device:** local rows without a user are assigned to the account,
+   marked dirty and pushed; then everything is pulled.
+5. **Same plate logged on two devices while offline:** after a pull, for duplicates of the
+   same `plate_normalized` the oldest (`created_at`, then `id`) is kept and the others are
+   soft-deleted, so every device ends up with the same result. Quick entries without a
+   plate are never merged.
+6. **Errors:** network errors, a paused project or an expired session never block the app;
+   the status line in Settings shows the state and the last successful sync.
+
+### App changes
+
+- `@supabase/supabase-js`, configured from build-time values `PUBLIC_SUPABASE_URL` and
+  `PUBLIC_SUPABASE_KEY` (the public key; RLS protects the data). Without them (local dev,
+  forks) the account section is hidden and the app works as today.
+- Settings → **Account & sync:** email → "Send code" → 6-digit code → signed in; then the
+  email, sync status, last sync, "Sync now", "Sign out", "Delete my cloud data".
+- Session stored by supabase-js in localStorage under an `spz-ky.*` key (shared origin on
+  GitHub Pages).
+
+### CI/CD
+
+- **ci.yml**, new job *database*: `supabase/setup-cli`, start a local database on the runner
+  (Docker), apply all migrations, run `supabase test db` (RLS tests) and the linter.
+- **Sync end-to-end test** against the local Supabase stack in CI (it includes a mail
+  catcher, so the smoke test can read the sign-in code): two browser profiles act as two
+  devices, log plates offline, sync, and must end up identical.
+- **release.yml**, new job *migrate* after the tests and before the deploy: `supabase link`,
+  `supabase db push`, `supabase config push` (auth settings and SMTP). The build gets the
+  public URL and key from repo variables.
+
+### GitHub configuration
+
+| Name | Kind | Value |
+| --- | --- | --- |
+| `SUPABASE_ACCESS_TOKEN` | secret | personal access token (Supabase account → Access Tokens) |
+| `SUPABASE_DB_PASSWORD` | secret | database password chosen when creating the project |
+| `SUPABASE_PROJECT_ID` | secret | project reference (from the project URL) |
+| `SUPABASE_SMTP_PASSWORD` | secret | Gmail app password |
+| `PUBLIC_SUPABASE_URL` | variable | `https://<project-ref>.supabase.co` |
+| `PUBLIC_SUPABASE_KEY` | variable | the project's publishable (anon) key |
+| `SMTP_USER` | variable | the Gmail address (also the sender) |
+
+### Owner's setup steps (before building starts)
+
+1. Create a **new Gmail account** for the app (not a personal one), turn on 2-Step
+   Verification, create an **app password** ("Supabase").
+2. Create a free **Supabase** account and project; region **Frankfurt (eu-central-1)**;
+   keep the database password.
+3. Create a Supabase **access token** (account settings → Access Tokens).
+4. In GitHub: Settings → Secrets and variables → Actions, add the secrets and variables
+   above. Never paste secrets into a chat or commit them.
+
+### Open points (decide before or during building)
+
+- **Sign-out:** keep the local data on the device, or remove it after making sure
+  everything is synced? (Proposal: ask the user, default "remove", blocked while unsynced
+  changes exist.)
+- **Delete account completely** (including the email in Supabase Auth) needs a server-side
+  function with admin rights (Edge Function). Decided 2026-11-15: **later**, not in phase 7;
+  phase 7 has "Delete my cloud data" (the rows).
+- Verify during setup: Gmail app passwords and limits on Google's own pages, Supabase's
+  current OTP email template variables and `config push` support for SMTP settings.
 
 ## Phases
 
@@ -167,7 +300,7 @@ by `updatedAt`. On first sign-in, local anonymous data is attached to the accoun
 | 4   | Nationwide plates: save plates without region per country, plate types + highlighting; country choice ordered by GPS, then last used (see above) | ✅ done (v0.3.0) |
 | 5   | Progress: per-country screens incl. nationwide subcollection, code grids, home overview    | ✅ done (v0.3.0) |
 | 6   | Maps: boundary data → SVG, colored map views                                               | ✅ done (v0.5.0)          |
-| 7   | Sync: Supabase project, schema + RLS, auth screens, sync engine, first-login merge         | next; needs Supabase URL + anon key from the user |
+| 7   | Sync: Supabase project, schema + RLS, email-code sign-in, sync engine, first-login merge  | next; planned in "Sync — phase 7"; needs the owner's setup steps first |
 | 8   | Vintage CZ polish                                                                          |                           |
 
 Deploy comes before the remaining features so the app can be installed and tested on a phone
