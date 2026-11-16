@@ -7,6 +7,7 @@
 	import { collections, type CollectionId } from '#lib/collections.js';
 	import { loadMap } from '#lib/geo/maps/index.js';
 	import AccountSection from '#lib/components/AccountSection.svelte';
+	import DataSection from '#lib/components/DataSection.svelte';
 	import { syncConfigured } from '#lib/sync/account.svelte.js';
 
 	let persisted = $state<boolean | null>(null);
@@ -102,6 +103,8 @@
 	</section>
 
 	{#if syncConfigured}<AccountSection />{/if}
+
+	<DataSection />
 
 	<section class="card credits">
 		<h2>{t('settings.mapData')}</h2>

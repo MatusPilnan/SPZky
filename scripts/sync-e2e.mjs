@@ -9,7 +9,7 @@
 // Uses the API URL and publishable key from `supabase status`. BASE_PATH and
 // BROWSER_PATH work as in smoke.mjs. Screenshots go to .smoke/sync-*.png.
 import { execSync, spawn } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import puppeteer from 'puppeteer-core';
@@ -258,6 +258,27 @@ try {
 	const counts = await tablet.page.$eval('[data-testid=conflict] .counts', (e) => e.innerText.replace(/\s+/g, ' '));
 	check('tablet: conflict dialog shows both sides', /On this device 1 only here: 1/.test(counts) && /In the account 1 only there: 1/.test(counts), counts);
 	await shot(tablet, '02-conflict');
+
+	// The conflict dialog offers a backup of this device's plates before choosing.
+	const downloads = path.join(outDir, 'sync-downloads');
+	rmSync(downloads, { recursive: true, force: true });
+	mkdirSync(downloads, { recursive: true });
+	const cdp = await browser.target().createCDPSession();
+	await cdp.send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: downloads, browserContextId: tablet.context.id });
+	await tablet.page.click('[data-testid=conflict] [data-testid=export]');
+	let backupFile = null;
+	for (let i = 0; i < 40 && !backupFile; i++) {
+		await sleep(250);
+		backupFile = readdirSync(downloads).find((f) => f.endsWith('.json')) ?? null;
+	}
+	const backup = backupFile ? JSON.parse(readFileSync(path.join(downloads, backupFile), 'utf8')) : null;
+	check(
+		'conflict dialog exports this device’s plates',
+		backup?.sightings.map((s) => s.plate).join() === 'KE-222BB',
+		backupFile ?? 'no file'
+	);
+	check('the dialog stays open after exporting', (await tablet.page.$('[data-testid=conflict][open]')) !== null);
+
 	await choose(tablet, 'merge');
 	await synced(tablet);
 	check('tablet: merge keeps both', JSON.stringify(await plates(tablet)) === '["BA-111AA","KE-222BB"]', String(await plates(tablet)));

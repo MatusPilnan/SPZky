@@ -352,6 +352,30 @@ triggers, auth), `fake-remote.ts` (in-memory server for the unit tests).
   mail arrives (and isn't in spam).
 - "Sign in with Google" as a second option: later, if wanted.
 
+## Export / import (added 2026-11-16, with phase 7)
+
+Settings → **Your data**, and "Export this device's plates first" in the sign-in conflict
+dialog (owner's request: a backup before choosing). Code: `src/lib/backup.ts`,
+`src/lib/files.ts`, `DataSection.svelte`, `ExportButton.svelte`.
+
+- **JSON only** (decided 2026-11-16; no CSV). File `spz-ky-YYYY-MM-DD.json`:
+  `{ app: "spz-ky", format: 1, appVersion, exportedAt, sightings: [...] }`, live sightings
+  only, readable ISO times, no ids or sync fields. Raise `format` only for changes older
+  versions can't read; the import refuses files with a newer format ("update the app").
+- **Saving:** in an installed app (standalone) the share sheet is used, because a download
+  link often does nothing there (iPhone); elsewhere a normal download.
+- **Import checks every entry** and skips what it can't use (unknown country or region,
+  bad date, a nationwide type that doesn't belong to the country). Plate type and
+  normalised plate are recomputed, not trusted; region codes removed since the export are
+  re-detected (`reassignUnknownRegion`).
+- A preview shows the count in the file, how many are new and how many are skipped, then:
+  **Add to my plates** (default; plates already on the device, by the same key as the
+  sign-in check, are skipped) or **Replace my plates** (second confirmation; never-synced
+  plates are removed, synced ones become deletions, so with an account they are deleted
+  there and on other devices too).
+- Imported plates get **new ids**, `updatedAt` = now and count as local changes, so they
+  sync like new entries and can't clash with rows of another account.
+
 ## Phases
 
 | #   | Phase                                                                                     | Status                    |

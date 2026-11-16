@@ -192,6 +192,38 @@ export const en = {
 	},
 	'conflict.continue': 'Continue',
 	'conflict.cancel': 'Cancel sign-in',
+	'conflict.export': 'Export this device’s plates first',
+	'conflict.exportHint': 'A backup file, in case you change your mind later.',
+
+	'data.title': 'Your data',
+	'data.hint': 'Save all your plates to a file – as a backup or to move them to another device – and load them back.',
+	'data.export': 'Export to a file',
+	'data.import': 'Import from a file',
+	'data.exported': { one: 'Exported {count} plate', other: 'Exported {count} plates' },
+	'data.exportFailed': 'Export failed.',
+	'data.invalidFile': 'This isn’t a ŠPZ-ky export file.',
+	'data.newerFile': 'This file comes from a newer version of the app. Update the app first.',
+	'data.fileHas': { one: 'The file contains {count} plate.', other: 'The file contains {count} plates.' },
+	'data.fresh': { one: 'New for this device: {count}.', other: 'New for this device: {count}.' },
+	'data.skipped': {
+		one: '{count} entry can’t be used and will be skipped.',
+		other: '{count} entries can’t be used and will be skipped.'
+	},
+	'data.add': 'Add to my plates',
+	'data.addHint': 'Plates already on this device are skipped.',
+	'data.replace': 'Replace my plates',
+	'data.replaceHint': {
+		one: 'The {count} plate on this device is removed first.',
+		other: 'The {count} plates on this device are removed first.'
+	},
+	'data.replaceHintAccount': ' They are also deleted in your account and on your other devices.',
+	'data.confirmReplace': {
+		one: 'Really remove the {count} plate on this device and replace it with the file’s plates?',
+		other: 'Really remove the {count} plates on this device and replace them with the file’s plates?'
+	},
+	'data.importNow': 'Import',
+	'data.imported': { one: 'Imported {count} plate', other: 'Imported {count} plates' },
+	'data.importFailed': 'Import failed.',
 	'settings.mapData': 'Map data',
 	'settings.mapDataBorders': 'Country outlines (GPS country): Natural Earth (public domain)',
 
@@ -410,6 +442,41 @@ export const sk: Messages = {
 	},
 	'conflict.continue': 'Pokračovať',
 	'conflict.cancel': 'Zrušiť prihlásenie',
+	'conflict.export': 'Najprv exportovať ŠPZ-ky z tohto zariadenia',
+	'conflict.exportHint': 'Záložný súbor pre prípad, že si to neskôr rozmyslíš.',
+
+	'data.title': 'Tvoje dáta',
+	'data.hint': 'Ulož si všetky ŠPZ-ky do súboru – ako zálohu alebo na prenos do iného zariadenia – a nahraj ich späť.',
+	'data.export': 'Exportovať do súboru',
+	'data.import': 'Importovať zo súboru',
+	'data.exported': { one: 'Exportovaná {count} ŠPZ', few: 'Exportované {count} ŠPZ', other: 'Exportovaných {count} ŠPZ' },
+	'data.exportFailed': 'Export zlyhal.',
+	'data.invalidFile': 'Toto nie je exportný súbor ŠPZ-ky.',
+	'data.newerFile': 'Tento súbor pochádza z novšej verzie aplikácie. Najprv aplikáciu aktualizuj.',
+	'data.fileHas': { one: 'Súbor obsahuje {count} ŠPZ.', few: 'Súbor obsahuje {count} ŠPZ.', other: 'Súbor obsahuje {count} ŠPZ.' },
+	'data.fresh': { one: 'Nových pre toto zariadenie: {count}.', other: 'Nových pre toto zariadenie: {count}.' },
+	'data.skipped': {
+		one: '{count} záznam sa nedá použiť a preskočí sa.',
+		few: '{count} záznamy sa nedajú použiť a preskočia sa.',
+		other: '{count} záznamov sa nedá použiť a preskočia sa.'
+	},
+	'data.add': 'Pridať k mojim ŠPZ-kam',
+	'data.addHint': 'ŠPZ-ky, ktoré už v tomto zariadení sú, sa preskočia.',
+	'data.replace': 'Nahradiť moje ŠPZ-ky',
+	'data.replaceHint': {
+		one: 'Najprv sa odstráni {count} ŠPZ v tomto zariadení.',
+		few: 'Najprv sa odstránia {count} ŠPZ v tomto zariadení.',
+		other: 'Najprv sa odstráni {count} ŠPZ v tomto zariadení.'
+	},
+	'data.replaceHintAccount': ' Zmažú sa aj v tvojom účte a v ostatných zariadeniach.',
+	'data.confirmReplace': {
+		one: 'Naozaj odstrániť {count} ŠPZ v tomto zariadení a nahradiť ju ŠPZ-kami zo súboru?',
+		few: 'Naozaj odstrániť {count} ŠPZ v tomto zariadení a nahradiť ich ŠPZ-kami zo súboru?',
+		other: 'Naozaj odstrániť {count} ŠPZ v tomto zariadení a nahradiť ich ŠPZ-kami zo súboru?'
+	},
+	'data.importNow': 'Importovať',
+	'data.imported': { one: 'Importovaná {count} ŠPZ', few: 'Importované {count} ŠPZ', other: 'Importovaných {count} ŠPZ' },
+	'data.importFailed': 'Import zlyhal.',
 	'settings.mapData': 'Mapové podklady',
 	'settings.mapDataBorders': 'Obrysy krajín (krajina podľa GPS): Natural Earth (voľné dielo)',
 

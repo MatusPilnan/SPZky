@@ -9,7 +9,7 @@
 // Browser: set BROWSER_PATH, otherwise common Edge/Chrome locations are tried.
 // Screenshots go to .smoke/ (gitignored).
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import puppeteer from 'puppeteer-core';
@@ -452,6 +452,58 @@ try {
 	}
 	await shot('08b-country-sk');
 	await page.setViewport({ width: 400, height: 860, deviceScaleFactor: 1 });
+
+	// Export / import (Settings → Your data). Downloads land in .smoke/.
+	{
+		const liveCount = () =>
+			page.evaluate(
+				() =>
+					new Promise((resolve) => {
+						const req = indexedDB.open('spz-ky');
+						req.onsuccess = () => {
+							const all = req.result.transaction('sightings').objectStore('sightings').getAll();
+							all.onsuccess = () => resolve(all.result.filter((s) => s.deleted === 0).length);
+						};
+					})
+			);
+		for (const f of readdirSync(outDir)) if (/^spz-ky-.*\.json$/.test(f)) rmSync(path.join(outDir, f), { force: true });
+		const cdp = await browser.target().createCDPSession();
+		await cdp.send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: outDir });
+		await page.goto(`${APP}/settings`, { waitUntil: 'networkidle0' });
+		await page.waitForSelector('[data-testid=data] [data-testid=export]');
+		await page.click('[data-testid=data] [data-testid=export]');
+		let exported = null;
+		for (let i = 0; i < 40 && !exported; i++) {
+			await sleep(250);
+			exported = readdirSync(outDir).find((f) => /^spz-ky-\d{4}-\d{2}-\d{2}\.json$/.test(f)) ?? null;
+		}
+		const before = await liveCount();
+		const backup = exported ? JSON.parse(readFileSync(path.join(outDir, exported), 'utf8')) : null;
+		check(
+			'export downloads a JSON file with every plate',
+			backup?.app === 'spz-ky' && backup.format === 1 && backup.sightings.length === before,
+			`${exported}: ${backup?.sightings.length} of ${before}`
+		);
+
+		// Import the file back plus one new plate and one broken entry: only the new plate is added.
+		const importPath = path.join(outDir, 'import-test.json');
+		const extra = { ...backup.sightings[0], plate: 'NR-777XY', regionCode: 'NR', plateType: 'sk-district' };
+		writeFileSync(importPath, JSON.stringify({ ...backup, sightings: [...backup.sightings, extra, { broken: true }] }));
+		const input = await page.$('[data-testid=data] input[type=file]');
+		await input.uploadFile(importPath);
+		await page.waitForSelector('dialog[aria-labelledby=import-title][open]');
+		const previewText = await page.$eval('dialog[aria-labelledby=import-title]', (d) => d.innerText.replace(/\s+/g, ' '));
+		check('import preview counts new and skipped entries', previewText.includes(`${before + 1} ŠPZ`) && previewText.includes(': 1.'), previewText);
+		await shot('12-import');
+		await page.click('dialog[aria-labelledby=import-title] .btn.primary');
+		await page.waitForFunction(() => !document.querySelector('dialog[aria-labelledby=import-title][open]'));
+		check('import (add) adds only the new plate', (await liveCount()) === before + 1, String(await liveCount()));
+
+		writeFileSync(importPath, '{"app":"something-else"}');
+		await input.uploadFile(importPath);
+		await page.waitForSelector('[data-testid=data] .error');
+		check('import rejects a foreign file', true);
+	}
 
 	// Offline: every page must load from the service worker cache, incl. the edit page with ?id=
 	if (PREVIEW) {

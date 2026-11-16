@@ -3,6 +3,7 @@
 	import { showToast } from '../toast.svelte';
 	import { account, cancelConflict, resolveConflict } from '../sync/account.svelte';
 	import type { SignInChoice } from '../sync/engine';
+	import ExportButton from './ExportButton.svelte';
 
 	let dialog = $state<HTMLDialogElement | null>(null);
 	let choice = $state<SignInChoice>('merge');
@@ -68,6 +69,10 @@
 					<span class="muted small">{t('conflict.onlyCloud', { count: c.onlyRemote })}</span>
 				</div>
 			</div>
+			<div class="export">
+				<ExportButton label={t('conflict.export')} />
+				<span class="muted small">{t('conflict.exportHint')}</span>
+			</div>
 			<fieldset class="choices" disabled={busy}>
 				{#each options as o (o.value)}
 					<label class="choice">
@@ -109,6 +114,12 @@
 	}
 	.small {
 		font-size: 0.85rem;
+	}
+	.export {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.25rem;
 	}
 	.choices {
 		margin: 0;

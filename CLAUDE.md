@@ -76,6 +76,9 @@ Design and reasons: `docs/PLAN.md`, "Sync — phase 7". Practical rules:
 - Local rows: `userId` null = not in an account; `dirty` = not pushed. Any local edit must
   use `nextUpdatedAt` (in `db/sightings.ts`) so it wins last-write-wins sync.
 - Supabase allows one sign-in code per address per 60 s.
+- Changing the `Sighting` shape? Also update the export format in `src/lib/backup.ts`
+  (bump `BACKUP_FORMAT` only if older app versions couldn't read the new files) and keep
+  importing older files working (tests in `backup.test.ts`).
 
 ## Region data: checklist for new or changed countries
 
@@ -156,11 +159,14 @@ src/lib/db/           Dexie schema (v2 plateType, v3 data fix, v4 meta + userId 
 src/lib/sync/         rows (pure rules), engine (push/pull/sign-in check/sign-out), remote
                       (Supabase), account.svelte (auth + state + triggers), fake-remote (tests)
 src/lib/progress.ts   region/nationwide counts, collectionProgress, regionStats (computed, never stored)
+src/lib/backup.ts     JSON export/import (format 1: parse + validate, preview, add/replace)
+src/lib/files.ts      saveTextFile: share sheet in installed apps, download otherwise
 src/lib/i18n/         typed sk/en messages, plural-aware formatter, reactive locale
 src/lib/*.svelte.ts   prefs (localStorage), location tracker, toasts
 src/lib/components/   PlateInput, PlateBadge, RegionGrid (filterable), NationwidePicker, TypeChip,
                       SightingList, ProgressBar, RegionMap, Switch, CollectionSwitch, Toasts,
-                      UpdatePrompt, AccountSection (Settings), SignInConflict (layout)
+                      UpdatePrompt, AccountSection (Settings), SignInConflict (layout),
+                      DataSection + ExportButton (export/import)
 src/routes/           home (overview), country (?id=), add (plate + quick), history,
                       sighting (edit, ?id=), settings
 supabase/             config.toml, migrations/, templates/, tests/database/ (pgTAP)
