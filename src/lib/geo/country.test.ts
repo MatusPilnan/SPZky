@@ -19,6 +19,8 @@ describe('countryAt', () => {
 		['Budapest', 47.4979, 19.0402, null],
 		['Kraków', 50.0647, 19.945, 'PL'],
 		['Dresden', 51.0504, 13.7373, 'DE'],
+		['Lviv', 49.8397, 24.0297, 'UA'],
+		['Kyiv', 50.45, 30.523, 'UA'],
 		['Budapest (not supported)', 47.4979, 19.0402, null],
 		['Atlantic', 0, 0, null]
 	])('%s → %s', (_, lat, lng, expected) => {

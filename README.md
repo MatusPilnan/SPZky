@@ -110,7 +110,8 @@ git push --follow-tags        # pushes the commit and the tag → release workfl
   2.0 (the generated `src/lib/geo/maps/at-districts.ts` and `at-states.ts` are shared under
   the same licence); Polish
   counties © Państwowy Rejestr Granic (GUGiK), CC BY 3.0 IGO; German districts ©
-  GeoBasis-DE / BKG, Datenlizenz Deutschland – Namensnennung 2.0. All via
+  GeoBasis-DE / BKG, Datenlizenz Deutschland – Namensnennung 2.0; Ukrainian regions ©
+  State Enterprise "Kartographia", CC BY 3.0 IGO. All via
   [geoBoundaries](https://www.geoboundaries.org/).
 - Country outlines: [Natural Earth](https://www.naturalearthdata.com/), public domain.
 - Plate formats and region codes: see the sources in each file of `src/lib/data/`.

@@ -14,7 +14,20 @@ describe('collection data', () => {
 
 	it('has the expected sizes', () => {
 		const size = Object.fromEntries(collections.map((c) => [c.id, c.regions.length]));
-		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165, de: 714 });
+		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165, de: 714, ua: 107, 'ua-vintage': 105 });
+	});
+
+	it('Ukraine: four codes per region (KK only for Kyiv), no online/national series', () => {
+		const ua = collections.find((c) => c.id === 'ua')!.regions;
+		const byName = new Map<string, string[]>();
+		for (const r of ua) byName.set(r.name, [...(byName.get(r.name) ?? []), r.code]);
+		expect(byName.size).toBe(27);
+		expect(byName.get('Kyiv')!.sort()).toEqual(['AA', 'KA', 'KK', 'TT']);
+		expect(byName.get('AR Krym')!.sort()).toEqual(['AK', 'MK', 'TK']);
+		for (const [name, codes] of byName) if (name !== 'AR Krym') expect(codes).toHaveLength(4);
+		for (const code of ['DI', 'PD', 'ED', 'DC', 'II', 'BP']) expect(ua.map((r) => r.code)).not.toContain(code);
+		// Only the 12 Latin-looking Cyrillic letters.
+		for (const r of ua) expect(r.code).toMatch(/^[ABCEHIKMOPTX]{2}$/);
 	});
 
 	it('Germany: district codes incl. reintroduced ones, no authority series', () => {

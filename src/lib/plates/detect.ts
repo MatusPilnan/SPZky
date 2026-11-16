@@ -30,7 +30,11 @@ export type RegionFormat =
 	/** DE electric vehicle: as standard, with a trailing E. */
 	| 'de-ev'
 	/** DE historic vehicle (30+ years): as standard, with a trailing H. */
-	| 'de-historic';
+	| 'de-historic'
+	/** UA since 2004: region code + 4 digits + 2-letter series (AA 1234 BB). */
+	| 'ua-standard'
+	/** UA 1995–2004: 5 digits + 2-letter series that identifies the region (123-45 KI). */
+	| 'ua-vintage';
 
 /** Recognised plate formats without a region; they go to the country's nationwide subcollection. */
 export type NationwideFormat =
@@ -202,6 +206,20 @@ function detectGerman(n: string, raw: string): Detection[] {
 	return out.filter((d): d is Detection => d !== null);
 }
 
+/**
+ * Ukraine (typed in Latin or Cyrillic; normalizePlate maps Cyrillic to Latin).
+ * Since 2004: region code + 4 digits + series of the 12 Latin-looking letters.
+ * 1995–2004: 5 digits + 2-letter series; the series identifies the region.
+ */
+function detectUkrainian(n: string): Detection[] {
+	const out: (Detection | null)[] = [];
+	const current = /^([A-Z]{2})\d{4}[ABCEHIKMOPTX]{2}$/.exec(n);
+	if (current) out.push(region('ua', current[1], 'ua-standard', 'high'));
+	const old = /^\d{5}([A-Z]{2})$/.exec(n);
+	if (old) out.push(region('ua-vintage', old[1], 'ua-vintage', 'high'));
+	return out.filter((d): d is Detection => d !== null);
+}
+
 export function detectionKey(d: Detection): string {
 	return d.type === 'region' ? `${d.collectionId}:${d.regionCode}` : `${d.collectionId}:*${d.format}`;
 }
@@ -217,7 +235,7 @@ export function detectPlate(raw: string): Detection[] {
 	if (n.length < 5) return [];
 
 	const seen = new Set<string>();
-	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw)]
+	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw), ...detectUkrainian(n)]
 		.filter((d) => {
 			const key = detectionKey(d);
 			if (seen.has(key)) return false;

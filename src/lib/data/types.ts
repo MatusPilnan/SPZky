@@ -14,10 +14,20 @@ export interface Region {
 	areas?: string[];
 }
 
-export type CollectionId = 'sk' | 'cz' | 'cz-vintage' | 'at' | 'at-vintage' | 'pl' | 'pl-vintage' | 'de';
+export type CollectionId =
+	| 'sk'
+	| 'cz'
+	| 'cz-vintage'
+	| 'at'
+	| 'at-vintage'
+	| 'pl'
+	| 'pl-vintage'
+	| 'de'
+	| 'ua'
+	| 'ua-vintage';
 
 /** ISO 3166-1 alpha-2 codes of the supported countries. */
-export type CountryCode = 'SK' | 'CZ' | 'AT' | 'PL' | 'DE';
+export type CountryCode = 'SK' | 'CZ' | 'AT' | 'PL' | 'DE' | 'UA';
 
 /** Collections that have a nationwide subcollection (plates without a region). */
 export type NationwideCollectionId = 'sk' | 'cz';

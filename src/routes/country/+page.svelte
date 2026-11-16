@@ -127,6 +127,16 @@
 				<p>{t('about.at-vintage.valid')}</p>
 				<p class="muted">{t('about.at-vintage.map')}</p>
 			</section>
+		{:else if collection.id === 'ua-vintage'}
+			<!-- Facts: src/lib/data/ua.ts (uaVintageRegions) -->
+			<section class="card about" data-testid="about">
+				<div class="about-head">
+					<PlateBadge text="123-45 KI" country="UA" plain />
+					<h2>{t('about.ua-vintage.title')}</h2>
+				</div>
+				<p>{t('about.ua-vintage.what')}</p>
+				<p>{t('about.ua-vintage.valid')}</p>
+			</section>
 		{:else if collection.id === 'pl-vintage'}
 			<!-- Facts: src/lib/data/pl-vintage.ts -->
 			<section class="card about" data-testid="about">

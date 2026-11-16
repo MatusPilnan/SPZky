@@ -84,6 +84,18 @@ checklist "Region data" in `CLAUDE.md` for every country added later.
   Many plates also fit SK/AT formats (e.g. `BA-MA001` Bamberg); GPS decides the order.
   Sources: de.wikipedia list (above), en.wikipedia "Vehicle registration plates of Germany",
   de.wikipedia "Kfz-Kennzeichen (DDR)" (checked 2026-11-16).
+- **Ukraine** (phase 9, 2026-11-16): **107** region codes of the system since 2004
+  (`AA 1234 BB`): four per region (2004, 2013, 2021×2), only the 12 Cyrillic letters that
+  look Latin; typed Cyrillic is mapped to Latin by `normalizePlate` (also Greek for later).
+  KK is listed for Crimea (2013) and Kyiv (2021): kept for Kyiv only. Crimea, Sevastopol and
+  the occupied regions keep their codes (Ukrainian plates still on the road). Left out:
+  DI/PD/ED/DC (online registration since Dec 2022, no region), II (national, withdrawn
+  2006), BP (parliament), police/military/diplomatic/transit.
+- **Ukraine 1995–2004** (bonus, `123-45 КІ`): **105** series of the 27 regions (uk.wikipedia
+  table; the en.wikipedia table has errors). Still usable on the road, exchanged at any
+  registration change (hsc.gov.ua, 2025). Same map as the current collection.
+  Sources: uk.wikipedia "Номерні знаки України" (citing zakon.rada.gov.ua z0353-21),
+  en.wikipedia "Vehicle registration plates of Ukraine", hsc.gov.ua (checked 2026-11-16).
 - Sources, with details in the header of each file in `src/lib/data/`: en.wikipedia (plates
   of Slovakia / Czech Republic), sk.wikipedia "Zoznam skratiek okresov Slovenska" (reserved
   codes) and "Evidenčné číslo vozidiel na Slovensku", cs.wikipedia "Státní poznávací značky v
@@ -173,6 +185,7 @@ raw, loaded on demand and precached for offline use):
 
 | PL | 380 counties and city counties (powiaty) | gbHumanitarian POL ADM2: Państwowy Rejestr Granic via HDX, 2022 | CC BY 3.0 IGO |
 | PL pre-2000 | — (no map) | — | — |
+| UA, UA 1995–2004 | 27 regions (oblasts, Crimea, Kyiv, Sevastopol) | gbHumanitarian UKR ADM1: State Enterprise "Kartographia" via HDX, 2022 (Kyiv city renamed by location: both are "Kyivska") | CC BY 3.0 IGO |
 | DE | 401 districts and district-free cities (Kreise) | gbOpen DEU ADM3: BKG, 2021 (dissolved by name: coastal districts come in several parts) | dl-de/by-2-0 (attribution) |
 
 | AT pre-1990 | 9 states (Bundesländer) | gbOpen AUT ADM1: BEV, 2017 | CC BY-SA 2.0 (as above) |

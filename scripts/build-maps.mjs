@@ -11,7 +11,7 @@ import mapshaper from 'mapshaper';
 
 const RELEASE = 'https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData';
 
-/** @type {{ file: string, url: string, simplify: string, center: [number, number], attribution: string, license: string, rename?: Record<string, string>, disambiguateWith?: string, dissolve?: boolean }[]} */
+/** @type {{ file: string, url: string, simplify: string, center: [number, number], attribution: string, license: string, rename?: Record<string, string>, disambiguateWith?: string, dissolve?: boolean, nameAt?: { from: string, point: [number, number], to: string }[] }[]} */
 const MAPS = [
 	{
 		file: 'sk-districts',
@@ -115,6 +115,17 @@ const MAPS = [
 		center: [10.4, 51.2],
 		attribution: '© GeoBasis-DE / BKG (Federal Agency for Cartography and Geodesy) via geoBoundaries',
 		license: 'dl-de/by-2-0'
+	},
+	{
+		// 24 oblasts, Crimea, Kyiv and Sevastopol (official boundaries, 2022). Used by both
+		// Ukrainian collections (the 1995 system used the same regions).
+		file: 'ua-regions',
+		url: `${RELEASE}/gbHumanitarian/UKR/ADM1/geoBoundaries-UKR-ADM1_simplified.geojson`,
+		nameAt: [{ from: 'Kyivska', point: [30.523, 50.45], to: 'Kyiv' }],
+		simplify: '6%',
+		center: [31.2, 48.4],
+		attribution: 'State Enterprise "Kartographia" via geoBoundaries / HDX',
+		license: 'CC BY 3.0 IGO'
 	}
 ];
 
@@ -129,6 +140,24 @@ function inRing([x, y], ring) {
 	return inside;
 }
 const polygonsOf = (g) => (g.type === 'Polygon' ? [g.coordinates] : g.coordinates);
+
+/**
+ * Renames the area of a given name that contains a point (e.g. Kyiv city vs Kyiv Oblast,
+ * both "Kyivska"; the oblast has the city as a hole, so only the city contains it).
+ */
+function renameAt(input, rules) {
+	const gj = JSON.parse(input);
+	for (const { from, point, to } of rules) {
+		const hits = gj.features.filter(
+			(f) =>
+				f.properties.shapeName === from &&
+				polygonsOf(f.geometry).some(([outer, ...holes]) => inRing(point, outer) && !holes.some((h) => inRing(point, h)))
+		);
+		if (hits.length !== 1) throw new Error(`nameAt ${from} → ${to}: ${hits.length} areas contain the point`);
+		hits[0].properties.shapeName = to;
+	}
+	return JSON.stringify(gj);
+}
 
 /**
  * Appends " (Parent)" to area names that occur more than once, using the parent
@@ -176,6 +205,7 @@ for (const m of MAPS) {
 	if (!res.ok) throw new Error(`${m.url}: HTTP ${res.status}`);
 	let input = await res.text();
 	if (m.disambiguateWith) input = await disambiguate(input, m.disambiguateWith);
+	if (m.nameAt) input = renameAt(input, m.nameAt);
 
 	const proj = `+proj=laea +lat_0=${m.center[1]} +lon_0=${m.center[0]} +datum=WGS84`;
 	// dissolve: one area per name (some datasets split a district into several features).

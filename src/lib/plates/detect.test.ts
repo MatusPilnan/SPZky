@@ -88,6 +88,28 @@ describe('detectPlate: Germany', () => {
 	});
 });
 
+describe('detectPlate: Ukraine', () => {
+	const ua = (raw: string) =>
+		detectPlate(raw)
+			.filter((d) => d.collectionId.startsWith('ua'))
+			.map((d) => `${d.collectionId}:${(d as { regionCode: string }).regionCode}`);
+
+	it('current plates, typed in Latin or Cyrillic', () => {
+		expect(ua('AA 1234 BC')).toEqual(['ua:AA']);
+		expect(ua('АА 1234 ВС')).toEqual(['ua:AA']); // Cyrillic
+		expect(ua('ВС 0001 АО')).toEqual(['ua:BC']);
+	});
+
+	it('the series uses only Latin-looking letters', () => {
+		expect(ua('AA 1234 ZZ')).toEqual([]);
+	});
+
+	it('1995–2004 plates: five digits and the region series', () => {
+		expect(ua('123-45 КІ')).toEqual(['ua-vintage:KI']);
+		expect(ua('123-45 PE')).toEqual(['ua-vintage:PE']); // Zakarpattia
+	});
+});
+
 describe('detectPlate: Poland', () => {
 	const pl = (raw: string) =>
 		detectPlate(raw)

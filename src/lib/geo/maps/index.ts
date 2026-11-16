@@ -17,7 +17,9 @@ const loaders: Partial<Record<CollectionId, () => Promise<{ map: RegionMapData }
 	at: () => import('./at-districts'),
 	'at-vintage': () => import('./at-states'),
 	pl: () => import('./pl-counties'),
-	de: () => import('./de-districts')
+	de: () => import('./de-districts'),
+	ua: () => import('./ua-regions'),
+	'ua-vintage': () => import('./ua-regions')
 };
 
 export function hasMap(collectionId: CollectionId): boolean {

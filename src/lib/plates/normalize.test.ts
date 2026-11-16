@@ -18,6 +18,13 @@ describe('normalizePlate', () => {
 		expect(normalizePlate('LÖ-A 1')).not.toBe(normalizePlate('LO-A 1'));
 	});
 
+	it('maps Cyrillic and Greek look-alike letters to Latin', () => {
+		expect(normalizePlate('АА 1234 ВС')).toBe('AA1234BC'); // Ukrainian, typed in Cyrillic
+		expect(normalizePlate('аа 1234 вс')).toBe('AA1234BC');
+		expect(normalizePlate('123-45 КІ')).toBe('12345KI');
+		expect(normalizePlate('ΥΧΝ 1234')).toBe('YXN1234'); // Greek
+	});
+
 	it('returns empty string for input without letters or digits', () => {
 		expect(normalizePlate(' - . ')).toBe('');
 	});

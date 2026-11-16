@@ -48,6 +48,11 @@ export const en = {
 	'about.at-vintage.valid':
 		'They stay valid as long as the registration doesn’t change – more than 120,000 were still on the road in 2025.',
 	'about.at-vintage.map': 'The map shows the nine states; Graz and Linz count within Styria and Upper Austria.',
+	'about.ua-vintage.title': 'About these plates',
+	'about.ua-vintage.what':
+		'Ukrainian plates of 1995–2004: five digits and two letters, e.g. 123-45 КІ. The two letters are a series of the region (Kyiv used KA, KB, KE, KI, KH, KT, II and OO).',
+	'about.ua-vintage.valid':
+		'They may still be driven, but are exchanged at any change of registration, so they get rarer.',
 	'about.pl-vintage.title': 'About these plates',
 	'about.pl-vintage.what':
 		'Polish plates of the system used from 1976 to 2000: white on black, three letters and four digits, e.g. KRA 1234. The first two letters stand for one of the 49 voivodeships of that time (Kraków used KR, KK, KW and KV).',
@@ -117,6 +122,8 @@ export const en = {
 	'format.de-standard': 'standard plate',
 	'format.de-ev': 'electric vehicle (E)',
 	'format.de-historic': 'historic vehicle (H)',
+	'format.ua-standard': 'standard plate',
+	'format.ua-vintage': 'plate 1995–2004',
 	'format.pl-vintage': 'black plate (before 2000)',
 
 	'location.idle': 'Location is not saved (enable in Settings)',
@@ -275,6 +282,8 @@ export const en = {
 	'collection.at': 'Austria',
 	'collection.at-vintage': 'Austria (pre-1990)',
 	'collection.de': 'Germany',
+	'collection.ua': 'Ukraine',
+	'collection.ua-vintage': 'Ukraine (1995–2004)',
 	'collection.pl': 'Poland',
 	'collection.pl-vintage': 'Poland (pre-2000)'
 } satisfies Record<string, Message>;
@@ -333,6 +342,11 @@ export const sk: Messages = {
 	'about.at-vintage.valid':
 		'Platia, kým sa registrácia nezmení – v roku 2025 ich jazdilo ešte vyše 120 000.',
 	'about.at-vintage.map': 'Mapa zobrazuje deväť spolkových krajín; Graz a Linz sa rátajú v Štajersku a Hornom Rakúsku.',
+	'about.ua-vintage.title': 'O týchto ŠPZ',
+	'about.ua-vintage.what':
+		'Ukrajinské ŠPZ z rokov 1995–2004: päť číslic a dve písmená, napr. 123-45 КІ. Dve písmená sú séria regiónu (Kyjev mal KA, KB, KE, KI, KH, KT, II a OO).',
+	'about.ua-vintage.valid':
+		'Ešte sa s nimi smie jazdiť, ale pri každej zmene registrácie sa vymieňajú, takže ich ubúda.',
 	'about.pl-vintage.title': 'O týchto ŠPZ',
 	'about.pl-vintage.what':
 		'Poľské ŠPZ systému z rokov 1976 až 2000: biele písmo na čiernom, tri písmená a štyri číslice, napr. KRA 1234. Prvé dve písmená označujú jedno zo 49 vtedajších vojvodstiev (Krakov mal KR, KK, KW a KV).',
@@ -402,6 +416,8 @@ export const sk: Messages = {
 	'format.de-standard': 'štandardná ŠPZ',
 	'format.de-ev': 'elektromobil (E)',
 	'format.de-historic': 'historické vozidlo (H)',
+	'format.ua-standard': 'štandardná ŠPZ',
+	'format.ua-vintage': 'ŠPZ 1995–2004',
 	'format.pl-vintage': 'čierna ŠPZ (pred 2000)',
 
 	'location.idle': 'Poloha sa neukladá (zapni v Nastaveniach)',
@@ -570,6 +586,8 @@ export const sk: Messages = {
 	'collection.at': 'Rakúsko',
 	'collection.at-vintage': 'Rakúsko (do 1990)',
 	'collection.de': 'Nemecko',
+	'collection.ua': 'Ukrajina',
+	'collection.ua-vintage': 'Ukrajina (1995–2004)',
 	'collection.pl': 'Poľsko',
 	'collection.pl-vintage': 'Poľsko (do 2000)'
 };
