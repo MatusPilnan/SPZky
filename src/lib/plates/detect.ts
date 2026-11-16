@@ -52,7 +52,9 @@ export type RegionFormat =
 	/** GR since 1984: 3 letters (code = first two) + 1000–9999, motorcycles 1–999. */
 	| 'gr-standard'
 	/** XK (RKS) since 2010: district 01–07 + 3 digits from 101 + 2 letters (01 234-AB). */
-	| 'xk-standard';
+	| 'xk-standard'
+	/** CH: canton code + up to 6 digits (7 for ZH/BE from 2026): ZH 123456. */
+	| 'ch-standard';
 
 /** Recognised plate formats without a region; they go to the country's nationwide subcollection. */
 export type NationwideFormat =
@@ -313,6 +315,15 @@ function detectGreek(n: string): Detection[] {
 	return d ? [d] : [];
 }
 
+/** Switzerland: canton code + 1–6 digits without leading zero (7 in Zürich and Bern from 2026). */
+function detectSwiss(n: string): Detection[] {
+	const m = /^([A-Z]{2})([1-9]\d{0,6})$/.exec(n);
+	if (!m) return [];
+	if (m[2].length === 7 && m[1] !== 'ZH' && m[1] !== 'BE') return [];
+	const d = region('ch', m[1], 'ch-standard', 'high');
+	return d ? [d] : [];
+}
+
 /** Kosovo (RKS): district code 01–07, three digits (from 101), two letters. */
 function detectKosovar(n: string): Detection[] {
 	const m = /^(\d{2})[1-9]\d{2}[A-Z]{2}$/.exec(n);
@@ -358,7 +369,7 @@ export function detectPlate(raw: string): Detection[] {
 	if (n.length < 5) return [];
 
 	const seen = new Set<string>();
-	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw), ...detectUkrainian(n), ...detectFrench(n), ...detectBulgarian(n), ...detectRomanian(n), ...detectSlovenian(n), ...detectSerbian(n), ...detectGreek(n), ...detectKosovar(n)]
+	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw), ...detectUkrainian(n), ...detectFrench(n), ...detectBulgarian(n), ...detectRomanian(n), ...detectSlovenian(n), ...detectSerbian(n), ...detectGreek(n), ...detectKosovar(n), ...detectSwiss(n)]
 		.filter((d) => {
 			const key = detectionKey(d);
 			if (seen.has(key)) return false;

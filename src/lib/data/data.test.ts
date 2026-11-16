@@ -15,7 +15,7 @@ describe('collection data', () => {
 
 	it('has the expected sizes', () => {
 		const size = Object.fromEntries(collections.map((c) => [c.id, c.regions.length]));
-		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165, de: 714, ua: 107, 'ua-vintage': 105, fr: 101, bg: 30, ro: 42, si: 11, rs: 81, gr: 156, xk: 7 });
+		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165, de: 714, ua: 107, 'ua-vintage': 105, fr: 101, bg: 30, ro: 42, si: 11, rs: 81, gr: 156, xk: 7, ch: 26 });
 	});
 
 	it('Greece: current series only, ΚΟΗ/ΚΟΚ in Thessaloniki, no non-regional series', () => {

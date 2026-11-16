@@ -6,6 +6,7 @@ import { deRegions } from './data/de';
 import { frRegions } from './data/fr';
 import { plRegions } from './data/pl';
 import { plVintageRegions } from './data/pl-vintage';
+import { chRegions } from './data/ch';
 import { grRegions } from './data/gr';
 import { roRegions } from './data/ro';
 import { rsRegions } from './data/rs';
@@ -60,6 +61,8 @@ export const collections: CollectionDef[] = [
 		regions: atVintageRegions,
 		nationwideTypes: []
 	},
+	// Swiss plates have no EU band.
+	{ id: 'ch', country: 'CH', bandCode: 'CH', flag: '🇨🇭', bonus: false, plateStyle: 'plain', regions: chRegions, nationwideTypes: [] },
 	{ id: 'de', country: 'DE', bandCode: 'D', flag: '🇩🇪', bonus: false, plateStyle: 'eu', regions: deRegions, nationwideTypes: [] },
 	{ id: 'fr', country: 'FR', bandCode: 'F', flag: '🇫🇷', bonus: false, plateStyle: 'eu', regions: frRegions, nationwideTypes: [] },
 	{ id: 'bg', country: 'BG', bandCode: 'BG', flag: '🇧🇬', bonus: false, plateStyle: 'eu', regions: bgRegions, nationwideTypes: ['ev'] },
@@ -97,7 +100,7 @@ export function isDarkPlate(collectionId: string, type: PlateFormat | null | und
 	return byId.get(collectionId)?.plateStyle === 'black' || type === 'at-black';
 }
 
-/** Plate without the EU band (old systems). */
+/** Plate without the EU band (old systems, Switzerland). */
 export function isBandless(collectionId: string, type: PlateFormat | null | undefined): boolean {
 	return byId.get(collectionId)?.plateStyle !== 'eu' || type === 'at-black';
 }

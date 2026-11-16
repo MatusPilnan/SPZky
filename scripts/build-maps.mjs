@@ -170,6 +170,15 @@ const MAPS = [
 		}
 	},
 	{
+		// 26 cantons, one code each. swisstopo open data: free use with attribution.
+		file: 'ch-cantons',
+		url: `${RELEASE}/gbOpen/CHE/ADM1/geoBoundaries-CHE-ADM1_simplified.geojson`,
+		simplify: '6%',
+		center: [8.2, 46.8],
+		attribution: '© swisstopo via geoBoundaries',
+		license: 'swisstopo OGD (attribution)'
+	},
+	{
 		// 7 districts = the 7 RKS codes. CC BY-SA (share-alike): this generated file is under
 		// the same licence.
 		file: 'xk-districts',

@@ -28,6 +28,8 @@ describe('countryAt', () => {
 		['Thessaloniki', 40.6401, 22.9444, 'GR'],
 		['Heraklion (Crete)', 35.3387, 25.1442, 'GR'],
 		['Prishtina', 42.6629, 21.1655, 'XK'],
+		['Zürich', 47.3769, 8.5417, 'CH'],
+		['Basel (next to DE/FR)', 47.5596, 7.5886, 'CH'],
 		['Belgrade (not Kosovo)', 44.7866, 20.4489, 'RS'],
 		['Corte (Corsica)', 42.3061, 9.1497, 'FR'],
 		['Kyiv', 50.45, 30.523, 'UA'],

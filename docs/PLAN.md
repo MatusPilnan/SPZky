@@ -118,6 +118,15 @@ checklist "Region data" in `CLAUDE.md` for every country added later.
   pre-2011 plates were valid only until the end of 2011. Left out: diplomatic, police,
   army, temporary. Sources: sr.wikipedia "Регистарске ознаке у Србији", en.wikipedia
   "Vehicle registration plates of Serbia" (checked 2026-11-16).
+- **Switzerland** (phase 9, 2026-11-16): **26** canton codes, `ZH 123456` (up to 6 digits,
+  7 for ZH/BE from 2026), white plates **without EU band** (`plateStyle: 'plain'`). System
+  unchanged since 1933, so no bonus collection. Left out: dealer (U), temporary/customs
+  (Z), diplomatic (CD/CC/AT), army (M), federal A/P (abolished 2004), FL (Liechtenstein).
+  SG is also Slovenj Gradec (SI): GPS decides. Numbers of 1–2 digits are under the
+  5-character detection minimum and are picked by hand. Place names in German (the
+  majority language; Nominatim has no "local language" option). Map: 26 cantons, swisstopo
+  open data (attribution). Sources: de.wikipedia "Kontrollschild (Schweiz)", en.wikipedia
+  "Vehicle registration plates of Switzerland" (checked 2026-11-16).
 - **Kosovo** (phase 9, 2026-11-16, owner's decision: own collection): **7** district codes
   01–07 (RKS plates since Dec 2010, `01 234-AB`, numbers from 101), band code RKS, country
   code XK (user-assigned; Natural Earth has no numeric code, so `build-borders.mjs` also
@@ -252,6 +261,7 @@ raw, loaded on demand and precached for offline use):
 | BG | 28 provinces (oblasti) | gbOpen BGR ADM1: Wikimedia Commons, 2019 | Public domain |
 | RO | 41 counties + Bucharest | gbOpen ROU ADM1: World Bank, 2017 | CC BY 4.0 |
 | GR | 13 regions + Mount Athos (alias of Central Macedonia), prefecture codes grouped by region | gbOpen GRC ADM2: EuroGeoGraphics | CC BY 4.0 |
+| CH | 26 cantons | gbOpen CHE ADM1: swisstopo, 2022 | swisstopo open government data (free use, attribution) |
 | XK | 7 districts | gbOpen XKX ADM1: OpenStreetMap | CC BY-SA 2.0 (share-alike: the generated `xk-districts.ts` is under the same licence) |
 | RS | 145 municipalities, grouped into registration areas (Kosovo codes without area) | gbOpen SRB ADM2: OpenStreetMap | ODbL 1.0 (share-alike: the generated `rs-municipalities.ts` is under the same licence) |
 | UA, UA 1995–2004 | 27 regions (oblasts, Crimea, Kyiv, Sevastopol) | gbHumanitarian UKR ADM1: State Enterprise "Kartographia" via HDX, 2022 (Kyiv city renamed by location: both are "Kyivska") | CC BY 3.0 IGO |

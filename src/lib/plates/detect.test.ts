@@ -241,6 +241,29 @@ describe('detectPlate: Greece', () => {
 	});
 });
 
+describe('detectPlate: Switzerland', () => {
+	const ch = (raw: string) =>
+		detectPlate(raw)
+			.filter((d) => d.collectionId === 'ch')
+			.map((d) => (d as { regionCode: string }).regionCode);
+
+	it('canton + up to 6 digits; 7 only in Zürich and Bern', () => {
+		expect(ch('ZH 123456')).toEqual(['ZH']);
+		expect(ch('AI 123')).toEqual(['AI']);
+		expect(ch('AI 12')).toEqual([]); // under 5 characters: picked by hand
+		expect(ch('BE 1234567')).toEqual(['BE']);
+		expect(ch('VD 1234567')).toEqual([]);
+		expect(ch('ZH 012345')).toEqual([]); // no leading zero
+		expect(ch('FL 1234')).toEqual([]); // Liechtenstein is not a canton
+	});
+
+	it('SG is also a Slovenian area: both are offered', () => {
+		const all = detectPlate('SG 12345').map((d) => d.collectionId);
+		expect(all).toContain('ch');
+		expect(all).toContain('si');
+	});
+});
+
 describe('detectPlate: Kosovo', () => {
 	const xk = (raw: string) =>
 		detectPlate(raw)

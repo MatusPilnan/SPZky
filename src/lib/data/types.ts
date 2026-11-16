@@ -33,10 +33,11 @@ export type CollectionId =
 	| 'si'
 	| 'rs'
 	| 'gr'
-	| 'xk';
+	| 'xk'
+	| 'ch';
 
 /** ISO 3166-1 alpha-2 codes of the supported countries (XK = Kosovo, user-assigned code). */
-export type CountryCode = 'SK' | 'CZ' | 'AT' | 'PL' | 'DE' | 'UA' | 'FR' | 'BG' | 'RO' | 'SI' | 'RS' | 'GR' | 'XK';
+export type CountryCode = 'SK' | 'CZ' | 'AT' | 'PL' | 'DE' | 'UA' | 'FR' | 'BG' | 'RO' | 'SI' | 'RS' | 'GR' | 'XK' | 'CH';
 
 /** Collections that have a nationwide subcollection (plates without a region). */
 export type NationwideCollectionId = 'sk' | 'cz' | 'bg';

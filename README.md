@@ -113,7 +113,8 @@ git push --follow-tags        # pushes the commit and the tag → release workfl
   GeoBasis-DE / BKG, Datenlizenz Deutschland – Namensnennung 2.0; Ukrainian regions ©
   State Enterprise "Kartographia", CC BY 3.0 IGO; French departments © IGN, Licence Ouverte
   Etalab 2.0; Bulgarian provinces public domain; Romanian counties © World Bank, CC BY 4.0;
-  Greek regions © EuroGeographics, CC BY 4.0;
+  Greek regions © EuroGeographics, CC BY 4.0; Swiss cantons © swisstopo (open
+  government data, attribution);
   Serbian municipalities © OpenStreetMap contributors, ODbL 1.0 (the generated
   `src/lib/geo/maps/rs-municipalities.ts` is shared under the same licence); Kosovo
   districts © OpenStreetMap contributors, CC BY-SA 2.0 (`xk-districts.ts` likewise). All via
