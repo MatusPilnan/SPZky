@@ -3,6 +3,28 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.10.0](https://github.com/MatusPilnan/SPZky/compare/v0.9.0...v0.10.0) - 2026-11-16
+
+### Features
+
+- **ch:** Switzerland with 26 canton codes and a canton map ([4d53390](https://github.com/MatusPilnan/SPZky/commit/4d5339084982baf81d1da454761bedb7e5b6ace7))
+- **xk:** Kosovo with 7 district codes and a district map ([c6483de](https://github.com/MatusPilnan/SPZky/commit/c6483de907a64d7c5a6df069e71437a5d177d143))
+- **gr:** Greece with 156 prefecture series and a region map ([3447e6e](https://github.com/MatusPilnan/SPZky/commit/3447e6e6682f1d319e99f978721ffd4bf1268bf3))
+- **rs:** Serbia with 81 registration areas and a municipality map ([e8d4ca6](https://github.com/MatusPilnan/SPZky/commit/e8d4ca64e85546ae5d5e7de8c6e6dca0300af94e))
+- **si:** Slovenia with 11 registration areas ([3183f24](https://github.com/MatusPilnan/SPZky/commit/3183f24c92a8a8b6cead60431bee06167803c60e))
+- **ro:** Romania with 42 county codes and a county map ([cafdf6a](https://github.com/MatusPilnan/SPZky/commit/cafdf6a1e57de41e54b512f5a944406cb4c8ab51))
+- **bg:** Bulgaria with 30 province codes and a province map ([eb4f6e8](https://github.com/MatusPilnan/SPZky/commit/eb4f6e8b33b3d719a2ff97dec0ca5eecd1879ab2))
+- **fr:** France with 101 department numbers and a department map ([877fe26](https://github.com/MatusPilnan/SPZky/commit/877fe26bed1beda5f3821e7a0c4e0d309d2c4a5d))
+- **ua:** Ukraine with 107 region codes and a 1995-2004 bonus collection ([6f13c73](https://github.com/MatusPilnan/SPZky/commit/6f13c73e56dd6e5a571628b909860f50d834bf6c))
+- **de:** Germany with 714 district codes and a district map ([09b174d](https://github.com/MatusPilnan/SPZky/commit/09b174df30abdace7d6fbd331e142edf127a0930))
+- **at:** Austrian black plates before 1990 as a bonus collection ([b53e414](https://github.com/MatusPilnan/SPZky/commit/b53e414622fa833140b767ae992ed5daf7c02134))
+- **pl:** Poland with 441 county codes and a pre-2000 bonus collection ([80b6050](https://github.com/MatusPilnan/SPZky/commit/80b60500eee036e7201087951b1b224f498b0ea9))
+- **at:** Austria with 111 district codes and a district map ([3d7d74b](https://github.com/MatusPilnan/SPZky/commit/3d7d74bea128ab43ab24c3ce7dbea1ec4f827b75))
+
+### Other changes
+
+- repair characters garbled in the plan by a PowerShell round trip ([044d9ac](https://github.com/MatusPilnan/SPZky/commit/044d9acdb5eca3f74fab61d5e604874b89ed38c5))
+
 ## [0.9.0](https://github.com/MatusPilnan/SPZky/compare/v0.8.0...v0.9.0) - 2026-11-16
 
 ### Features
