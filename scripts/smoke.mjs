@@ -388,6 +388,12 @@ try {
 		cards.join(' || ')
 	);
 	check('home lists recent sightings', (await page.$$('main ul li')).length === 3);
+	// The percentage never wraps ("0 %" on two lines next to a long name).
+	const wrappedPct = await page.$$eval('a.collection .pct', (els) =>
+		els.filter((e) => e.getClientRects().length > 1 || e.getBoundingClientRect().height > parseFloat(getComputedStyle(e).lineHeight) * 1.5).map((e) => e.closest('a')?.querySelector('strong')?.textContent)
+	);
+	check('home: collection percentages stay on one line', wrappedPct.length === 0, wrappedPct.join(', '));
+
 	// Every card has a map thumbnail, except collections without a map (Poland before 2000).
 	const MAPLESS = ['Poland (pre-2000)'];
 	const cardCount = (await page.$$('a.collection')).length;

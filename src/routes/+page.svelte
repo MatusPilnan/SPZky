@@ -145,9 +145,17 @@
 		font-size: 1.05rem;
 	}
 	.flag {
+		flex: none;
 		font-size: 1.3rem;
 	}
+	/* A long name ("Ukrajina (1995–2004)") wraps; the percentage stays on one line. */
+	.title strong {
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
 	.pct {
+		flex: none;
+		white-space: nowrap;
 		margin-left: auto;
 		font-weight: 700;
 		font-variant-numeric: tabular-nums;
