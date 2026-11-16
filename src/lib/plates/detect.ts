@@ -48,7 +48,9 @@ export type RegionFormat =
 	/** SI: area code + 3–6 letters/digits (exact serial formats not in the sources). */
 	| 'si-standard'
 	/** RS since 2011: area code + 3 digits (4 in Belgrade) + 2 letters (NS 123-AB). */
-	| 'rs-standard';
+	| 'rs-standard'
+	/** GR since 1984: 3 letters (code = first two) + 1000–9999, motorcycles 1–999. */
+	| 'gr-standard';
 
 /** Recognised plate formats without a region; they go to the country's nationwide subcollection. */
 export type NationwideFormat =
@@ -298,6 +300,17 @@ function detectSlovenian(n: string): Detection[] {
 	return d ? [d] : [];
 }
 
+/**
+ * Greece: three letters (only the Greek-looking ones) + 1000–9999 (cars) or 1–999
+ * (motorcycles). The code is the first two letters, except the 3-letter ΚΟΗ/ΚΟΚ.
+ */
+function detectGreek(n: string): Detection[] {
+	const m = /^([ABEZHIKMNOPTYX]{3})([1-9]\d{0,3})$/.exec(n);
+	if (!m) return [];
+	const d = region('gr', m[1], 'gr-standard', 'high') ?? region('gr', m[1].slice(0, 2), 'gr-standard', 'high');
+	return d ? [d] : [];
+}
+
 /** Serbian codes by their diacritic-free form ("BC" → BČ, BĆ), for codes typed without Č Ć Š Ž Đ. */
 let rsByFold: Map<string, string[]> | null = null;
 function rsCodesFor(typed: string): { codes: string[]; exact: boolean } {
@@ -335,7 +348,7 @@ export function detectPlate(raw: string): Detection[] {
 	if (n.length < 5) return [];
 
 	const seen = new Set<string>();
-	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw), ...detectUkrainian(n), ...detectFrench(n), ...detectBulgarian(n), ...detectRomanian(n), ...detectSlovenian(n), ...detectSerbian(n)]
+	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw), ...detectUkrainian(n), ...detectFrench(n), ...detectBulgarian(n), ...detectRomanian(n), ...detectSlovenian(n), ...detectSerbian(n), ...detectGreek(n)]
 		.filter((d) => {
 			const key = detectionKey(d);
 			if (seen.has(key)) return false;

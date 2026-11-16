@@ -15,7 +15,21 @@ describe('collection data', () => {
 
 	it('has the expected sizes', () => {
 		const size = Object.fromEntries(collections.map((c) => [c.id, c.regions.length]));
-		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165, de: 714, ua: 107, 'ua-vintage': 105, fr: 101, bg: 30, ro: 42, si: 11, rs: 81 });
+		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165, de: 714, ua: 107, 'ua-vintage': 105, fr: 101, bg: 30, ro: 42, si: 11, rs: 81, gr: 156 });
+	});
+
+	it('Greece: current series only, ΚΟΗ/ΚΟΚ in Thessaloniki, no non-regional series', () => {
+		const gr = collections.find((c) => c.id === 'gr')!.regions;
+		const nameOf = (code: string) => gr.find((r) => r.code === code)?.name;
+		expect(nameOf('KO')).toBe('Rhodope');
+		expect(nameOf('KOH')).toBe('Thessaloniki');
+		expect(nameOf('KOK')).toBe('Thessaloniki');
+		for (const code of ['IA', 'NX', 'TA']) expect(nameOf(code)).toBeUndefined();
+		// ΙΟ is an Athens series; historic plates are ΙΟ + 5 digits and don't match the format.
+		expect(nameOf('IO')).toBe('Athens');
+		// Only Greek letters that look Latin.
+		for (const r of gr) expect(r.code).toMatch(/^[ABEZHIKMNOPTYX]{2,3}$/);
+		expect(new Set(gr.map((r) => r.area)).size).toBe(13);
 	});
 
 	it('Serbia: 81 areas, the 7 Kosovo codes marked rare and without map area', () => {

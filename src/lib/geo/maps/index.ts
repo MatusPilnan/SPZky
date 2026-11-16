@@ -24,6 +24,7 @@ const loaders: Partial<Record<CollectionId, () => Promise<{ map: RegionMapData }
 	bg: () => import('./bg-provinces'),
 	ro: () => import('./ro-counties'),
 	rs: () => import('./rs-municipalities'),
+	gr: () => import('./gr-regions'),
 	ua: () => import('./ua-regions'),
 	'ua-vintage': () => import('./ua-regions')
 };
@@ -43,6 +44,8 @@ export async function loadMap(collectionId: CollectionId): Promise<RegionMapData
  * cover several region names. Everything else matches by identical name (or `Region.area`).
  */
 const areaAliases: Partial<Record<CollectionId, Record<string, string[]>>> = {
+	// Mount Athos has no prefecture code of its own (part of Chalkidiki's surroundings).
+	gr: { 'Mount Athos': ['Central Macedonia'] },
 	sk: {
 		// Bratislava I–V share the codes BA/BL/BT, Košice I–IV share KE.
 		'Bratislava I': ['Bratislava'],

@@ -118,6 +118,16 @@ checklist "Region data" in `CLAUDE.md` for every country added later.
   pre-2011 plates were valid only until the end of 2011. Left out: diplomatic, police,
   army, temporary. Sources: sr.wikipedia "Регистарске ознаке у Србији", en.wikipedia
   "Vehicle registration plates of Serbia" (checked 2026-11-16).
+- **Greece** (phase 9, 2026-11-16): **156** codes: the two-letter series of the 54 former
+  prefectures (Athens and Thessaloniki have many each) + ΚΟΗ/ΚΟΚ (3 letters, issued in
+  Thessaloniki; the rest of ΚΟ is Rhodope). Format since 1984 `ΙΚΗ-1234` (1000–9999),
+  motorcycles 1–999; only the 14 Greek letters that look Latin, stored in Latin. Only
+  series en.wikipedia marks "Current" (not "Future"). Left out: ΙΑ, ΝΧ, ΤΑ (non-regional),
+  historic ΙΟ + 5 digits, diplomatic, army. Same shape as CZ pre-2001 / PL pre-2000
+  (`KOA 1234`): GPS decides. Decided 2026-11-16: no bonus collection for the 1972–1984
+  `ΧΧ-0000` plates for now (still valid, very rare). Map: 13 regions, codes grouped by
+  prefecture's region. Sources: el.wikipedia "Πινακίδες κυκλοφορίας οχημάτων στην Ελλάδα",
+  en.wikipedia "Vehicle registration plates of Greece" (checked 2026-11-16).
 - **Slovenia** (phase 9, 2026-11-16): **11** registration areas (CE, GO, KK, KP, KR, LJ, MB,
   MS, NM, PO, SG). The sources don't give the serial formats, so detection is loose (code +
   3–6 letters/digits with a digit, medium confidence); KK/PO also exist in Slovakia, GPS
@@ -232,6 +242,7 @@ raw, loaded on demand and precached for offline use):
 | FR | 96 metropolitan departments (overseas 971–976 without area) | gbOpen FRA ADM2: IGN, 2022 | Etalab Open Licence 2.0 (attribution) |
 | BG | 28 provinces (oblasti) | gbOpen BGR ADM1: Wikimedia Commons, 2019 | Public domain |
 | RO | 41 counties + Bucharest | gbOpen ROU ADM1: World Bank, 2017 | CC BY 4.0 |
+| GR | 13 regions + Mount Athos (alias of Central Macedonia), prefecture codes grouped by region | gbOpen GRC ADM2: EuroGeoGraphics | CC BY 4.0 |
 | RS | 145 municipalities, grouped into registration areas (Kosovo codes without area) | gbOpen SRB ADM2: OpenStreetMap | ODbL 1.0 (share-alike: the generated `rs-municipalities.ts` is under the same licence) |
 | UA, UA 1995–2004 | 27 regions (oblasts, Crimea, Kyiv, Sevastopol) | gbHumanitarian UKR ADM1: State Enterprise "Kartographia" via HDX, 2022 (Kyiv city renamed by location: both are "Kyivska") | CC BY 3.0 IGO |
 | DE | 401 districts and district-free cities (Kreise) | gbOpen DEU ADM3: BKG, 2021 (dissolved by name: coastal districts come in several parts) | dl-de/by-2-0 (attribution) |

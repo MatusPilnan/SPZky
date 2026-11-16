@@ -145,6 +145,31 @@ const MAPS = [
 		license: 'CC BY 4.0'
 	},
 	{
+		// 13 regions + Mount Athos; prefecture codes are grouped by region (gr.ts).
+		file: 'gr-regions',
+		url: `${RELEASE}/gbOpen/GRC/ADM2/geoBoundaries-GRC-ADM2_simplified.geojson`,
+		simplify: '10%',
+		center: [23.8, 38.6],
+		attribution: '© EuroGeographics via geoBoundaries',
+		license: 'CC BY 4.0',
+		rename: {
+			'Anatolikis Makedonias kai Thr*': 'East Macedonia and Thrace',
+			'Kentrikis Makedonias': 'Central Macedonia',
+			'Dytikis Makedonias': 'West Macedonia',
+			Ipeiroy: 'Epirus',
+			Thessalias: 'Thessaly',
+			'Stereas Elladas': 'Central Greece',
+			'Ionion Nison': 'Ionian Islands',
+			'Dytikis Elladas': 'Western Greece',
+			Peloponnisoy: 'Peloponnese',
+			Attikis: 'Attica',
+			'Voreioy Aigaioy': 'North Aegean',
+			'Notioy Aigaioy': 'South Aegean',
+			Kritis: 'Crete',
+			'Agion Oros': 'Mount Athos'
+		}
+	},
+	{
 		// 145 municipalities (without Kosovo), grouped into registration areas by rs.ts.
 		// ODbL (share-alike): this generated file is under the same licence.
 		file: 'rs-municipalities',

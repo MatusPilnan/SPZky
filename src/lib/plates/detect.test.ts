@@ -219,6 +219,28 @@ describe('detectPlate: Serbia', () => {
 	});
 });
 
+describe('detectPlate: Greece', () => {
+	const gr = (raw: string) =>
+		detectPlate(raw)
+			.filter((d) => d.collectionId === 'gr')
+			.map((d) => (d as { regionCode: string }).regionCode);
+
+	it('3 letters + 1000–9999 (cars) or 1–999 (motorcycles), typed in Greek or Latin', () => {
+		expect(gr('ΙΚΗ-1234')).toEqual(['IK']);
+		expect(gr('IKH 1234')).toEqual(['IK']);
+		expect(gr('ΑΧΑ 12')).toEqual(['AX']);
+		expect(gr('ΙΚΗ-0123')).toEqual([]); // no leading zero
+		expect(gr('ΙΚΗ-12345')).toEqual([]);
+		expect(gr('ABC 1234')).toEqual([]); // C is not a Greek-looking letter
+	});
+
+	it('ΚΟΗ/ΚΟΚ are Thessaloniki, the rest of ΚΟ Rhodope', () => {
+		expect(gr('ΚΟΗ 1234')).toEqual(['KOH']);
+		expect(gr('ΚΟΚ 1234')).toEqual(['KOK']);
+		expect(gr('ΚΟΑ 1234')).toEqual(['KO']);
+	});
+});
+
 describe('detectPlate: Poland', () => {
 	const pl = (raw: string) =>
 		detectPlate(raw)
@@ -340,8 +362,9 @@ describe('detectPlate: Czech pre-2001', () => {
 			format: 'cz-vintage',
 			confidence: 'high'
 		});
-		// Same shape as an old Polish plate (Koszalin KO): both old systems are offered.
-		expect(regions('KOA 12-34')).toEqual(['cz-vintage:KO', 'pl-vintage:KO']);
+		// Same shape as an old Polish plate (Koszalin KO) and a Greek one (Rhodope ΚΟ): all are
+		// offered, GPS decides the order.
+		expect(regions('KOA 12-34')).toEqual(['cz-vintage:KO', 'pl-vintage:KO', 'gr:KO']);
 		expect(spansCountries(detectPlate('KOA 12-34'))).toBe(true);
 	});
 
