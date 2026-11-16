@@ -93,6 +93,8 @@ export const en = {
 	'location.idle': 'Location is not saved (enable in Settings)',
 	'location.waiting': 'Getting location…',
 	'location.ok': 'Location will be saved (±{accuracy} m)',
+	'location.coarse':
+		'Only an approximate location is shared. For exact spots, allow precise location for your browser (Android: Settings → Apps → browser → Permissions → Location → Use precise location).',
 	'location.denied': 'Location permission denied',
 	'location.unavailable': 'Location unavailable',
 
@@ -112,6 +114,10 @@ export const en = {
 	'edit.location': 'Location',
 	'edit.noLocation': 'No location saved.',
 	'edit.showOnMap': 'Show on map',
+	'edit.mapLabel': 'Map of where the plate was spotted',
+	'edit.mapOffline': 'Offline: position on the region map',
+	'edit.placeLooking': 'Looking up the address…',
+	'edit.placeCredit': 'Address: © OpenStreetMap contributors',
 	'edit.removeLocation': 'Remove location',
 	'edit.back': 'Back',
 	'edit.changeRegion': 'Change',
@@ -126,7 +132,7 @@ export const en = {
 	'settings.location': 'Location',
 	'settings.saveLocation': 'Save location with new sightings',
 	'settings.saveLocationHint':
-		'The position is read only while the Add screen is open. It stays on this device, and in your account when you’re signed in.',
+		'The position is read only while the Add screen is open. It stays on this device, and in your account when you’re signed in. Town and street are looked up once via OpenStreetMap.',
 	'settings.storage': 'Storage',
 	'settings.storagePersisted': 'Data is stored persistently on this device.',
 	'settings.storageNotPersisted': 'The browser may clear data when storage runs low.',
@@ -229,6 +235,8 @@ export const en = {
 
 	'pwa.offlineReady': 'The app is ready to work offline.',
 	'pwa.needRefresh': 'A new version is available.',
+	'pwa.needRefreshHint': 'Updating takes a few seconds. Your plates stay as they are.',
+	'pwa.later': 'Later',
 	'pwa.reload': 'Update',
 	'pwa.close': 'Close',
 
@@ -336,6 +344,8 @@ export const sk: Messages = {
 	'location.idle': 'Poloha sa neukladá (zapni v Nastaveniach)',
 	'location.waiting': 'Zisťujem polohu…',
 	'location.ok': 'Poloha sa uloží (±{accuracy} m)',
+	'location.coarse':
+		'Zdieľa sa len približná poloha. Pre presné miesta povoľ prehliadaču presnú polohu (Android: Nastavenia → Aplikácie → prehliadač → Povolenia → Poloha → Použiť presnú polohu).',
 	'location.denied': 'Prístup k polohe bol zamietnutý',
 	'location.unavailable': 'Poloha nie je dostupná',
 
@@ -355,6 +365,10 @@ export const sk: Messages = {
 	'edit.location': 'Poloha',
 	'edit.noLocation': 'Poloha nebola uložená.',
 	'edit.showOnMap': 'Zobraziť na mape',
+	'edit.mapLabel': 'Mapa miesta, kde bola ŠPZ videná',
+	'edit.mapOffline': 'Offline: poloha na mape regiónov',
+	'edit.placeLooking': 'Zisťujem adresu…',
+	'edit.placeCredit': 'Adresa: © prispievatelia OpenStreetMap',
 	'edit.removeLocation': 'Odstrániť polohu',
 	'edit.back': 'Späť',
 	'edit.changeRegion': 'Zmeniť',
@@ -369,7 +383,7 @@ export const sk: Messages = {
 	'settings.location': 'Poloha',
 	'settings.saveLocation': 'Ukladať polohu k novým záznamom',
 	'settings.saveLocationHint':
-		'Poloha sa zisťuje len kým je otvorená obrazovka Pridať. Zostáva v tomto zariadení a po prihlásení aj vo tvojom účte.',
+		'Poloha sa zisťuje len kým je otvorená obrazovka Pridať. Zostáva v tomto zariadení a po prihlásení aj vo tvojom účte. Obec a ulica sa raz zistia cez OpenStreetMap.',
 	'settings.storage': 'Úložisko',
 	'settings.storagePersisted': 'Dáta sú v tomto zariadení uložené natrvalo.',
 	'settings.storageNotPersisted': 'Prehliadač môže dáta zmazať, keď mu dôjde miesto.',
@@ -482,6 +496,8 @@ export const sk: Messages = {
 
 	'pwa.offlineReady': 'Aplikácia je pripravená fungovať offline.',
 	'pwa.needRefresh': 'Je dostupná nová verzia.',
+	'pwa.needRefreshHint': 'Aktualizácia trvá pár sekúnd. Tvoje ŠPZ-ky zostanú tak, ako sú.',
+	'pwa.later': 'Neskôr',
 	'pwa.reload': 'Aktualizovať',
 	'pwa.close': 'Zavrieť',
 

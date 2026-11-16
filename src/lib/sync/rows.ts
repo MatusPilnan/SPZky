@@ -19,6 +19,8 @@ export interface RemoteRow {
 	lat: number | null;
 	lng: number | null;
 	accuracy: number | null;
+	/** Address of the location; null = not looked up yet, "" = nothing found. */
+	place?: string | null;
 	note: string;
 	deleted: boolean;
 	/** Only in rows coming from the server. */
@@ -43,6 +45,7 @@ export function toRow(s: Sighting): RemoteRow {
 		lat: s.location?.lat ?? null,
 		lng: s.location?.lng ?? null,
 		accuracy: s.location?.accuracy ?? null,
+		place: s.place ?? null,
 		note: s.note,
 		deleted: s.deleted === 1
 	};
@@ -59,6 +62,7 @@ export function fromRow(r: RemoteRow, userId: string): Sighting {
 		plateNormalized: r.plate_normalized,
 		seenAt: ms(r.seen_at),
 		location: r.lat === null || r.lng === null ? null : { lat: r.lat, lng: r.lng, accuracy: r.accuracy },
+		place: r.place ?? null,
 		note: r.note ?? '',
 		createdAt: ms(r.created_at),
 		updatedAt: ms(r.updated_at),

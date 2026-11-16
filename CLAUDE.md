@@ -50,6 +50,15 @@ Setup and scripts for humans: [README.md](README.md).
 - **Never write Svelte `$state` objects to IndexedDB directly.** They are Proxies and Dexie
   fails with DataCloneError. Copy them to plain objects (see `plainLocation` in
   `src/lib/db/sightings.ts`) or use `$state.raw`.
+- **Navigation:** never `goto()` directly. Links are routed through `src/lib/nav.ts`
+  (intercepted in the layout); in code use `navigate(url)` or `back(fallback)`. The back
+  stack is Home → screen → detail, with each screen at most once (docs/PLAN.md, "Fixes
+  after v0.7.0").
+- **Dialogs:** modal `<dialog>` + `onclick={closeOnBackdrop}` (`src/lib/dialog.ts`), except
+  where a choice is required (sign-in conflict).
+- **OpenStreetMap:** address lookups (Nominatim) at most 1/s and saved on the sighting
+  (`src/lib/geo/place.ts`); map tiles only shown, never precached. Tests must not hit
+  these servers: smoke.mjs answers both hosts through CDP `Fetch`.
 - TS narrows arrays through inferred type predicates (`arr.every(x => x === null)` makes
   `arr` a `null[]`). Use `some` or a separate variable.
 
@@ -153,7 +162,10 @@ src/lib/data/         region lists (sk, cz, cz-vintage) with sources
 src/lib/collections.ts collection registry, nationwide types per country, highlightOf, countryOf
 src/lib/plates/       normalizePlate, detectPlate (region + nationwide candidates), orderByCountry
 src/lib/geo/          countryAt (offline point-in-polygon); borders.ts is GENERATED
-src/lib/geo/maps/     region maps (GENERATED *.ts), loadMap, codesOfArea, areaStatus
+src/lib/geo/maps/     region maps (GENERATED *.ts incl. projection), loadMap, codesOfArea,
+                      areaStatus, project.ts (lat/lng → map point)
+src/lib/geo/place.ts  address lookup (Nominatim) + background resolver; accuracy.ts (coarse fix)
+src/lib/nav.ts        back-stack navigation; dialog.ts (close on backdrop)
 src/lib/db/           Dexie schema (v2 plateType, v3 data fix, v4 meta + userId index),
                       sighting repository (soft delete, sync fields, nextUpdatedAt)
 src/lib/sync/         rows (pure rules), engine (push/pull/sign-in check/sign-out), remote
@@ -166,7 +178,8 @@ src/lib/*.svelte.ts   prefs (localStorage), location tracker, toasts
 src/lib/components/   PlateInput, PlateBadge, RegionGrid (filterable), NationwidePicker, TypeChip,
                       SightingList, ProgressBar, RegionMap, Switch, CollectionSwitch, Toasts,
                       UpdatePrompt, AccountSection (Settings), SignInConflict (layout),
-                      DataSection + ExportButton (export/import), SyncButton (Home)
+                      DataSection + ExportButton (export/import), SyncButton (Home),
+                      LocationMap (edit page: Leaflet street map / offline pin)
 src/routes/           home (overview), country (?id=), add (plate + quick), history,
                       sighting (edit, ?id=), settings
 supabase/             config.toml, migrations/, templates/, tests/database/ (pgTAP)

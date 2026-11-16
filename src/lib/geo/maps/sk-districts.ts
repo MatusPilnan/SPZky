@@ -7,6 +7,13 @@ export const map: RegionMapData = {
 	"viewBox": "0 0 1000 497",
 	"attribution": "Geoportal.SK (ÚGKK SR) via geoBoundaries / HDX",
 	"license": "CC BY 3.0 IGO",
+	"projection": {
+		"lon0": 19.5,
+		"lat0": 48.7,
+		"minX": -196811.0362986447,
+		"maxY": 101613.6380151741,
+		"scale": 0.002382143434353281
+	},
 	"shapes": [
 		{
 			"name": "Bánovce nad Bebravou",

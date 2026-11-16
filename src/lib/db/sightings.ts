@@ -39,6 +39,10 @@ function plainLocation(location: GeoPoint | null | undefined): GeoPoint | null {
 	return { lat: location.lat, lng: location.lng, accuracy: location.accuracy ?? null };
 }
 
+function sameSpot(a: GeoPoint | null, b: GeoPoint | null): boolean {
+	return a === b || (!!a && !!b && a.lat === b.lat && a.lng === b.lng);
+}
+
 export async function addSighting(input: NewSighting, database: SpzDatabase = defaultDb): Promise<Sighting> {
 	const now = Date.now();
 	const sighting: Sighting = {
@@ -49,6 +53,7 @@ export async function addSighting(input: NewSighting, database: SpzDatabase = de
 		...cleanPlate(input.plate),
 		seenAt: input.seenAt ?? now,
 		location: plainLocation(input.location),
+		place: null,
 		note: input.note?.trim() ?? '',
 		createdAt: now,
 		updatedAt: now,
@@ -75,6 +80,8 @@ export async function updateSighting(
 		const current = await database.sightings.get(id);
 		if (!current) throw new Error(`Sighting ${id} not found`);
 		changes.updatedAt = nextUpdatedAt(current);
+		// A moved (or removed) location needs its address looked up again.
+		if ('location' in changes && !sameSpot(changes.location ?? null, current.location)) changes.place = null;
 		assertConsistent({ ...current, ...changes });
 		await database.sightings.update(id, changes);
 	});

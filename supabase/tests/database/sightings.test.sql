@@ -2,7 +2,7 @@
 -- replace at sign-in. Run with `npm run db:test` (supabase test db).
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(31);
+select plan(34);
 
 -- Start from an empty table (rows of earlier local runs); rolled back at the end.
 delete from public.sightings;
@@ -94,6 +94,30 @@ select results_eq(
 	array['newer'],
 	'an equal timestamp does not overwrite'
 );
+
+-- Address (place): stored; kept when an older app (no `place`) pushes the same spot; reset when the spot moves.
+select public.push_sightings(jsonb_build_array(pg_temp.row_json(
+	'11111111-0000-0000-0000-000000000004', '2026-11-01T10:00:00Z', '{"lat": 48.1, "lng": 17.1, "place": "Hlavná 1, Košice"}')));
+select public.push_sightings(jsonb_build_array(pg_temp.row_json(
+	'11111111-0000-0000-0000-000000000004', '2026-11-02T10:00:00Z', '{"lat": 48.1, "lng": 17.1, "note": "old app"}')));
+select results_eq(
+	$$select place, note from public.sightings where id = '11111111-0000-0000-0000-000000000004'$$,
+	$$values ('Hlavná 1, Košice', 'old app')$$,
+	'a push without place keeps the stored address of the same spot'
+);
+select public.push_sightings(jsonb_build_array(pg_temp.row_json(
+	'11111111-0000-0000-0000-000000000004', '2026-11-03T10:00:00Z', '{"lat": 49.0, "lng": 18.0}')));
+select results_eq(
+	$$select place from public.sightings where id = '11111111-0000-0000-0000-000000000004'$$,
+	array[null::text],
+	'a moved spot drops the old address'
+);
+select throws_ok(
+	$$select public.push_sightings(jsonb_build_array(pg_temp.row_json(
+		'11111111-0000-0000-0000-000000000005', '2026-11-01T10:00:00Z', jsonb_build_object('place', repeat('x', 301)))))$$,
+	'23514', null, 'the address is at most 300 characters'
+);
+delete from public.sightings where id = '11111111-0000-0000-0000-000000000004';
 
 -- Validation
 select throws_ok(

@@ -21,6 +21,8 @@ export interface BackupSighting {
 	createdAt: string;
 	updatedAt: string;
 	location: GeoPoint | null;
+	/** Address of the location (optional; files from before it existed don't have it). */
+	place?: string | null;
 	note: string;
 }
 
@@ -52,6 +54,7 @@ export async function exportBackup(db: SpzDatabase, appVersion: string, now = Da
 			createdAt: iso(s.createdAt),
 			updatedAt: iso(s.updatedAt),
 			location: s.location ? { lat: s.location.lat, lng: s.location.lng, accuracy: s.location.accuracy } : null,
+			place: s.place ?? null,
 			note: s.note
 		}))
 	};
@@ -125,6 +128,7 @@ function readSighting(raw: unknown): ImportedSighting | null {
 	}
 
 	const createdAt = time(raw.createdAt) ?? seenAt;
+	const where = location(raw.location);
 	return {
 		collectionId,
 		regionCode,
@@ -132,7 +136,9 @@ function readSighting(raw: unknown): ImportedSighting | null {
 		plate,
 		plateNormalized,
 		seenAt,
-		location: location(raw.location),
+		location: where,
+		// Only meaningful with a location; otherwise looked up again later.
+		place: where && typeof raw.place === 'string' ? raw.place.trim().slice(0, 300) : null,
 		note: typeof raw.note === 'string' ? raw.note.trim().slice(0, 2000) : '',
 		createdAt,
 		updatedAt: time(raw.updatedAt) ?? createdAt

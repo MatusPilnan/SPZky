@@ -14,7 +14,7 @@ export interface Remote {
 }
 
 const COLUMNS =
-	'id, collection_id, region_code, plate_type, plate, plate_normalized, seen_at, created_at, updated_at, lat, lng, accuracy, note, deleted, server_updated_at';
+	'id, collection_id, region_code, plate_type, plate, plate_normalized, seen_at, created_at, updated_at, lat, lng, accuracy, place, note, deleted, server_updated_at';
 
 export function supabaseRemote(client: SupabaseClient): Remote {
 	return {

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { navigate } from '#lib/nav.js';
+	import { resolvePlaces } from '#lib/geo/place.js';
 	import { liveQuery } from 'dexie';
 	import { db } from '#lib/db/db.js';
 	import { addSighting, deleteSighting } from '#lib/db/sightings.js';
@@ -25,7 +26,7 @@
 	import { countByRegion, countNationwide, regionCount } from '#lib/progress.js';
 	import { countryAt } from '#lib/geo/country.js';
 	import { prefs } from '#lib/prefs.svelte.js';
-	import { LocationTracker } from '#lib/location.svelte.js';
+	import { isCoarse, LocationTracker } from '#lib/location.svelte.js';
 	import { showToast } from '#lib/toast.svelte.js';
 	import { fromLocalInputValue } from '#lib/datetime.js';
 	import { formatDateTime, t } from '#lib/i18n/i18n.svelte.js';
@@ -96,8 +97,12 @@
 		return (candidates.find((c) => c.key === pickedKey) ?? candidates[0])?.selection ?? null;
 	});
 
+	// Not while saving: the live list gets the new plate before save() can clear the input,
+	// so the plate being saved would briefly show as "already logged".
 	const duplicate = $derived(
-		normalized ? ($all ?? []).find((s) => s.deleted === 0 && s.plateNormalized === normalized) : undefined
+		normalized && !saving
+			? ($all ?? []).find((s) => s.deleted === 0 && s.plateNormalized === normalized)
+			: undefined
 	);
 
 	const bandCountry = $derived(selection ? (countryOf(selection.collectionId) ?? '') : '');
@@ -121,8 +126,9 @@
 	/** After a save: stay for the next plate, or go home if the user chose so in Settings. */
 	async function afterSave(): Promise<boolean> {
 		void requestPersistentStorage();
+		if (prefs.saveLocation) setTimeout(() => void resolvePlaces(), 1500);
 		if (!prefs.returnHomeAfterAdd) return false;
-		await goto(resolve('/')); // toasts live in the layout, so they stay visible
+		await navigate(resolve('/')); // toasts live in the layout, so they stay visible
 		return true;
 	}
 
@@ -142,6 +148,11 @@
 				location: prefs.saveLocation ? tracker.current() : null,
 				note
 			});
+			// Clear the form before `saving` ends (see `duplicate`).
+			plate = '';
+			note = '';
+			seenAtInput = '';
+			onPlateInput();
 			const region = getRegion(sel.collectionId, sel.regionCode);
 			showToast(
 				wasNew
@@ -151,10 +162,6 @@
 						: { kind: 'success', text: t('add.saved', { plate: saved.plate ?? '' }) }
 			);
 			if (await afterSave()) return;
-			plate = '';
-			note = '';
-			seenAtInput = '';
-			onPlateInput();
 			plateInput?.focus();
 		} finally {
 			saving = false;
@@ -197,6 +204,17 @@
 		);
 	}
 </script>
+
+{#snippet locationLine()}
+	<p class="location muted" data-testid="location">
+		{tracker.status === 'ok'
+			? t('location.ok', { accuracy: tracker.position?.accuracy ?? '?' })
+			: t(`location.${tracker.status}`)}
+		{#if tracker.status === 'ok' && isCoarse(tracker.position)}
+			<span class="coarse">{t('location.coarse')}</span>
+		{/if}
+	</p>
+{/snippet}
 
 {#snippet candidateBody(sel: Selection)}
 	{@const c = getCollection(sel.collectionId)}
@@ -329,11 +347,7 @@
 				</div>
 			</details>
 
-			<p class="location muted">
-				{tracker.status === 'ok'
-					? t('location.ok', { accuracy: tracker.position?.accuracy ?? '?' })
-					: t(`location.${tracker.status}`)}
-			</p>
+			{@render locationLine()}
 
 			<button class="btn primary save" type="submit" disabled={!canSave}>{t('add.save')}</button>
 		</form>
@@ -351,11 +365,7 @@
 					/>
 				</div>
 			{/key}
-			<p class="location muted">
-				{tracker.status === 'ok'
-					? t('location.ok', { accuracy: tracker.position?.accuracy ?? '?' })
-					: t(`location.${tracker.status}`)}
-			</p>
+			{@render locationLine()}
 		</section>
 	{/if}
 </div>
@@ -470,6 +480,11 @@
 	.location {
 		margin: 0;
 		font-size: 0.85rem;
+	}
+	.coarse {
+		display: block;
+		margin-top: 0.25rem;
+		color: var(--text);
 	}
 	.save {
 		min-height: 3.25rem;

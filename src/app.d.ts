@@ -10,7 +10,10 @@ declare global {
 		// interface Error {}
 		// interface Locals {}
 		// interface PageData {}
-		// interface PageState {}
+		interface PageState {
+			/** Position in the app's back stack (src/lib/nav.ts): 0 = Home at the bottom. */
+			depth?: number;
+		}
 		// interface Platform {}
 	}
 }

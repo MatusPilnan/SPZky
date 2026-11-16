@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { BackupError, importBackup, parseBackup, previewImport, type ImportMode, type ImportPreview, type ParsedBackup } from '../backup';
 	import { db } from '../db/db';
+	import { closeOnBackdrop } from '../dialog';
 	import { t } from '../i18n/i18n.svelte';
 	import { account } from '../sync/account.svelte';
 	import { showToast } from '../toast.svelte';
@@ -63,7 +64,7 @@
 	{#if error}<p class="error" role="alert">{error}</p>{/if}
 </section>
 
-<dialog bind:this={dialog} aria-labelledby="import-title" onclose={() => (parsed = null)}>
+<dialog bind:this={dialog} aria-labelledby="import-title" onclose={() => (parsed = null)} onclick={closeOnBackdrop}>
 	{#if preview}
 		<div class="sheet stack">
 			<h2 id="import-title">{t('data.import')}</h2>

@@ -7,6 +7,7 @@
 	import type { NationwideFormat } from '#lib/plates/detect.js';
 	import { collectionProgress, countByRegion, countNationwide, regionStats } from '#lib/progress.js';
 	import { formatDateTime, t } from '#lib/i18n/i18n.svelte.js';
+	import { closeOnBackdrop } from '#lib/dialog.js';
 	import ProgressBar from '#lib/components/ProgressBar.svelte';
 	import RegionGrid from '#lib/components/RegionGrid.svelte';
 	import NationwidePicker from '#lib/components/NationwidePicker.svelte';
@@ -163,6 +164,7 @@
 	onclose={() => {
 		if (!dialog?.open) detail = null;
 	}}
+	onclick={closeOnBackdrop}
 	aria-labelledby="detail-title"
 >
 	{#if detail && collection}

@@ -8,7 +8,7 @@
 // BASE_PATH (e.g. /SPZky) tests a build made for a sub-path; build with the same value.
 // Browser: set BROWSER_PATH, otherwise common Edge/Chrome locations are tried.
 // Screenshots go to .smoke/ (gitignored).
-import { spawn } from 'node:child_process';
+import { execSync, spawn } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -46,11 +46,13 @@ for (const f of readdirSync(outDir)) if (f.endsWith('.png')) rmSync(path.join(ou
 // Fresh browser profile per run, so no IndexedDB/service worker state leaks between runs.
 const profileDir = mkdtempSync(path.join(os.tmpdir(), 'spzky-smoke-'));
 
-const server = spawn(
-	process.execPath,
-	[path.join(projectDir, 'node_modules/vite/bin/vite.js'), PREVIEW ? 'preview' : 'dev', '--port', String(PORT), '--strictPort'],
-	{ cwd: projectDir, stdio: 'ignore' }
-);
+const startServer = () =>
+	spawn(
+		process.execPath,
+		[path.join(projectDir, 'node_modules/vite/bin/vite.js'), PREVIEW ? 'preview' : 'dev', '--port', String(PORT), '--strictPort'],
+		{ cwd: projectDir, stdio: 'ignore' }
+	);
+let server = startServer();
 
 const results = [];
 const check = (name, ok, detail = '') => results.push({ ok, line: `${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ' — ' + detail : ''}` });
@@ -83,12 +85,48 @@ try {
 	});
 	await browser.defaultBrowserContext().overridePermissions(ORIGIN, ['geolocation']);
 	page = await browser.newPage();
+	// OpenStreetMap (address lookup + map tiles) is answered locally: no traffic to their
+	// servers from tests. Only these two hosts are intercepted; everything else is untouched.
+	// While `offline` is set, these requests fail like they would without a connection.
+	const osm = { lookups: [], tiles: 0, offline: false };
+	const osmCdp = await page.createCDPSession();
+	await osmCdp.send('Fetch.enable', {
+		patterns: [{ urlPattern: 'https://nominatim.openstreetmap.org/*' }, { urlPattern: 'https://tile.openstreetmap.org/*' }]
+	});
+	const PNG_1PX = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+	osmCdp.on('Fetch.requestPaused', (e) => {
+		if (osm.offline) {
+			void osmCdp.send('Fetch.failRequest', { requestId: e.requestId, errorReason: 'InternetDisconnected' }).catch(() => {});
+			return;
+		}
+		const lookup = e.request.url.startsWith('https://nominatim.');
+		if (lookup) osm.lookups.push({ at: Date.now(), url: e.request.url });
+		else osm.tiles++;
+		const body = lookup
+			? Buffer.from(JSON.stringify({ address: { road: 'Hlavná', house_number: '1', city: 'Bratislava' } })).toString('base64')
+			: PNG_1PX;
+		void osmCdp
+			.send('Fetch.fulfillRequest', {
+				requestId: e.requestId,
+				responseCode: 200,
+				responseHeaders: [
+					{ name: 'Content-Type', value: lookup ? 'application/json' : 'image/png' },
+					{ name: 'Access-Control-Allow-Origin', value: '*' }
+				],
+				body
+			})
+			.catch(() => {});
+	});
 	// SLOW=4 throttles the CPU 4× to surface race conditions that only show on slow CI runners.
 	if (process.env.SLOW) await page.emulateCPUThrottling(Number(process.env.SLOW));
 	await page.setViewport({ width: 400, height: 860, deviceScaleFactor: 1 });
 	await page.setGeolocation({ latitude: 48.1486, longitude: 17.1077, accuracy: 12 });
 	page.on('pageerror', (e) => errors.push('pageerror: ' + (e.stack || e.message || String(e))));
-	page.on('console', (m) => m.type() === 'error' && errors.push('console: ' + m.text()));
+	page.on('console', (m) => {
+		// Map tiles failing while offline are expected (the app then shows the offline pin).
+		if (m.location()?.url?.startsWith('https://tile.openstreetmap.org/')) return;
+		if (m.type() === 'error') errors.push('console: ' + m.text());
+	});
 	// Start in English with location saving on; later steps may change these.
 	await page.evaluateOnNewDocument(() => {
 		if (!localStorage.getItem('spz-ky.locale')) localStorage.setItem('spz-ky.locale', 'en');
@@ -134,9 +172,20 @@ try {
 	let t = await text();
 	check('SK plate detected', /BA\s*Bratislava/.test(t) && /new!/i.test(t));
 	check('location ready', t.includes('Location will be saved'));
+	check('no approximate-location hint for a precise fix (±12 m)', (await page.$('[data-testid=location] .coarse')) === null);
 	await shot('01-add-sk');
+	// Record whether the red "already logged" warning shows up at any moment during the save
+	// (it used to flash: the list of plates updated before the input was cleared).
+	await page.evaluate(() => {
+		window.__warnFlash = false;
+		new MutationObserver(() => {
+			if (document.querySelector('.notice.warn')) window.__warnFlash = true;
+		}).observe(document.querySelector('main'), { childList: true, subtree: true });
+	});
 	await page.keyboard.press('Enter');
 	await page.waitForSelector('.toasts .toast');
+	await sleep(500);
+	check('no duplicate warning flashes after saving', !(await page.evaluate(() => window.__warnFlash)));
 	const toast1 = await page.$eval('.toasts .toast', (e) => e.innerText);
 	check('save shows new-region toast', toast1.includes('New region: BA'), toast1);
 	check('input cleared after save', (await page.$eval(plateSel, (e) => e.value)) === '');
@@ -173,6 +222,13 @@ try {
 	check('EL plate: GPS in CZ → Czechia first', (await firstCandidate()).includes('Czechia'), await firstCandidate());
 	await page.keyboard.press('Enter');
 	await page.waitForFunction(() => document.querySelector('.toasts')?.innerText.includes('EL-123AB'));
+	// Android with "approximate location" reports ±2000 m: the app explains how to get precise.
+	await page.setGeolocation({ latitude: 48.1486, longitude: 17.1077, accuracy: 2000 });
+	await page.reload({ waitUntil: 'networkidle0' });
+	await page.waitForSelector('[data-testid=location] .coarse', { timeout: 5000 }).catch(() => {});
+	const coarseText = await page.$eval('[data-testid=location]', (e) => e.innerText).catch(() => '');
+	check('approximate location (±2000 m) explains how to allow precise location', coarseText.includes('precise location'), coarseText);
+	await shot('02b-add-coarse');
 	await page.setGeolocation({ latitude: 48.1486, longitude: 17.1077, accuracy: 12 });
 	await page.reload({ waitUntil: 'networkidle0' });
 	await page.waitForFunction(() => (document.querySelector('main')?.innerText ?? '').includes('Location will be saved'));
@@ -261,6 +317,19 @@ try {
 	);
 	t = await text();
 	check('edit page loads with location', t.includes('48.14860') && t.includes('±12 m'));
+	const editWithLocation = page.url();
+	// Address (looked up in the background, saved on the sighting) and the street map.
+	const placeShown = await page
+		.waitForFunction(() => document.querySelector('[data-testid=place]')?.innerText.includes('Hlavná 1, Bratislava'), { timeout: 20_000 })
+		.then(() => true, () => false);
+	check('edit page shows the looked-up address', placeShown, await page.$eval('[data-testid=place]', (e) => e.innerText).catch(() => '?'));
+	const streetMap = await page
+		.waitForFunction(() => document.querySelectorAll('[data-testid=street-map] img.leaflet-tile-loaded').length > 0, { timeout: 10_000 })
+		.then(() => true, () => false);
+	const attribution = await page.$eval('[data-testid=street-map] .leaflet-control-attribution', (e) => e.innerText).catch(() => '');
+	check('edit page shows a street map with the OpenStreetMap credit', streetMap && attribution.includes('OpenStreetMap'), attribution);
+	const gaps = osm.lookups.slice(1).map((l, i) => l.at - osm.lookups[i].at);
+	check('address lookups: at most one per second, street level', gaps.every((g) => g >= 1000) && osm.lookups.every((l) => l.url.includes('zoom=18')), `${osm.lookups.length} lookups, gaps ${gaps.join(',')} ms`);
 	await shot('06-edit');
 	await page.type('input[placeholder^="e.g. highway"]', 'test note');
 	await page.evaluate(() => [...document.querySelectorAll('button')].find((b) => b.innerText === 'Save changes').click());
@@ -404,8 +473,15 @@ try {
 	await page.waitForSelector('dialog[open]');
 	sheet = await page.$eval('dialog[open]', (d) => d.innerText.replace(/\s+/g, ' '));
 	check('tapping a single-code area opens that code', sheet.includes('ZA') && sheet.includes('Žilina') && sheet.includes('1234567'), sheet);
-	await page.keyboard.press('Escape');
-	await page.waitForFunction(() => !document.querySelector('dialog[open]'));
+	// Taps inside the sheet keep it open; a tap on the darkened area above closes it.
+	await page.click('dialog[open] h2');
+	await sleep(200);
+	check('a tap inside the details keeps them open', (await page.$('dialog[open]')) !== null);
+	await page.mouse.click(200, 80);
+	const closedOutside = await page
+		.waitForFunction(() => !document.querySelector('dialog[open]'), { timeout: 3000 })
+		.then(() => true, () => false);
+	check('a tap outside the details closes them', closedOutside);
 	await shot('11-country');
 
 	// Slovak UI
@@ -452,6 +528,65 @@ try {
 	}
 	await shot('08b-country-sk');
 	await page.setViewport({ width: 400, height: 860, deviceScaleFactor: 1 });
+
+	// Back stack: Home at the bottom, bottom-bar screens replace each other, detail screens
+	// on top of where they were opened, Home tab jumps back. (System back = history.back().)
+	{
+		const where = () => page.evaluate((base) => location.pathname.slice(base.length).replace(/\/$/, '') || '/', BASE_PATH);
+		const settle = async (before) => {
+			await page.waitForFunction((b) => location.href !== b, { timeout: 5000 }, before);
+			await sleep(250);
+		};
+		const tap = async (selector) => {
+			const before = page.url();
+			await page.click(selector);
+			await settle(before);
+		};
+		const systemBack = async () => {
+			const before = page.url();
+			await page.evaluate(() => history.back());
+			await settle(before);
+		};
+		const tab = (route) => `nav a[href$="${BASE_PATH}${route}"]`;
+
+		await page.goto(`${APP}/`, { waitUntil: 'networkidle0' });
+		await tap(tab('/add'));
+		await tap(tab('/history'));
+		await tap(tab('/settings'));
+		await tap(tab('/history'));
+		await tap(tab('/add'));
+		await systemBack();
+		check('back after switching tabs back and forth goes straight Home', (await where()) === '/', await where());
+
+		await tap(tab('/history'));
+		await tap('main ul li:first-child a');
+		check('edit page opens from History', (await where()) === '/sighting');
+		await systemBack();
+		check('back from the edit page returns to History', (await where()) === '/history', await where());
+		await systemBack();
+		check('…and then to Home', (await where()) === '/', await where());
+
+		await tap(tab('/history'));
+		await tap('main ul li:first-child a');
+		await page.click('form button.primary[type=submit]'); // save without changes
+		await page.waitForFunction((b) => location.pathname.startsWith(b + '/history'), {}, BASE_PATH);
+		await sleep(250);
+		await systemBack();
+		check('saving on the edit page goes back (no extra History entry)', (await where()) === '/', await where());
+
+		await tap('a.collection[href*="country"]');
+		await tap(tab('/settings'));
+		await systemBack();
+		check('country → Settings tab → back lands on Home', (await where()) === '/', await where());
+
+		await tap(tab('/history'));
+		await tap('main ul li:first-child a');
+		await tap(tab('/'));
+		check('Home tab from a detail screen goes Home', (await where()) === '/', await where());
+		await tap(tab('/settings'));
+		await systemBack();
+		check('…and the stack is sane afterwards (Settings → back → Home)', (await where()) === '/', await where());
+	}
 
 	// Export / import (Settings → Your data). Downloads land in .smoke/.
 	{
@@ -508,6 +643,7 @@ try {
 	// Offline: every page must load from the service worker cache, incl. the edit page with ?id=
 	if (PREVIEW) {
 		await page.setOfflineMode(true);
+		osm.offline = true;
 		try {
 			for (const route of ['/', '/add', '/settings', '/country?id=cz', '/history']) {
 				await page.goto(`${APP}${route}`, { waitUntil: 'load' });
@@ -521,6 +657,14 @@ try {
 			await page.goto(editUrl, { waitUntil: 'load' });
 			await page.waitForFunction(() => document.querySelector('main')?.innerText.includes('Upraviť záznam'));
 			check('offline: edit page with ?id= loads', true);
+			// Offline, the location is a pin on the app's own map instead of the street map.
+			await page.goto(editWithLocation, { waitUntil: 'load' });
+			const pinShown = await page
+				.waitForSelector('[data-testid=pin-map] circle.dot', { timeout: 5000 })
+				.then(() => true, () => false);
+			const savedPlace = await page.$eval('[data-testid=place]', (e) => e.innerText).catch(() => '');
+			check('offline: location shown as a pin on the region map, address still there', pinShown && savedPlace.includes('Hlavná 1'), savedPlace);
+			await shot('09b-offline-pin');
 			// Map data is loaded on demand: it must come from the cache, too.
 			await page.goto(`${APP}/country?id=cz-vintage`, { waitUntil: 'load' });
 			const offlineMap = await page
@@ -530,7 +674,48 @@ try {
 			await shot('09-offline-edit');
 		} finally {
 			await page.setOfflineMode(false);
+			osm.offline = false;
 		}
+
+		// A new release: rebuild with a different version, let the service worker find it.
+		// "New version available" must be a centred modal over a darkened screen, and a tap
+		// outside it closes it.
+		execSync(`"${process.execPath}" node_modules/vite/bin/vite.js build`, {
+			cwd: projectDir,
+			stdio: 'ignore',
+			env: { ...process.env, SMOKE_VERSION_SUFFIX: '-smoke-update' }
+		});
+		// The preview server reads the files once at startup: restart it to serve the new build.
+		server.kill();
+		await sleep(500);
+		server = startServer();
+		await waitForServer();
+		await page.goto(`${APP}/`, { waitUntil: 'networkidle0' });
+		await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.update());
+		const updateShown = await page
+			.waitForSelector('dialog[data-testid=update][open]', { timeout: 20_000 })
+			.then(() => true, () => false);
+		const box = updateShown
+			? await page.$eval('dialog[data-testid=update]', (d) => {
+					const r = d.getBoundingClientRect();
+					return {
+						dx: Math.round(r.left + r.width / 2 - innerWidth / 2),
+						dy: Math.round(r.top + r.height / 2 - innerHeight / 2),
+						backdrop: getComputedStyle(d, '::backdrop').backgroundColor
+					};
+				})
+			: null;
+		check(
+			'new version: centred modal with a darkened backdrop',
+			!!box && Math.abs(box.dx) < 20 && Math.abs(box.dy) < 40 && /rgba\(0, 0, 0, 0\.[1-9]/.test(box.backdrop),
+			JSON.stringify(box)
+		);
+		await shot('13-update');
+		await page.mouse.click(8, 120);
+		const dismissed = await page
+			.waitForFunction(() => !document.querySelector('dialog[data-testid=update][open]'), { timeout: 3000 })
+			.then(() => true, () => false);
+		check('new version modal closes on a tap outside', dismissed);
 	}
 } catch (e) {
 	check('script', false, e.stack);

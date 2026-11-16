@@ -9,11 +9,25 @@
 	import SignInConflict from '#lib/components/SignInConflict.svelte';
 	import { initSync, syncConfigured } from '#lib/sync/account.svelte.js';
 	import { onMount } from 'svelte';
+	import { interceptLinks } from '#lib/nav.js';
+	import { resolvePlaces } from '#lib/geo/place.js';
 
 	let { children } = $props();
 
 	i18n.init();
 	onMount(() => void initSync());
+	// All in-app links follow the back-stack rules in nav.ts.
+	onMount(interceptLinks);
+	// Addresses of locations still missing one (one request per second, in the background).
+	onMount(() => {
+		const lookUp = () => void resolvePlaces();
+		const timer = setTimeout(lookUp, 3000);
+		addEventListener('online', lookUp);
+		return () => {
+			clearTimeout(timer);
+			removeEventListener('online', lookUp);
+		};
+	});
 
 	const nav: { href: '/' | '/add' | '/history' | '/settings'; label: MessageKey; icon: string }[] = [
 		{ href: '/', label: 'nav.home', icon: 'M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z' },

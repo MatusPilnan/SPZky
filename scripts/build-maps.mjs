@@ -107,7 +107,14 @@ for (const m of MAPS) {
 import type { RegionMapData } from './types';
 
 export const map: RegionMapData = ${JSON.stringify(
-		{ viewBox: `0 0 ${WIDTH} ${height}`, attribution: m.attribution, license: m.license, shapes },
+		{
+			viewBox: `0 0 ${WIDTH} ${height}`,
+			attribution: m.attribution,
+			license: m.license,
+			// For placing points (e.g. a sighting's location) on the map: see projectToMap().
+			projection: { lon0: m.center[0], lat0: m.center[1], minX, maxY, scale },
+			shapes
+		},
 		null,
 		'\t'
 	)};

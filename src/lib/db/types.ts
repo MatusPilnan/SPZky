@@ -32,6 +32,11 @@ export interface Sighting {
 	/** When the plate was spotted (epoch ms). */
 	seenAt: number;
 	location: GeoPoint | null;
+	/**
+	 * Address of `location` ("Hlavná 12, Košice"), looked up once online (src/lib/geo/place.ts).
+	 * null/missing = not looked up yet; "" = looked up, nothing found.
+	 */
+	place?: string | null;
 	note: string;
 	createdAt: number;
 	/** Last local modification (epoch ms); drives last-write-wins sync. */

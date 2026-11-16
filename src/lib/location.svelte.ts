@@ -5,6 +5,8 @@ export type LocationStatus = 'idle' | 'waiting' | 'ok' | 'denied' | 'unavailable
 /** Positions older than this are not attached to a sighting. */
 const MAX_AGE_MS = 2 * 60 * 1000;
 
+export { isCoarse } from './geo/accuracy';
+
 /**
  * Watches the device position while active, so a fresh fix is already
  * available when the user saves (no waiting for GPS at save time).

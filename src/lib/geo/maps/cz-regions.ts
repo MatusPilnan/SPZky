@@ -7,6 +7,13 @@ export const map: RegionMapData = {
 	"viewBox": "0 0 1000 576",
 	"attribution": "ČÚZK (Czech Office for Surveying) via geoBoundaries",
 	"license": "CC BY 4.0",
+	"projection": {
+		"lon0": 15.5,
+		"lat0": 49.8,
+		"minX": -241831.65100786835,
+		"maxY": 140291.07674569226,
+		"scale": 0.002067753260789649
+	},
 	"shapes": [
 		{
 			"name": "Hlavní město Praha",

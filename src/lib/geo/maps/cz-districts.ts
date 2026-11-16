@@ -7,6 +7,13 @@ export const map: RegionMapData = {
 	"viewBox": "0 0 1000 572",
 	"attribution": "geoBoundaries, Wikimedia Commons",
 	"license": "Public domain",
+	"projection": {
+		"lon0": 15.5,
+		"lat0": 49.8,
+		"minX": -241575.5149329885,
+		"maxY": 139461.81595827214,
+		"scale": 0.002064071455525373
+	},
 	"shapes": [
 		{
 			"name": "Benešov",

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { closeOnBackdrop } from '../dialog';
 	import { formatDateTime, t } from '../i18n/i18n.svelte';
 	import { showToast } from '../toast.svelte';
 	import { account, deleteCloudData, sendCode, signOut, syncNow, verifyCode } from '../sync/account.svelte';
@@ -174,7 +175,7 @@
 	{/if}
 </section>
 
-<dialog bind:this={signOutDialog} aria-labelledby="signout-title">
+<dialog bind:this={signOutDialog} aria-labelledby="signout-title" onclick={closeOnBackdrop}>
 	<div class="sheet stack">
 		<h2 id="signout-title">{t('account.signOut')}</h2>
 		{#if account.unsynced > 0}

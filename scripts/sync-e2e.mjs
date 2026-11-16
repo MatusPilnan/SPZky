@@ -258,6 +258,9 @@ try {
 	const counts = await tablet.page.$eval('[data-testid=conflict] .counts', (e) => e.innerText.replace(/\s+/g, ' '));
 	check('tablet: conflict dialog shows both sides', /On this device 1 only here: 1/.test(counts) && /In the account 1 only there: 1/.test(counts), counts);
 	await shot(tablet, '02-conflict');
+	await tablet.page.mouse.click(200, 30);
+	await sleep(300);
+	check('a tap outside does not close the conflict dialog (a choice is needed)', (await tablet.page.$('[data-testid=conflict][open]')) !== null);
 
 	// The conflict dialog offers a backup of this device's plates before choosing.
 	const downloads = path.join(outDir, 'sync-downloads');
@@ -325,6 +328,16 @@ try {
 	await tablet.page.waitForFunction((before) => document.querySelector('.hero .count')?.innerText !== before, { timeout: 15_000 }, countBefore);
 	check('Home “Sync now” brings in the other device’s plate', (await plates(tablet)).includes('TN-555XX'), `${countBefore} → ${await homeCount()}`);
 	await shot(tablet, '04-home-sync');
+	const syncButton = await tablet.page.$eval('[data-testid=sync-now]', (b) => ({
+		width: Math.round(b.getBoundingClientRect().width),
+		label: b.getAttribute('aria-label'),
+		textShown: b.querySelector('.text')?.getClientRects().length > 0
+	}));
+	check(
+		'Home sync button is icon-only on a phone, with an accessible label',
+		syncButton.width <= 48 && !syncButton.textShown && syncButton.label === 'Sync now',
+		JSON.stringify(syncButton)
+	);
 
 	await addPlate(phone, 'PD-666YY');
 	await openSettings(phone);

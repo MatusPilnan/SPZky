@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { back } from '#lib/nav.js';
+	import { resolvePlaces } from '#lib/geo/place.js';
+	import LocationMap from '#lib/components/LocationMap.svelte';
 	import { page } from '$app/state';
 	import { liveQuery } from 'dexie';
 	import { db, inferPlateType } from '#lib/db/db.js';
@@ -93,7 +95,7 @@
 				location
 			});
 			showToast({ kind: 'success', text: t('edit.saved') });
-			await goto(resolve('/history'));
+			await back(resolve('/history'));
 		} finally {
 			saving = false;
 		}
@@ -103,8 +105,27 @@
 		if (!original || !confirm(t('edit.confirmDelete'))) return;
 		await deleteSighting(original.id);
 		showToast({ kind: 'info', text: t('edit.deleted') });
-		await goto(resolve('/history'));
+		await back(resolve('/history'));
 	}
+
+	/** Address from the live record (filled in by the background lookup), while the location is unchanged. */
+	const livePlace = $derived.by(() => {
+		const current = ($all ?? []).find((s) => s.id === id);
+		const same = current?.location && location && current.location.lat === location.lat && current.location.lng === location.lng;
+		return same ? (current.place ?? null) : null;
+	});
+	let online = $state(typeof navigator === 'undefined' || navigator.onLine);
+	onMount(() => {
+		const update = () => (online = navigator.onLine);
+		addEventListener('online', update);
+		addEventListener('offline', update);
+		// Look up the address now if it's still missing (no-op when there's nothing to do).
+		void resolvePlaces();
+		return () => {
+			removeEventListener('online', update);
+			removeEventListener('offline', update);
+		};
+	});
 
 	function mapUrl(p: GeoPoint): string {
 		return `https://www.openstreetmap.org/?mlat=${p.lat}&mlon=${p.lng}#map=16/${p.lat}/${p.lng}`;
@@ -112,7 +133,16 @@
 </script>
 
 <div class="stack">
-	<a class="back" href={resolve('/history')}>← {t('edit.back')}</a>
+	<!-- Back to wherever the edit page was opened from (History, Home, a country). -->
+	<a
+		class="back"
+		href={resolve('/history')}
+		data-back
+		onclick={(e) => {
+			e.preventDefault();
+			void back(resolve('/history'));
+		}}>← {t('edit.back')}</a
+	>
 	<h1>{t('edit.title')}</h1>
 
 	{#if notFound}
@@ -184,10 +214,19 @@
 			<section class="card">
 				<h2>{t('edit.location')}</h2>
 				{#if location}
-					<p>
-						{location.lat.toFixed(5)}, {location.lng.toFixed(5)}
-						{#if location.accuracy !== null}<span class="muted">(±{location.accuracy} m)</span>{/if}
-					</p>
+					<div class="place" data-testid="place">
+						{#if livePlace}
+							<strong>{livePlace}</strong>
+						{:else if livePlace == null && online}
+							<span class="muted">{t('edit.placeLooking')}</span>
+						{/if}
+						<span class="muted small">
+							{location.lat.toFixed(5)}, {location.lng.toFixed(5)}
+							{#if location.accuracy !== null}(±{location.accuracy} m){/if}
+						</span>
+					</div>
+					<LocationMap {location} />
+					{#if livePlace}<p class="muted credit">{t('edit.placeCredit')}</p>{/if}
 					<div class="row">
 						<a class="btn" href={mapUrl(location)} target="_blank" rel="noopener noreferrer">{t('edit.showOnMap')}</a>
 						<button type="button" class="btn" onclick={() => (location = null)}>{t('edit.removeLocation')}</button>
@@ -239,5 +278,18 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
+		margin-top: 0.75rem;
+	}
+	.place {
+		display: flex;
+		flex-direction: column;
+		margin-bottom: 0.6rem;
+	}
+	.small {
+		font-size: 0.85rem;
+	}
+	.credit {
+		margin: 0.25rem 0 0;
+		font-size: 0.75rem;
 	}
 </style>

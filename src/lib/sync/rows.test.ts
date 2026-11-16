@@ -11,6 +11,7 @@ const base: Sighting = {
 	plateNormalized: 'BA123AB',
 	seenAt: Date.parse('2026-11-01T10:00:00Z'),
 	location: { lat: 48.1, lng: 17.1, accuracy: 12 },
+	place: 'Hlavná 1, Košice',
 	note: 'D1',
 	createdAt: Date.parse('2026-11-01T10:00:01Z'),
 	updatedAt: Date.parse('2026-11-01T10:00:02Z'),

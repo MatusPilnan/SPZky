@@ -18,7 +18,8 @@ const scope = `${base}/`;
 
 export default defineConfig({
 	define: {
-		__APP_VERSION__: JSON.stringify(pkg.version),
+		// SMOKE_VERSION_SUFFIX: the smoke test rebuilds with a suffix to simulate a new release.
+		__APP_VERSION__: JSON.stringify(pkg.version + (process.env.SMOKE_VERSION_SUFFIX ?? '')),
 		// Sync backend (public values; row-level security protects the data). Empty
 		// in local dev and forks: the app then works offline-only, without accounts.
 		__SUPABASE_URL__: JSON.stringify(env.PUBLIC_SUPABASE_URL ?? ''),

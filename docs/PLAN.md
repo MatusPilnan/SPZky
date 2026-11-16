@@ -379,6 +379,44 @@ dialog (owner's request: a backup before choosing). Code: `src/lib/backup.ts`,
 - Imported plates get **new ids**, `updatedAt` = now and count as local changes, so they
   sync like new entries and can't clash with rows of another account.
 
+## Fixes after v0.7.0 (planned and done 2026-11-16)
+
+All seven done; how they were solved is noted per item.
+
+- (2) `UpdatePrompt` uses a `<dialog>` (showModal); the smoke test simulates a real new
+  release (rebuild with `SMOKE_VERSION_SUFFIX`, restart the preview server, which reads files
+  only at startup).
+- (3) `closeOnBackdrop` in `src/lib/dialog.ts`.
+- (4) Even clearing the input right after `addSighting` was too late (the live query
+  updates first), so the duplicate check is off while `saving`.
+- (5) `src/lib/nav.ts`: every entry stores its depth in SvelteKit page state; in-app links
+  are intercepted in the layout. Apps opened directly on a sub-page have no Home below; the
+  Home tab then replaces that entry with Home.
+- (7) Address: Nominatim (max 1 request/s, results saved, credited), street level, or town
+  only for approximate fixes; names in the place's language. Migration
+  `20261117120000_sighting_place.sql`: column `place`; pushes from app versions without it
+  keep the stored address unless the spot moved. Map: Leaflet + OSM tiles, not draggable
+  (page scrolling stays smooth; zoom buttons work); offline (or when a tile fails) a pin on
+  the region map, using the map projection now saved in the generated map files
+  (`projectToMap`, same LAEA as mapshaper, tested against it).
+
+1. Home sync button smaller; icon only on phones.
+2. "New version available" as a centred modal with a darkened background (the "ready to
+   work offline" note stays a toast).
+3. Tapping outside a dialog closes it (not the sign-in conflict dialog: a choice is needed).
+4. Red flash after saving a plate: the live query sees the just-saved plate as a duplicate
+   before the input is cleared. Clear first; never count the just-saved plate.
+5. Back stack: Home always at the bottom; bottom-bar screens replace each other (never
+   deeper than Home → screen); detail screens (country, edit) sit on top of the screen
+   they came from; the Home tab goes straight back; save/delete on the edit page go back.
+6. Location always ±2000 m (owner's phone: Android): that's Android's "approximate
+   location" permission for the browser. Detect a coarse fix and say how to allow precise
+   location.
+7. Edit page: address (town, street) via OpenStreetMap Nominatim, looked up once when
+   online and **saved with the sighting** (synced; new column + Dexie version); a small
+   street map (Leaflet + OSM tiles) with the accuracy circle when online, a pin on the
+   app's own district map offline.
+
 ## Phases
 
 | #   | Phase                                                                                     | Status                    |
