@@ -3,6 +3,16 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.13.0](https://github.com/MatusPilnan/SPZky/compare/v0.12.0...v0.13.0) - 2026-11-16
+
+### Features
+
+- compact Home with country tiles and a collapsible bonus section ([540e586](https://github.com/MatusPilnan/SPZky/commit/540e5869822dcf6af63a18b7ce20833c0e6a0731))
+
+### Bug fixes
+
+- keep the collection percentage on one line ([f37402c](https://github.com/MatusPilnan/SPZky/commit/f37402cc29ef992c05f839d4efd2988fe83790d1))
+
 ## [0.12.0](https://github.com/MatusPilnan/SPZky/compare/v0.11.0...v0.12.0) - 2026-11-16
 
 ### Features
