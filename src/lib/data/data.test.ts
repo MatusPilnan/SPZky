@@ -7,14 +7,24 @@ describe('collection data', () => {
 		const codes = c.regions.map((r) => r.code);
 		expect(new Set(codes).size).toBe(codes.length);
 		for (const r of c.regions) {
-			expect(r.code).toMatch(/^[A-ZÄÖÜ]{1,3}$/);
+			// Letters (incl. German umlauts) or French department numbers ("75", "2A", "974").
+			expect(r.code).toMatch(/^([A-ZÄÖÜ]{1,3}|\d{2}|2[AB]|97\d)$/);
 			expect(r.name.trim()).not.toBe('');
 		}
 	});
 
 	it('has the expected sizes', () => {
 		const size = Object.fromEntries(collections.map((c) => [c.id, c.regions.length]));
-		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165, de: 714, ua: 107, 'ua-vintage': 105 });
+		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165, de: 714, ua: 107, 'ua-vintage': 105, fr: 101 });
+	});
+
+	it('France: 101 departments, Corsica as 2A/2B, no 20', () => {
+		const fr = collections.find((c) => c.id === 'fr')!.regions.map((r) => r.code);
+		expect(fr).toContain('2A');
+		expect(fr).toContain('2B');
+		expect(fr).not.toContain('20');
+		expect(fr).not.toContain('975');
+		expect(fr.filter((c) => c.startsWith('97'))).toEqual(['971', '972', '973', '974', '976']);
 	});
 
 	it('Ukraine: four codes per region (KK only for Kyiv), no online/national series', () => {

@@ -1,5 +1,6 @@
 import { atUnmappedCodes } from '../../data/at';
 import { plUnmappedCodes } from '../../data/pl';
+import { frUnmappedCodes } from '../../data/fr';
 import type { CollectionDef, CollectionId } from '../../data/types';
 import type { RegionMapData } from './types';
 
@@ -18,6 +19,7 @@ const loaders: Partial<Record<CollectionId, () => Promise<{ map: RegionMapData }
 	'at-vintage': () => import('./at-states'),
 	pl: () => import('./pl-counties'),
 	de: () => import('./de-districts'),
+	fr: () => import('./fr-departments'),
 	ua: () => import('./ua-regions'),
 	'ua-vintage': () => import('./ua-regions')
 };
@@ -78,7 +80,11 @@ const areaAliases: Partial<Record<CollectionId, Record<string, string[]>>> = {
  * Codes with no area on the map: Austrian state codes of the pre-1990 black plates and
  * the dissolved district Wien-Umgebung. They still count in the grid.
  */
-const unmapped: Partial<Record<CollectionId, Set<string>>> = { at: atUnmappedCodes, pl: plUnmappedCodes };
+const unmapped: Partial<Record<CollectionId, Set<string>>> = {
+	at: atUnmappedCodes,
+	pl: plUnmappedCodes,
+	fr: frUnmappedCodes
+};
 
 export function isUnmappedCode(collectionId: CollectionId, code: string): boolean {
 	return unmapped[collectionId]?.has(code) ?? false;

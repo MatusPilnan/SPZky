@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { detectPlate, orderByCountry, spansCountries, type Detection } from './detect';
+import { detectPlate, isBareFrenchPlate, orderByCountry, spansCountries, type Detection } from './detect';
 
 function regions(raw: string) {
 	return detectPlate(raw)
@@ -107,6 +107,36 @@ describe('detectPlate: Ukraine', () => {
 	it('1995–2004 plates: five digits and the region series', () => {
 		expect(ua('123-45 КІ')).toEqual(['ua-vintage:KI']);
 		expect(ua('123-45 PE')).toEqual(['ua-vintage:PE']); // Zakarpattia
+	});
+});
+
+describe('detectPlate: France', () => {
+	const fr = (raw: string) =>
+		detectPlate(raw)
+			.filter((d) => d.collectionId === 'fr')
+			.map((d) => `${(d as { regionCode: string }).regionCode}:${d.format}`);
+
+	it('SIV plates count with the department typed after them', () => {
+		expect(fr('AB-123-CD 75')).toEqual(['75:fr-siv']);
+		expect(fr('GH-456-JK 2A')).toEqual(['2A:fr-siv']);
+		expect(fr('AB-123-CD 974')).toEqual(['974:fr-siv']);
+	});
+
+	it('a bare SIV plate has no department (the Add screen asks for it)', () => {
+		expect(fr('AB-123-CD')).toEqual([]);
+		expect(isBareFrenchPlate('AB-123-CD')).toBe(true);
+		expect(isBareFrenchPlate('AB-123-CD 75')).toBe(false);
+	});
+
+	it('FNI plates end with the department', () => {
+		expect(fr('1234 AB 75')).toEqual(['75:fr-fni']);
+		expect(fr('123 ABC 13')).toEqual(['13:fr-fni']);
+		expect(fr('12 AB 2B')).toEqual(['2B:fr-fni']);
+		expect(fr('1234 AB 20')).toEqual([]); // Corsica before 1976: not collected
+	});
+
+	it('SIV never uses I, O, U', () => {
+		expect(fr('AI-123-CD 75')).toEqual([]);
 	});
 });
 

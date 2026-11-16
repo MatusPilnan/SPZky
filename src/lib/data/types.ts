@@ -24,10 +24,11 @@ export type CollectionId =
 	| 'pl-vintage'
 	| 'de'
 	| 'ua'
-	| 'ua-vintage';
+	| 'ua-vintage'
+	| 'fr';
 
 /** ISO 3166-1 alpha-2 codes of the supported countries. */
-export type CountryCode = 'SK' | 'CZ' | 'AT' | 'PL' | 'DE' | 'UA';
+export type CountryCode = 'SK' | 'CZ' | 'AT' | 'PL' | 'DE' | 'UA' | 'FR';
 
 /** Collections that have a nationwide subcollection (plates without a region). */
 export type NationwideCollectionId = 'sk' | 'cz';

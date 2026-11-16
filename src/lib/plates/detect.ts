@@ -1,5 +1,6 @@
 import { countryOf, getRegion } from '../collections';
 import { czNumericToLetter } from '../data/cz';
+import { FR_DEPARTMENT } from '../data/fr';
 import type { CollectionId, NationwideCollectionId } from '../data/types';
 import { normalizePlate } from './normalize';
 
@@ -34,7 +35,11 @@ export type RegionFormat =
 	/** UA since 2004: region code + 4 digits + 2-letter series (AA 1234 BB). */
 	| 'ua-standard'
 	/** UA 1995–2004: 5 digits + 2-letter series that identifies the region (123-45 KI). */
-	| 'ua-vintage';
+	| 'ua-vintage'
+	/** FR since 2009 (SIV) with the department of the right band typed after it (AB-123-CD 75). */
+	| 'fr-siv'
+	/** FR 1950–2009 (FNI): digits, letters, department (1234 AB 75). */
+	| 'fr-fni';
 
 /** Recognised plate formats without a region; they go to the country's nationwide subcollection. */
 export type NationwideFormat =
@@ -220,6 +225,31 @@ function detectUkrainian(n: string): Detection[] {
 	return out.filter((d): d is Detection => d !== null);
 }
 
+/** SIV letters: no I, O, U. */
+const FR_L = '[A-HJ-NP-TV-Z]';
+const frSivWithDepartment = new RegExp(`^${FR_L}{2}\\d{3}${FR_L}{2}(${FR_DEPARTMENT})$`);
+const frFni = new RegExp(`^\\d{1,4}[A-Z]{1,3}(${FR_DEPARTMENT})$`);
+const frSivBare = new RegExp(`^${FR_L}{2}\\d{3}${FR_L}{2}$`);
+
+/**
+ * France: what counts is the department number. On SIV plates (since 2009) it's on the
+ * right band, not in the number, so it's typed after the plate ("AB-123-CD 75"); on FNI
+ * plates (until 2009) it ends the number ("1234 AB 75").
+ */
+function detectFrench(n: string): Detection[] {
+	const out: (Detection | null)[] = [];
+	const siv = frSivWithDepartment.exec(n);
+	if (siv) out.push(region('fr', siv[1], 'fr-siv', 'high'));
+	const fni = frFni.exec(n);
+	if (fni) out.push(region('fr', fni[1], 'fr-fni', 'high'));
+	return out.filter((d): d is Detection => d !== null);
+}
+
+/** A French SIV plate typed without the department of its right band (the Add screen hints). */
+export function isBareFrenchPlate(raw: string): boolean {
+	return frSivBare.test(normalizePlate(raw));
+}
+
 export function detectionKey(d: Detection): string {
 	return d.type === 'region' ? `${d.collectionId}:${d.regionCode}` : `${d.collectionId}:*${d.format}`;
 }
@@ -235,7 +265,7 @@ export function detectPlate(raw: string): Detection[] {
 	if (n.length < 5) return [];
 
 	const seen = new Set<string>();
-	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw), ...detectUkrainian(n)]
+	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw), ...detectUkrainian(n), ...detectFrench(n)]
 		.filter((d) => {
 			const key = detectionKey(d);
 			if (seen.has(key)) return false;

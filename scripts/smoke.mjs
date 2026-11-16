@@ -568,6 +568,23 @@ try {
 		overlap.candidates.length === 2 && /Slovensko|Slovakia/.test(overlap.candidates[0]) && !overlap.notice,
 		JSON.stringify(overlap)
 	);
+	// A bare French plate (no department) in France: hint to add the band's number; with it,
+	// it counts. (In Slovakia the same shape is a Slovak plate, so no hint there.)
+	await page.setGeolocation({ latitude: 48.8566, longitude: 2.3522, accuracy: 12 });
+	await page.reload({ waitUntil: 'networkidle0' });
+	await page.waitForSelector('.plate input');
+	await sleep(500);
+	await typeAny('GH-456-JK');
+	check('bare French plate in France: hint to add the department', (await page.$('[data-testid=fr-hint]')) !== null);
+	await page.setGeolocation({ latitude: 48.1486, longitude: 17.1077, accuracy: 12 });
+	await page.reload({ waitUntil: 'networkidle0' });
+	await page.waitForSelector('.plate input');
+	await sleep(500);
+	await typeAny('GH-456-JK 2A');
+	const fr = await page.$eval('.candidates .candidate', (c) => c.innerText.replace(/\s+/g, ' ')).catch(() => '');
+	check('French plate with department: Corse-du-Sud', fr.includes('2A') && fr.includes('Corse-du-Sud'), fr);
+	await typeAny('BA 123 AB');
+	check('no French hint on a Slovak plate (GPS in SK)', (await page.$('[data-testid=fr-hint]')) === null);
 	await typeAny('W 12345 A');
 	const austrian = await page.evaluate(() => ({
 		band: document.querySelector('.plate .cc')?.textContent,

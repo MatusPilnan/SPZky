@@ -19,6 +19,7 @@
 	import {
 		detectionKey,
 		detectPlate,
+		isBareFrenchPlate,
 		orderByCountry,
 		spansCountries,
 		type NationwideFormat,
@@ -304,6 +305,12 @@
 				<div class="candidate active" class:nationwide={manual.regionCode === null}>
 					{@render candidateBody(manual)}
 				</div>
+			{/if}
+
+			<!-- A bare SIV plate looks like a Slovak district plate (BA-123-CD), so the hint only
+			     shows when nothing else matched or when GPS says we're in France. -->
+			{#if isBareFrenchPlate(plate) && !candidates.some((c) => c.selection.collectionId === 'fr') && (candidates.length === 0 || gpsCountry === 'FR')}
+				<p class="notice" data-testid="fr-hint">{t('add.frDepartmentHint')}</p>
 			{/if}
 
 			{#if duplicate}

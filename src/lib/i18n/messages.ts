@@ -94,6 +94,8 @@ export const en = {
 
 	'add.chooseCountry': 'This plate fits more than one country. Which one did you see?',
 	'add.evColorHint': 'Tip: Slovak EV plates have green letters, Czech ones black.',
+	'add.frDepartmentHint':
+		'French plate? Add the department number from the blue band on the right, e.g. AB-123-CD 75.',
 	'add.notCounted': 'not counted toward progress',
 	'add.savedNationwide': 'Saved {plate} (nationwide)',
 	'add.quickSavedNationwide': 'Logged nationwide: {type}',
@@ -122,6 +124,8 @@ export const en = {
 	'format.de-standard': 'standard plate',
 	'format.de-ev': 'electric vehicle (E)',
 	'format.de-historic': 'historic vehicle (H)',
+	'format.fr-siv': 'plate since 2009 (department on the band)',
+	'format.fr-fni': 'plate before 2009',
 	'format.ua-standard': 'standard plate',
 	'format.ua-vintage': 'plate 1995–2004',
 	'format.pl-vintage': 'black plate (before 2000)',
@@ -282,6 +286,7 @@ export const en = {
 	'collection.at': 'Austria',
 	'collection.at-vintage': 'Austria (pre-1990)',
 	'collection.de': 'Germany',
+	'collection.fr': 'France',
 	'collection.ua': 'Ukraine',
 	'collection.ua-vintage': 'Ukraine (1995–2004)',
 	'collection.pl': 'Poland',
@@ -388,6 +393,8 @@ export const sk: Messages = {
 
 	'add.chooseCountry': 'Táto ŠPZ sedí na viac krajín. Ktorú si videl(a)?',
 	'add.evColorHint': 'Tip: slovenské ŠPZ elektromobilov majú zelené písmo, české čierne.',
+	'add.frDepartmentHint':
+		'Francúzska ŠPZ? Pridaj číslo departementu z modrého pruhu vpravo, napr. AB-123-CD 75.',
 	'add.notCounted': 'nezapočítava sa do postupu',
 	'add.savedNationwide': 'Uložené: {plate} (celoštátna)',
 	'add.quickSavedNationwide': 'Zaznamenaná celoštátna: {type}',
@@ -416,6 +423,8 @@ export const sk: Messages = {
 	'format.de-standard': 'štandardná ŠPZ',
 	'format.de-ev': 'elektromobil (E)',
 	'format.de-historic': 'historické vozidlo (H)',
+	'format.fr-siv': 'ŠPZ od 2009 (departement na pruhu)',
+	'format.fr-fni': 'ŠPZ pred 2009',
 	'format.ua-standard': 'štandardná ŠPZ',
 	'format.ua-vintage': 'ŠPZ 1995–2004',
 	'format.pl-vintage': 'čierna ŠPZ (pred 2000)',
@@ -586,6 +595,7 @@ export const sk: Messages = {
 	'collection.at': 'Rakúsko',
 	'collection.at-vintage': 'Rakúsko (do 1990)',
 	'collection.de': 'Nemecko',
+	'collection.fr': 'Francúzsko',
 	'collection.ua': 'Ukrajina',
 	'collection.ua-vintage': 'Ukrajina (1995–2004)',
 	'collection.pl': 'Poľsko',

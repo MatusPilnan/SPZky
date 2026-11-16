@@ -117,6 +117,16 @@ const MAPS = [
 		license: 'dl-de/by-2-0'
 	},
 	{
+		// The 96 metropolitan departments (overseas departments are not in this data).
+		file: 'fr-departments',
+		url: `${RELEASE}/gbOpen/FRA/ADM2/geoBoundaries-FRA-ADM2_simplified.geojson`,
+		simplify: '6%',
+		center: [2.5, 46.6],
+		attribution: 'IGN via geoBoundaries',
+		license: 'Etalab Open Licence 2.0',
+		rename: { "Côtes d'Armor": "Côtes-d'Armor" }
+	},
+	{
 		// 24 oblasts, Crimea, Kyiv and Sevastopol (official boundaries, 2022). Used by both
 		// Ukrainian collections (the 1995 system used the same regions).
 		file: 'ua-regions',
@@ -233,7 +243,8 @@ for (const m of MAPS) {
 
 	const shapes = gj.features
 		.map((f) => {
-			const raw = f.properties.shapeName;
+			// Some sources end names with (non-breaking) spaces, e.g. "Indre-et-Loire ".
+			const raw = f.properties.shapeName.replace(/[\s ]+$/u, '');
 			return { name: m.rename?.[raw] ?? raw, d: toPath(f.geometry, project) };
 		})
 		.sort((a, b) => a.name.localeCompare(b.name, 'cs'));

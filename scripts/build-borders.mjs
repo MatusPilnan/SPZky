@@ -10,7 +10,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { feature } from 'topojson-client';
 
-const COUNTRIES = { SK: '703', CZ: '203', AT: '040', PL: '616', DE: '276', UA: '804' };
+const COUNTRIES = { SK: '703', CZ: '203', AT: '040', PL: '616', DE: '276', UA: '804', FR: '250' };
 const resolution = process.argv[2] ?? '10m';
 
 const require = createRequire(import.meta.url);
@@ -24,7 +24,9 @@ let points = 0;
 for (const [code, id] of Object.entries(COUNTRIES)) {
 	const f = all.find((x) => String(x.id).padStart(3, '0') === id);
 	if (!f) throw new Error(`country ${code} (${id}) not found`);
-	const polygons = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
+	// Only the European parts (France's overseas departments are far away and large).
+	const inEurope = (rings) => rings[0].every(([lng, lat]) => lng > -32 && lng < 50 && lat > 33 && lat < 72);
+	const polygons = (f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates).filter(inEurope);
 	out[code] = polygons.map((rings) =>
 		rings.map((ring) => {
 			const pts = [];

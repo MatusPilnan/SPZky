@@ -84,6 +84,16 @@ checklist "Region data" in `CLAUDE.md` for every country added later.
   Many plates also fit SK/AT formats (e.g. `BA-MA001` Bamberg); GPS decides the order.
   Sources: de.wikipedia list (above), en.wikipedia "Vehicle registration plates of Germany",
   de.wikipedia "Kfz-Kennzeichen (DDR)" (checked 2026-11-16).
+- **France** (phase 9, 2026-11-16): **101** department numbers (01–95 without 20, 2A, 2B,
+  971–974, 976). Decided 2026-11-16: the department counts, from either system: SIV
+  (since 2009, `AB-123-CD`) shows a freely chosen but mandatory department on the right
+  band, typed after the plate (`AB-123-CD 75`); FNI (until 2009, `1234 AB 75`) ends with it
+  and is converted only at a change of owner/address. Same codes, so one collection (no
+  bonus). A bare SIV plate has the shape of a Slovak plate (and matches the loose SK
+  personalised pattern), so the Add screen hints "add the department" only when nothing
+  else matched or GPS is in France. Overseas departments have no map area. Sources:
+  fr.wikipedia "Plaque d'immatriculation française", en.wikipedia "Vehicle registration
+  plates of France" (checked 2026-11-16).
 - **Ukraine** (phase 9, 2026-11-16): **107** region codes of the system since 2004
   (`AA 1234 BB`): four per region (2004, 2013, 2021×2), only the 12 Cyrillic letters that
   look Latin; typed Cyrillic is mapped to Latin by `normalizePlate` (also Greek for later).
@@ -185,6 +195,7 @@ raw, loaded on demand and precached for offline use):
 
 | PL | 380 counties and city counties (powiaty) | gbHumanitarian POL ADM2: Państwowy Rejestr Granic via HDX, 2022 | CC BY 3.0 IGO |
 | PL pre-2000 | — (no map) | — | — |
+| FR | 96 metropolitan departments (overseas 971–976 without area) | gbOpen FRA ADM2: IGN, 2022 | Etalab Open Licence 2.0 (attribution) |
 | UA, UA 1995–2004 | 27 regions (oblasts, Crimea, Kyiv, Sevastopol) | gbHumanitarian UKR ADM1: State Enterprise "Kartographia" via HDX, 2022 (Kyiv city renamed by location: both are "Kyivska") | CC BY 3.0 IGO |
 | DE | 401 districts and district-free cities (Kreise) | gbOpen DEU ADM3: BKG, 2021 (dissolved by name: coastal districts come in several parts) | dl-de/by-2-0 (attribution) |
 
