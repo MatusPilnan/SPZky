@@ -73,7 +73,7 @@
 	onDestroy(() => map?.remove());
 
 	// Offline: pin on the map of the country the point is in (SK districts / CZ regions).
-	let pinMap = $state<RegionMapData | null>(null);
+	let pinMap = $state.raw<RegionMapData | null>(null);
 	$effect(() => {
 		if (street) return;
 		const country = countryAt(location.lat, location.lng);

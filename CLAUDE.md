@@ -173,7 +173,8 @@ after touching links, paths, the manifest or the service worker (PowerShell:
 ## Code map
 
 ```
-src/lib/data/         region lists (sk, cz, cz-vintage, at) with sources; types.ts (CountryCode)
+src/lib/data/         region lists (sk, cz, cz-vintage, at, pl, pl-vintage) with sources;
+                      types.ts (CountryCode, Region.area, plateStyle eu/plain/black)
 src/lib/collections.ts collection registry, nationwide types per country, highlightOf, countryOf
 src/lib/plates/       normalizePlate, detectPlate (region + nationwide candidates), orderByCountry
 src/lib/geo/          countryAt (offline point-in-polygon); borders.ts is GENERATED

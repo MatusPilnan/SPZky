@@ -54,6 +54,21 @@ checklist "Region data" in `CLAUDE.md` for every country added later.
   ones (BA, BL, BN, BR…), so `BA-123AB` fits both countries; GPS decides the order.
   Sources: de.wikipedia "Kfz-Kennzeichen (Österreich)", en.wikipedia "Vehicle registration
   plates of Austria" (checked 2026-11-16).
+- **Poland** (phase 9, 2026-11-16): **441** codes of the system since 2000: county codes
+  of 2–3 letters, first letter = voivodeship (some voivodeships have a second letter: A, I,
+  J, M, V, X, Y). Includes secondary codes (Kraków KR/KK/JR, Wrocław DW/DX/VW, Warsaw's 16
+  district codes as "Warszawa") and codes no longer issued but valid (DB, PKO, SRS, POZ,
+  NOG). Left out: codes pl.wikipedia marks as never used by the office (BIB, SBN, CBC, KBA,
+  PA, TKC, TKM, TKP, LVB, NOX, PX, WPX, RZR, ZZ, SWZ, DWW, VWW), STY (not a county),
+  army/police/diplomatic and personalised plates. Serials never use B, D, I, O, Z.
+- **Poland before 2000** (bonus, black plates `XYZ 1234` / `XYZ 123A`): **165** area codes
+  of the 49 voivodeships of 1975–1998; valid until change of owner/residence, no deadline.
+  No map (those voivodeships aren't available as boundary data). Old and current formats
+  never overlap; `KOA 12-34` fits both CZ pre-2001 (Kolín) and PL pre-2000 (Koszalin).
+  Decided 2026-11-16: **every country with a still-valid older system gets a bonus
+  collection** like CZ pre-2001.
+  Sources: pl.wikipedia "Tablice rejestracyjne w Polsce", en.wikipedia "Vehicle
+  registration plates of Poland" (checked 2026-11-16).
 - Sources, with details in the header of each file in `src/lib/data/`: en.wikipedia (plates
   of Slovakia / Czech Republic), sk.wikipedia "Zoznam skratiek okresov Slovenska" (reserved
   codes) and "Evidenčné číslo vozidiel na Slovensku", cs.wikipedia "Státní poznávací značky v
@@ -141,8 +156,15 @@ raw, loaded on demand and precached for offline use):
 | CZ pre-2001 | 77 districts (okresy) | gbOpen CZE ADM2: Wikimedia Commons, 2010 | Public domain |
 | AT | 94 districts and statutory cities (Bezirke) | gbOpen AUT ADM2: BEV, 2017 | CC BY-SA 2.0 (share-alike: the generated `at-districts.ts` is under the same licence) |
 
+| PL | 380 counties and city counties (powiaty) | gbHumanitarian POL ADM2: Państwowy Rejestr Granic via HDX, 2022 | CC BY 3.0 IGO |
+| PL pre-2000 | — (no map) | — | — |
+
 - Codes without a map area (`isUnmappedCode`): Austria's black-plate state codes N, O, ST,
-  T, V and WU (Wien-Umgebung, dissolved 2017). They are in the grid but not on the map.
+  T, V and WU (Wien-Umgebung, dissolved 2017); Poland's NOG (Olecko-Gołdap until 2002).
+  They are in the grid but not on the map.
+- Polish county names repeat across voivodeships ("Bielski"…): `build-maps.mjs` appends the
+  voivodeship (`disambiguateWith`), and each Polish region names its map area (`Region.area`).
+- Collections without a map (`hasMap`): no map card, no Home thumbnail.
 
 - The gbOpen SVK ADM2 data (OSM, ODbL with share-alike) has garbled names, so the
   humanitarian release is used instead.

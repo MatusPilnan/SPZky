@@ -11,7 +11,7 @@ import mapshaper from 'mapshaper';
 
 const RELEASE = 'https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData';
 
-/** @type {{ file: string, url: string, simplify: string, center: [number, number], attribution: string, license: string, rename?: Record<string, string> }[]} */
+/** @type {{ file: string, url: string, simplify: string, center: [number, number], attribution: string, license: string, rename?: Record<string, string>, disambiguateWith?: string }[]} */
 const MAPS = [
 	{
 		file: 'sk-districts',
@@ -83,8 +83,58 @@ const MAPS = [
 			'Wiener Neustadt(Land)': 'Wiener Neustadt-Land',
 			'Wiener Neustadt(Stadt)': 'Wiener Neustadt'
 		}
+	},
+	{
+		// 380 counties and city counties from the official border register (PRG). Names
+		// have no diacritics and repeat across voivodeships (e.g. "Bielski"), so repeated
+		// names get the voivodeship appended; regions point to areas via `area` in pl.ts.
+		file: 'pl-counties',
+		url: `${RELEASE}/gbHumanitarian/POL/ADM2/geoBoundaries-POL-ADM2_simplified.geojson`,
+		disambiguateWith: `${RELEASE}/gbHumanitarian/POL/ADM1/geoBoundaries-POL-ADM1_simplified.geojson`,
+		simplify: '6%',
+		center: [19.4, 52.1],
+		attribution: 'Państwowy Rejestr Granic (GUGiK) via geoBoundaries / HDX',
+		license: 'CC BY 3.0 IGO'
 	}
 ];
+
+/** Ray casting on [lng, lat] rings. */
+function inRing([x, y], ring) {
+	let inside = false;
+	for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+		const [xi, yi] = ring[i];
+		const [xj, yj] = ring[j];
+		if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+	}
+	return inside;
+}
+const polygonsOf = (g) => (g.type === 'Polygon' ? [g.coordinates] : g.coordinates);
+
+/**
+ * Appends " (Parent)" to area names that occur more than once, using the parent
+ * level (e.g. voivodeship) that contains an inner point of the area.
+ */
+async function disambiguate(input, parentUrl) {
+	const gj = JSON.parse(input);
+	const count = new Map();
+	for (const f of gj.features) count.set(f.properties.shapeName, (count.get(f.properties.shapeName) ?? 0) + 1);
+	const res = await fetch(parentUrl);
+	if (!res.ok) throw new Error(`${parentUrl}: HTTP ${res.status}`);
+	const parents = (await res.json()).features;
+	const inner = JSON.parse(
+		(await mapshaper.applyCommands('-i in.json -each "ix=this.innerX, iy=this.innerY" -o out.json format=geojson', { 'in.json': input }))[
+			'out.json'
+		]
+	).features;
+	gj.features.forEach((f, i) => {
+		if (count.get(f.properties.shapeName) < 2) return;
+		const point = [inner[i].properties.ix, inner[i].properties.iy];
+		const parent = parents.find((p) => polygonsOf(p.geometry).some(([outer]) => inRing(point, outer)));
+		if (!parent) throw new Error(`no parent area for ${f.properties.shapeName}`);
+		f.properties.shapeName = `${f.properties.shapeName} (${parent.properties.shapeName})`;
+	});
+	return JSON.stringify(gj);
+}
 
 const WIDTH = 1000;
 
@@ -104,7 +154,8 @@ mkdirSync('src/lib/geo/maps', { recursive: true });
 for (const m of MAPS) {
 	const res = await fetch(m.url);
 	if (!res.ok) throw new Error(`${m.url}: HTTP ${res.status}`);
-	const input = await res.text();
+	let input = await res.text();
+	if (m.disambiguateWith) input = await disambiguate(input, m.disambiguateWith);
 
 	const proj = `+proj=laea +lat_0=${m.center[1]} +lon_0=${m.center[0]} +datum=WGS84`;
 	const out = await mapshaper.applyCommands(

@@ -10,17 +10,19 @@
 		ev?: boolean;
 		/** Plate from before the EU-style design (e.g. CZ before 2001): no blue band. */
 		plain?: boolean;
+		/** Old black plate: white characters on black (implies no band). */
+		dark?: boolean;
 	}
 
-	let { text, country, muted = false, ev = false, plain = false }: Props = $props();
+	let { text, country, muted = false, ev = false, plain = false, dark = false }: Props = $props();
 
 	/** Characters that fit the fixed plate width at full size; longer text is scaled down. */
 	const FIT_CHARS = 9;
 	const scale = $derived(Math.min(1, FIT_CHARS / Math.max(1, [...text].length)));
 </script>
 
-<span class="plate" class:muted class:ev class:plain>
-	{#if !plain}
+<span class="plate" class:muted class:ev class:plain={plain || dark} class:dark>
+	{#if !plain && !dark}
 		<span class="band" aria-hidden="true">
 			<svg viewBox="0 0 20 20" class="stars">
 				{#each Array.from({ length: 12 }, (_, i) => i) as i (i)}
@@ -101,6 +103,18 @@
 			inset 0 0 0 2px #fff,
 			inset 0 0 0 3px #111,
 			0 1px 2px rgb(0 0 0 / 0.15);
+	}
+	/* Old black plates (PL before 2000, AT before 1990): white on black. */
+	.dark {
+		background: #111;
+		color: #f4f4f4;
+		box-shadow:
+			inset 0 0 0 2px #111,
+			inset 0 0 0 3px #f4f4f4,
+			0 1px 2px rgb(0 0 0 / 0.15);
+	}
+	.dark.muted .text {
+		color: #bbb;
 	}
 	.muted .text {
 		color: #666;

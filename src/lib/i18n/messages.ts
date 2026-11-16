@@ -42,6 +42,12 @@ export const en = {
 	'about.cz-vintage.rare':
 		'Rarest: GT and GV (Gottwaldov, renamed Zlín in 1990) and BI (Brno-venkov, trucks only). Prague used AB to AZ; they count as one code, A.',
 	'about.cz-vintage.map': 'The map shows today’s districts, which are very close to the districts of that time.',
+	'about.pl-vintage.title': 'About these plates',
+	'about.pl-vintage.what':
+		'Polish plates of the system used from 1976 to 2000: white on black, three letters and four digits, e.g. KRA 1234. The first two letters stand for one of the 49 voivodeships of that time (Kraków used KR, KK, KW and KV).',
+	'about.pl-vintage.valid':
+		'They stay valid until the car changes owner or moves to another county, so you can still spot them on older cars.',
+	'about.pl-vintage.map': 'There is no map: the voivodeships of 1975–1998 no longer exist.',
 
 	'map.label': 'Map of {name}: found regions are green',
 	'map.area': '{name}: {found} of {total} found',
@@ -101,6 +107,8 @@ export const en = {
 	'format.at-standard': 'standard plate',
 	'format.at-personalized': 'personalised plate',
 	'format.at-black': 'black plate (before 1990)',
+	'format.pl-standard': 'standard plate',
+	'format.pl-vintage': 'black plate (before 2000)',
 
 	'location.idle': 'Location is not saved (enable in Settings)',
 	'location.waiting': 'Getting location…',
@@ -255,7 +263,9 @@ export const en = {
 	'collection.sk': 'Slovakia',
 	'collection.cz': 'Czechia',
 	'collection.cz-vintage': 'Czechia (pre-2001)',
-	'collection.at': 'Austria'
+	'collection.at': 'Austria',
+	'collection.pl': 'Poland',
+	'collection.pl-vintage': 'Poland (pre-2000)'
 } satisfies Record<string, Message>;
 
 export type MessageKey = keyof typeof en;
@@ -306,6 +316,12 @@ export const sk: Messages = {
 	'about.cz-vintage.rare':
 		'Najvzácnejšie: GT a GV (Gottwaldov, od roku 1990 Zlín) a BI (Brno-venkov, len nákladné autá). Praha mala AB až AZ; rátajú sa ako jeden kód, A.',
 	'about.cz-vintage.map': 'Mapa zobrazuje dnešné okresy, ktoré sa s vtedajšími takmer zhodujú.',
+	'about.pl-vintage.title': 'O týchto ŠPZ',
+	'about.pl-vintage.what':
+		'Poľské ŠPZ systému z rokov 1976 až 2000: biele písmo na čiernom, tri písmená a štyri číslice, napr. KRA 1234. Prvé dve písmená označujú jedno zo 49 vtedajších vojvodstiev (Krakov mal KR, KK, KW a KV).',
+	'about.pl-vintage.valid':
+		'Platia, kým auto nezmení majiteľa ani sa nepresťahuje do iného okresu, takže ich ešte zbadáš na starších autách.',
+	'about.pl-vintage.map': 'Mapa tu nie je: vojvodstvá z rokov 1975–1998 už neexistujú.',
 
 	'map.label': 'Mapa – {name}: nájdené oblasti sú zelené',
 	'map.area': '{name}: nájdené {found} z {total}',
@@ -365,6 +381,8 @@ export const sk: Messages = {
 	'format.at-standard': 'štandardná ŠPZ',
 	'format.at-personalized': 'personalizovaná ŠPZ',
 	'format.at-black': 'čierna ŠPZ (pred 1990)',
+	'format.pl-standard': 'štandardná ŠPZ',
+	'format.pl-vintage': 'čierna ŠPZ (pred 2000)',
 
 	'location.idle': 'Poloha sa neukladá (zapni v Nastaveniach)',
 	'location.waiting': 'Zisťujem polohu…',
@@ -529,5 +547,7 @@ export const sk: Messages = {
 	'collection.sk': 'Slovensko',
 	'collection.cz': 'Česko',
 	'collection.cz-vintage': 'Česko (do 2001)',
-	'collection.at': 'Rakúsko'
+	'collection.at': 'Rakúsko',
+	'collection.pl': 'Poľsko',
+	'collection.pl-vintage': 'Poľsko (do 2000)'
 };

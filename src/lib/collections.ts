@@ -1,6 +1,8 @@
 import { atRegions } from './data/at';
 import { czRegions } from './data/cz';
 import { czVintageRegions } from './data/cz-vintage';
+import { plRegions } from './data/pl';
+import { plVintageRegions } from './data/pl-vintage';
 import { skRegions } from './data/sk';
 import type { CollectionDef, CollectionId, CountryCode, NationwideCollectionId, Region } from './data/types';
 import type { NationwideFormat, PlateFormat } from './plates/detect';
@@ -38,8 +40,29 @@ export const collections: CollectionDef[] = [
 		regions: czVintageRegions,
 		nationwideTypes: []
 	},
-	{ id: 'at', country: 'AT', bandCode: 'A', flag: '🇦🇹', bonus: false, plateStyle: 'eu', regions: atRegions, nationwideTypes: [] }
+	{ id: 'at', country: 'AT', bandCode: 'A', flag: '🇦🇹', bonus: false, plateStyle: 'eu', regions: atRegions, nationwideTypes: [] },
+	{ id: 'pl', country: 'PL', bandCode: 'PL', flag: '🇵🇱', bonus: false, plateStyle: 'eu', regions: plRegions, nationwideTypes: [] },
+	{
+		id: 'pl-vintage',
+		country: 'PL',
+		bandCode: 'PL',
+		flag: '🇵🇱',
+		bonus: true,
+		plateStyle: 'black',
+		regions: plVintageRegions,
+		nationwideTypes: []
+	}
 ];
+
+/** Plate looks like the old black plates (white on black, no band). */
+export function isDarkPlate(collectionId: string, type: PlateFormat | null | undefined): boolean {
+	return byId.get(collectionId)?.plateStyle === 'black' || type === 'at-black';
+}
+
+/** Plate without the EU band (old systems). */
+export function isBandless(collectionId: string, type: PlateFormat | null | undefined): boolean {
+	return byId.get(collectionId)?.plateStyle !== 'eu' || type === 'at-black';
+}
 
 const byId = new Map(collections.map((c) => [c.id as string, c]));
 const regionIndex = new Map(

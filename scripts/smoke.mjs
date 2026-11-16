@@ -388,12 +388,15 @@ try {
 		cards.join(' || ')
 	);
 	check('home lists recent sightings', (await page.$$('main ul li')).length === 3);
+	// Every card has a map thumbnail, except collections without a map (Poland before 2000).
 	const cardCount = (await page.$$('a.collection')).length;
 	await page
-		.waitForFunction((n) => document.querySelectorAll('a.collection svg.map').length === n, { timeout: 5000 }, cardCount)
+		.waitForFunction((n) => document.querySelectorAll('a.collection svg.map').length === n - 1, { timeout: 5000 }, cardCount)
 		.catch(() => {});
-	const thumbs = (await page.$$('a.collection svg.map')).length;
-	check('home cards show map thumbnails (one per card)', cardCount >= 4 && thumbs === cardCount, `${thumbs} of ${cardCount}`);
+	const withoutThumb = await page.$$eval('a.collection', (cards) =>
+		cards.filter((c) => !c.querySelector('svg.map')).map((c) => c.querySelector('strong')?.innerText)
+	);
+	check('home cards show map thumbnails (except mapless collections)', cardCount >= 6 && withoutThumb.join() === 'Poland (pre-2000)', withoutThumb.join());
 	check('home lists Austria (no plates yet)', cards.some((c) => c.includes('Austria') && c.includes('0 of 111 found')));
 	// Countries with plates come before those without.
 	const order = await page.$$eval('a.collection strong', (els) => els.map((e) => e.innerText));

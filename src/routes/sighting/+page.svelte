@@ -9,7 +9,7 @@
 	import { db, inferPlateType } from '#lib/db/db.js';
 	import { deleteSighting, updateSighting } from '#lib/db/sightings.js';
 	import type { GeoPoint, Sighting } from '#lib/db/types.js';
-	import { collections, getCollection, getRegion, isNationwideType } from '#lib/collections.js';
+	import { collections, getCollection, getRegion, isBandless, isDarkPlate, isNationwideType } from '#lib/collections.js';
 	import { detectPlate, type NationwideFormat } from '#lib/plates/detect.js';
 	import { countByRegion, countNationwide } from '#lib/progress.js';
 	import { fromLocalInputValue, toLocalInputValue } from '#lib/datetime.js';
@@ -152,7 +152,8 @@
 			<PlateInput
 				bind:value={plate}
 				country={getCollection(collectionId)?.bandCode ?? ''}
-				plain={getCollection(collectionId)?.plateStyle === 'plain'}
+				plain={isBandless(collectionId, original.plateType)}
+				dark={isDarkPlate(collectionId, original.plateType)}
 				oninput={onPlateInput}
 				aria-label={t('add.plate')}
 			/>

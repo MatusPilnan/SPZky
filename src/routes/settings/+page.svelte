@@ -51,12 +51,13 @@
 	/** Map data credits (required by the CC BY licences). */
 	let mapCredits = $state<{ collection: CollectionId; text: string }[]>([]);
 	onMount(async () => {
-		mapCredits = await Promise.all(
+		const credits = await Promise.all(
 			collections.map(async (c) => {
 				const m = await loadMap(c.id);
-				return { collection: c.id, text: `${m.attribution} (${m.license})` };
+				return m ? { collection: c.id, text: `${m.attribution} (${m.license})` } : null;
 			})
 		);
+		mapCredits = credits.filter((c) => c !== null);
 	});
 </script>
 

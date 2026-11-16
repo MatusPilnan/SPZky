@@ -56,6 +56,40 @@ describe('detectPlate: Austria', () => {
 	});
 });
 
+describe('detectPlate: Poland', () => {
+	const pl = (raw: string) =>
+		detectPlate(raw)
+			.filter((d) => d.collectionId.startsWith('pl'))
+			.map((d) => `${d.collectionId}:${(d as { regionCode: string }).regionCode}`);
+
+	it('current plates: 2-letter codes + 5, 3-letter codes + 4 or 5 characters', () => {
+		expect(pl('WA 12345')).toEqual(['pl:WA']);
+		expect(pl('KR 1234A')).toEqual(['pl:KR']);
+		expect(pl('DW 1A234')).toEqual(['pl:DW']);
+		expect(pl('KRA 1A23')).toEqual(['pl:KRA']);
+		expect(pl('WPI 12345')).toEqual(['pl:WPI']);
+		expect(pl('GDA AC12')).toEqual(['pl:GDA']);
+	});
+
+	it('never uses B, D, I, O, Z in the serial', () => {
+		expect(pl('WA 1234B')).toEqual([]);
+		expect(pl('KRA 12OZ')).toEqual([]);
+	});
+
+	it('old black plates: area code + series letter + 4 digits (or 3 digits + letter)', () => {
+		expect(pl('KRA 1234')).toEqual(['pl-vintage:KR']);
+		expect(pl('WAB 123C')).toEqual(['pl-vintage:WA']);
+		expect(detectPlate('KRA 1234').find((d) => d.collectionId === 'pl-vintage')?.format).toBe('pl-vintage');
+	});
+
+	it('old and current systems never match the same plate', () => {
+		for (const raw of ['KRA 1234', 'KRA 1A23', 'WA 12345', 'POZ 12AC']) {
+			const hits = pl(raw).map((h) => h.split(':')[0]);
+			expect(new Set(hits).size).toBe(1);
+		}
+	});
+});
+
 describe('detectPlate: Slovakia', () => {
 	it('detects standard district plates in any formatting', () => {
 		for (const raw of ['BA-123AB', 'ba 123 ab', 'BA123AB']) {
@@ -141,7 +175,9 @@ describe('detectPlate: Czech pre-2001', () => {
 			format: 'cz-vintage',
 			confidence: 'high'
 		});
-		expect(regions('KOA 12-34')).toEqual(['cz-vintage:KO']);
+		// Same shape as an old Polish plate (Koszalin KO): both old systems are offered.
+		expect(regions('KOA 12-34')).toEqual(['cz-vintage:KO', 'pl-vintage:KO']);
+		expect(spansCountries(detectPlate('KOA 12-34'))).toBe(true);
 	});
 
 	it('collects all Prague A* codes as A, except government AA', () => {

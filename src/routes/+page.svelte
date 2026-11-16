@@ -8,6 +8,7 @@
 	import ProgressBar from '#lib/components/ProgressBar.svelte';
 	import SightingList from '#lib/components/SightingList.svelte';
 	import RegionMap from '#lib/components/RegionMap.svelte';
+	import { hasMap } from '#lib/geo/maps/index.js';
 	import SyncButton from '#lib/components/SyncButton.svelte';
 
 	const sightings = liveQuery(() => listSightings());
@@ -42,7 +43,7 @@
 				{#if p.nationwide > 0}<span>{t('progress.nationwide', { count: p.nationwide })}</span>{/if}
 			</div>
 		</div>
-		<div class="thumb"><RegionMap collection={c} counts={counts.get(c.id)} /></div>
+		{#if hasMap(c.id)}<div class="thumb"><RegionMap collection={c} counts={counts.get(c.id)} /></div>{/if}
 	</a>
 {/snippet}
 

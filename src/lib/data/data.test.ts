@@ -7,14 +7,35 @@ describe('collection data', () => {
 		const codes = c.regions.map((r) => r.code);
 		expect(new Set(codes).size).toBe(codes.length);
 		for (const r of c.regions) {
-			expect(r.code).toMatch(/^[A-Z]{1,2}$/);
+			expect(r.code).toMatch(/^[A-Z]{1,3}$/);
 			expect(r.name.trim()).not.toBe('');
 		}
 	});
 
 	it('has the expected sizes', () => {
 		const size = Object.fromEntries(collections.map((c) => [c.id, c.regions.length]));
-		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 111 });
+		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 111, pl: 441, 'pl-vintage': 165 });
+	});
+
+	it('Poland: no never-used codes, secondary codes kept, every voivodeship letter valid', () => {
+		const pl = collections.find((c) => c.id === 'pl')!.regions;
+		const codes = pl.map((r) => r.code);
+		// Marked "not in use" by pl.wikipedia, and STY (no such county).
+		for (const code of ['BIB', 'SBN', 'CBC', 'KBA', 'PA', 'TKC', 'TKM', 'TKP', 'LVB', 'NOX', 'PX', 'WPX', 'RZR', 'ZZ', 'SWZ', 'DWW', 'VWW', 'STY']) {
+			expect(codes).not.toContain(code);
+		}
+		for (const code of ['KK', 'JR', 'DX', 'VW', 'PY', 'MO', 'AE', 'WV', 'SRS', 'PKO', 'POZ', 'NOG']) expect(codes).toContain(code);
+		expect(pl.filter((r) => r.name === 'Warszawa')).toHaveLength(16);
+		expect(new Set(codes.map((c) => c[0]))).toEqual(new Set('DVCLFEKJWAORYBGXSITNPMZ'));
+	});
+
+	it('Poland before 2000: 49 voivodeships with 2–12 codes each', () => {
+		const old = collections.find((c) => c.id === 'pl-vintage')!.regions;
+		const byName = new Map<string, number>();
+		for (const r of old) byName.set(r.name, (byName.get(r.name) ?? 0) + 1);
+		expect(byName.size).toBe(49);
+		expect(byName.get('Warszawa')).toBe(12);
+		expect(byName.get('Katowice')).toBe(6);
 	});
 
 	it('Austria: regional codes only, merged districts and black-plate state codes kept', () => {

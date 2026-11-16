@@ -7,14 +7,16 @@
 		country?: string;
 		/** Plate from before the EU-style design (e.g. CZ before 2001): no blue band. */
 		plain?: boolean;
+		/** Old black plate: white characters on black (implies no band). */
+		dark?: boolean;
 		ref?: HTMLInputElement | null;
 	}
 
-	let { value = $bindable(), country = '', plain = false, ref = $bindable(null), ...rest }: Props = $props();
+	let { value = $bindable(), country = '', plain = false, dark = false, ref = $bindable(null), ...rest }: Props = $props();
 </script>
 
-<div class="plate" class:plain data-plain={plain}>
-	{#if !plain}
+<div class="plate" class:plain={plain || dark} class:dark data-plain={plain || dark}>
+	{#if !plain && !dark}
 		<span class="band" aria-hidden="true">
 			<svg viewBox="0 0 20 20" class="stars">
 				{#each Array.from({ length: 12 }, (_, i) => i) as i (i)}
@@ -54,6 +56,16 @@
 	}
 	.plain input {
 		text-align: center;
+	}
+	.dark {
+		background: #111;
+		box-shadow:
+			inset 0 0 0 3px #111,
+			inset 0 0 0 4px #f4f4f4,
+			0 2px 6px rgb(0 0 0 / 0.15);
+	}
+	.dark input {
+		color: #f4f4f4;
 	}
 	.plate:focus-within {
 		outline: 3px solid var(--accent);

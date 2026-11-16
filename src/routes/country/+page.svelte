@@ -15,7 +15,7 @@
 	import PlateBadge from '#lib/components/PlateBadge.svelte';
 	import TypeChip from '#lib/components/TypeChip.svelte';
 	import RegionMap from '#lib/components/RegionMap.svelte';
-	import { loadMap } from '#lib/geo/maps/index.js';
+	import { hasMap, loadMap } from '#lib/geo/maps/index.js';
 
 	function pickArea(area: { name: string; codes: string[] }) {
 		detail = area.codes.length === 1 ? { kind: 'region', code: area.codes[0] } : { kind: 'area', ...area };
@@ -78,7 +78,7 @@
 	);
 
 	$effect(() => {
-		if (collection) loadMap(collection.id).then((m) => (mapCredit = `${m.attribution} (${m.license})`));
+		if (collection) loadMap(collection.id).then((m) => (mapCredit = m ? `${m.attribution} (${m.license})` : ''));
 	});
 
 	const filters = ['all', 'found', 'missing'] as const;
@@ -116,18 +116,31 @@
 				<p class="muted">{t('about.cz-vintage.rare')}</p>
 				<p class="muted">{t('about.cz-vintage.map')}</p>
 			</section>
+		{:else if collection.id === 'pl-vintage'}
+			<!-- Facts: src/lib/data/pl-vintage.ts -->
+			<section class="card about" data-testid="about">
+				<div class="about-head">
+					<PlateBadge text="KRA 1234" country="PL" dark />
+					<h2>{t('about.pl-vintage.title')}</h2>
+				</div>
+				<p>{t('about.pl-vintage.what')}</p>
+				<p>{t('about.pl-vintage.valid')}</p>
+				<p class="muted">{t('about.pl-vintage.map')}</p>
+			</section>
 		{/if}
 
-		<section class="card map-card">
-			<RegionMap
-				{collection}
-				counts={counts.get(collection.id)}
-				{selectedCodes}
-				interactive
-				onpick={pickArea}
-			/>
-			{#if mapCredit}<p class="credit muted">{t('map.credit', { source: mapCredit })}</p>{/if}
-		</section>
+		{#if hasMap(collection.id)}
+			<section class="card map-card">
+				<RegionMap
+					{collection}
+					counts={counts.get(collection.id)}
+					{selectedCodes}
+					interactive
+					onpick={pickArea}
+				/>
+				{#if mapCredit}<p class="credit muted">{t('map.credit', { source: mapCredit })}</p>{/if}
+			</section>
+		{/if}
 
 		<section class="card">
 			<div class="filters" role="tablist">

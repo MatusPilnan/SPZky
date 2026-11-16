@@ -12,6 +12,8 @@
 		getCollection,
 		getRegion,
 		highlightOf,
+		isBandless,
+		isDarkPlate,
 		type CollectionId
 	} from '#lib/collections.js';
 	import {
@@ -267,7 +269,8 @@
 				bind:value={plate}
 				bind:ref={plateInput}
 				country={bandCountry}
-				plain={selection ? getCollection(selection.collectionId)?.plateStyle === 'plain' : false}
+				plain={selection ? isBandless(selection.collectionId, selection.plateType) : false}
+				dark={selection ? isDarkPlate(selection.collectionId, selection.plateType) : false}
 				oninput={onPlateInput}
 				placeholder={t('add.platePlaceholder')}
 				aria-label={t('add.plate')}

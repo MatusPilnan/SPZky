@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { getCollection, getRegion, highlightOf } from '../collections';
+	import { getCollection, getRegion, highlightOf, isBandless, isDarkPlate } from '../collections';
 	import type { Sighting } from '../db/types';
 	import type { PlateFormat } from '../plates/detect';
 	import { formatDateTime, t } from '../i18n/i18n.svelte';
@@ -32,7 +32,8 @@
 					country={collection?.bandCode ?? '?'}
 					muted={s.plate === null}
 					ev={s.plateType === 'ev'}
-					plain={collection?.plateStyle === 'plain'}
+					plain={isBandless(s.collectionId, s.plateType)}
+					dark={isDarkPlate(s.collectionId, s.plateType)}
 				/>
 				<div class="meta">
 					{#if !compact}

@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { collections } from '../../collections';
-import { areaStatus, codesOfArea, isUnmappedCode, loadMap } from './index';
+import { areaStatus, codesOfArea, hasMap, isUnmappedCode, loadMap } from './index';
 
 describe('region maps', () => {
-	it.each(collections.map((c) => [c.id, c] as const))('%s: every area has codes and every code an area', async (_, c) => {
-		const map = await loadMap(c.id);
+	const mapped = collections.filter((c) => hasMap(c.id));
+
+	it('only historic collections have no map', () => {
+		expect(collections.filter((c) => !hasMap(c.id)).map((c) => c.id)).toEqual(['pl-vintage']);
+	});
+
+	it.each(mapped.map((c) => [c.id, c] as const))('%s: every area has codes and every code an area', async (_, c) => {
+		const map = (await loadMap(c.id))!;
 		const areasWithoutCodes = map.shapes.filter((s) => codesOfArea(c, s.name).length === 0).map((s) => s.name);
 		expect(areasWithoutCodes).toEqual([]);
 		const covered = new Set(map.shapes.flatMap((s) => codesOfArea(c, s.name)));
@@ -15,10 +21,12 @@ describe('region maps', () => {
 	});
 
 	it('has the expected number of areas', async () => {
-		expect((await loadMap('sk')).shapes).toHaveLength(79);
-		expect((await loadMap('cz')).shapes).toHaveLength(14);
-		expect((await loadMap('cz-vintage')).shapes).toHaveLength(77);
-		expect((await loadMap('at')).shapes).toHaveLength(94);
+		expect((await loadMap('sk'))!.shapes).toHaveLength(79);
+		expect((await loadMap('cz'))!.shapes).toHaveLength(14);
+		expect((await loadMap('cz-vintage'))!.shapes).toHaveLength(77);
+		expect((await loadMap('at'))!.shapes).toHaveLength(94);
+		expect((await loadMap('pl'))!.shapes).toHaveLength(380);
+		expect(await loadMap('pl-vintage')).toBeNull();
 	});
 
 	it('maps shared codes to all areas of a city', () => {
@@ -34,6 +42,12 @@ describe('region maps', () => {
 		expect(codesOfArea(at, 'Murtal').sort()).toEqual(['JU', 'KF', 'MT']);
 		expect(codesOfArea(at, 'Leoben').sort()).toEqual(['LE', 'LN']);
 		expect(codesOfArea(at, 'Rust')).toEqual(['E']);
+		const pl = collections.find((c) => c.id === 'pl')!;
+		expect(codesOfArea(pl, 'Krakow').sort()).toEqual(['JR', 'KK', 'KR']);
+		// Same county name in two voivodeships, told apart by the voivodeship.
+		expect(codesOfArea(pl, 'Bielski (Śląskie)').sort()).toEqual(['IBI', 'SBI']);
+		expect(codesOfArea(pl, 'Bielski (Podlaskie)')).toEqual(['BBI']);
+		expect(codesOfArea(pl, 'Warszawa')).toHaveLength(16);
 	});
 
 	it('derives the area status from its codes', () => {

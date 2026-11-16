@@ -13,10 +13,11 @@ describe('countryAt', () => {
 		['Ostrava', 49.8209, 18.2625, 'CZ'],
 		['Hodonín (near SK border)', 48.849, 17.132, 'CZ'],
 		['Wien', 48.2082, 16.3738, 'AT'],
+		['Gdańsk', 54.352, 18.6466, 'PL'],
 		['Innsbruck', 47.2692, 11.4041, 'AT'],
 		['Bratislava (next to the AT border)', 48.1486, 17.1077, 'SK'],
 		['Budapest', 47.4979, 19.0402, null],
-		['Kraków', 50.0647, 19.945, null],
+		['Kraków', 50.0647, 19.945, 'PL'],
 		['Dresden', 51.0504, 13.7373, null],
 		['Atlantic', 0, 0, null]
 	])('%s → %s', (_, lat, lng, expected) => {

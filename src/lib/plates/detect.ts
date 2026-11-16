@@ -21,7 +21,11 @@ export type RegionFormat =
 	/** AT personalised (Wunschkennzeichen): district code + letters then digits (W JOHN 1). */
 	| 'at-personalized'
 	/** AT black plate 1947–1989: state/city code + digits (W 123.456). */
-	| 'at-black';
+	| 'at-black'
+	/** PL since 2000: 2–3 letter county code + serial (WA 12345, KRA 1A23). */
+	| 'pl-standard'
+	/** PL 1976–2000 black plate: area code + series letter + 4 digits or 3 digits + letter. */
+	| 'pl-vintage';
 
 /** Recognised plate formats without a region; they go to the country's nationwide subcollection. */
 export type NationwideFormat =
@@ -144,6 +148,33 @@ function detectAustrian(n: string, raw: string): Detection[] {
 	return out.filter((d): d is Detection => d !== null);
 }
 
+/** Letters allowed in Polish serials (B, D, I, O, Z are never used). */
+const PL = '[ACEFGHJKLMNPRSTUVWXY]';
+/** Serials after a 2-letter code (5 characters). */
+const plSerial2 = new RegExp(`^(\\d{5}|\\d{4}${PL}|\\d{3}${PL}{2}|\\d${PL}\\d{3}|\\d${PL}{2}\\d{2})$`);
+/** Serials after a 3-letter code (4 or 5 characters). */
+const plSerial3 = new RegExp(
+	`^(${PL}\\d{3}|\\d{2}${PL}{2}|\\d${PL}\\d{2}|\\d{2}${PL}\\d|\\d${PL}{2}\\d|${PL}{2}\\d{2}|\\d{5}|\\d{4}${PL}|\\d{3}${PL}{2})$`
+);
+
+/**
+ * Poland. Since 2000: county code of 2–3 letters (first = voivodeship) + serial.
+ * 1976–2000 (black plates): 2-letter area code + series letter + 4 digits or 3 digits + letter;
+ * that serial shape never occurs on current plates, so the two systems don't overlap.
+ */
+function detectPolish(n: string): Detection[] {
+	const out: (Detection | null)[] = [];
+	for (const len of [2, 3]) {
+		const code = n.slice(0, len);
+		const serial = n.slice(len);
+		if (!getRegion('pl', code)) continue;
+		if ((len === 2 ? plSerial2 : plSerial3).test(serial)) out.push(region('pl', code, 'pl-standard', 'high'));
+	}
+	const old = /^([A-Z]{2})[A-Z](\d{4}|\d{3}[A-Z])$/.exec(n);
+	if (old) out.push(region('pl-vintage', old[1], 'pl-vintage', 'high'));
+	return out.filter((d): d is Detection => d !== null);
+}
+
 export function detectionKey(d: Detection): string {
 	return d.type === 'region' ? `${d.collectionId}:${d.regionCode}` : `${d.collectionId}:*${d.format}`;
 }
@@ -159,7 +190,7 @@ export function detectPlate(raw: string): Detection[] {
 	if (n.length < 5) return [];
 
 	const seen = new Set<string>();
-	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw)]
+	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n)]
 		.filter((d) => {
 			const key = detectionKey(d);
 			if (seen.has(key)) return false;
