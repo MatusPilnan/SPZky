@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizePlate } from './normalize';
+import { foldPlate, normalizePlate } from './normalize';
 
 describe('normalizePlate', () => {
 	it('uppercases and strips separators', () => {
@@ -8,8 +8,16 @@ describe('normalizePlate', () => {
 		expect(normalizePlate('BN 12-34')).toBe('BN1234');
 	});
 
-	it('drops diacritics instead of the whole letter', () => {
-		expect(normalizePlate('čA-123ŠŽ')).toBe('CA123SZ');
+	it('drops other diacritics instead of the whole letter', () => {
+		expect(normalizePlate('áň-123ťý')).toBe('AN123TY');
+	});
+
+	it('keeps Serbian Č Ć Š Ž Đ (BČ and BĆ are different codes)', () => {
+		expect(normalizePlate('bč 123-ab')).toBe('BČ123AB');
+		expect(normalizePlate('BĆ 123-AB')).toBe('BĆ123AB');
+		expect(normalizePlate('đa 123 ab')).toBe('ĐA123AB');
+		expect(foldPlate('BČ123AB')).toBe('BC123AB');
+		expect(foldPlate('ĐA1')).toBe('DA1');
 	});
 
 	it('keeps German umlauts (they are distinct codes: MÜ ≠ MU)', () => {

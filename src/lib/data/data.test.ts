@@ -7,15 +7,25 @@ describe('collection data', () => {
 		const codes = c.regions.map((r) => r.code);
 		expect(new Set(codes).size).toBe(codes.length);
 		for (const r of c.regions) {
-			// Letters (incl. German umlauts) or French department numbers ("75", "2A", "974").
-			expect(r.code).toMatch(/^([A-ZÄÖÜ]{1,3}|\d{2}|2[AB]|97\d)$/);
+			// Letters (incl. German umlauts, Serbian Č Ć Š Ž Đ) or French department numbers ("75", "2A", "974").
+			expect(r.code).toMatch(/^([A-ZÄÖÜČĆŠŽĐ]{1,3}|\d{2}|2[AB]|97\d)$/);
 			expect(r.name.trim()).not.toBe('');
 		}
 	});
 
 	it('has the expected sizes', () => {
 		const size = Object.fromEntries(collections.map((c) => [c.id, c.regions.length]));
-		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165, de: 714, ua: 107, 'ua-vintage': 105, fr: 101, bg: 30, ro: 42, si: 11 });
+		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165, de: 714, ua: 107, 'ua-vintage': 105, fr: 101, bg: 30, ro: 42, si: 11, rs: 81 });
+	});
+
+	it('Serbia: 81 areas, the 7 Kosovo codes marked rare and without map area', () => {
+		const rs = collections.find((c) => c.id === 'rs')!.regions;
+		const rare = rs.filter((r) => r.rare).map((r) => r.code).sort();
+		expect(rare).toEqual(['GL', 'KM', 'PE', 'PR', 'PZ', 'UR', 'ĐA']);
+		for (const r of rs) if (!r.rare) expect(r.areas?.length).toBeGreaterThan(0);
+		// Diacritics matter: Bečej and Bogatić are different codes.
+		expect(rs.find((r) => r.code === 'BČ')?.name).toBe('Bečej');
+		expect(rs.find((r) => r.code === 'BĆ')?.name).toBe('Bogatić');
 	});
 
 	it('France: 101 departments, Corsica as 2A/2B, no 20', () => {

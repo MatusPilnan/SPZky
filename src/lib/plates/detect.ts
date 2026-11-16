@@ -2,7 +2,8 @@ import { countryOf, getRegion } from '../collections';
 import { czNumericToLetter } from '../data/cz';
 import { FR_DEPARTMENT } from '../data/fr';
 import type { CollectionId, NationwideCollectionId } from '../data/types';
-import { normalizePlate } from './normalize';
+import { rsRegions } from '../data/rs';
+import { foldPlate, normalizePlate } from './normalize';
 
 /** Plate formats that encode a region. */
 export type RegionFormat =
@@ -45,7 +46,9 @@ export type RegionFormat =
 	/** RO since 1992: county + 2 digits + 3 letters (CJ 12 ABC; Bucharest B 123 ABC). */
 	| 'ro-standard'
 	/** SI: area code + 3–6 letters/digits (exact serial formats not in the sources). */
-	| 'si-standard';
+	| 'si-standard'
+	/** RS since 2011: area code + 3 digits (4 in Belgrade) + 2 letters (NS 123-AB). */
+	| 'rs-standard';
 
 /** Recognised plate formats without a region; they go to the country's nationwide subcollection. */
 export type NationwideFormat =
@@ -295,6 +298,28 @@ function detectSlovenian(n: string): Detection[] {
 	return d ? [d] : [];
 }
 
+/** Serbian codes by their diacritic-free form ("BC" → BČ, BĆ), for codes typed without Č Ć Š Ž Đ. */
+let rsByFold: Map<string, string[]> | null = null;
+function rsCodesFor(typed: string): { codes: string[]; exact: boolean } {
+	if (getRegion('rs', typed)) return { codes: [typed], exact: true };
+	rsByFold ??= rsRegions.reduce((m, r) => m.set(foldPlate(r.code), [...(m.get(foldPlate(r.code)) ?? []), r.code]), new Map<string, string[]>());
+	return { codes: rsByFold.get(foldPlate(typed)) ?? [], exact: false };
+}
+
+/**
+ * Serbia since 2011: area code + 3 digits (4 in Belgrade) + 2 letters. A code typed
+ * without its diacritics (CA for ČA) is matched at medium confidence.
+ */
+function detectSerbian(n: string): Detection[] {
+	const m = /^([A-ZČĆŠŽĐ]{2})(\d{3,4})[A-ZČĆŠŽĐ]{2}$/.exec(n);
+	if (!m) return [];
+	const { codes, exact } = rsCodesFor(m[1]);
+	return codes
+		.filter((code) => m[2].length === 3 || code === 'BG')
+		.map((code) => region('rs', code, 'rs-standard', exact ? 'high' : 'medium'))
+		.filter((d): d is Detection => d !== null);
+}
+
 export function detectionKey(d: Detection): string {
 	return d.type === 'region' ? `${d.collectionId}:${d.regionCode}` : `${d.collectionId}:*${d.format}`;
 }
@@ -310,7 +335,7 @@ export function detectPlate(raw: string): Detection[] {
 	if (n.length < 5) return [];
 
 	const seen = new Set<string>();
-	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw), ...detectUkrainian(n), ...detectFrench(n), ...detectBulgarian(n), ...detectRomanian(n), ...detectSlovenian(n)]
+	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw), ...detectUkrainian(n), ...detectFrench(n), ...detectBulgarian(n), ...detectRomanian(n), ...detectSlovenian(n), ...detectSerbian(n)]
 		.filter((d) => {
 			const key = detectionKey(d);
 			if (seen.has(key)) return false;

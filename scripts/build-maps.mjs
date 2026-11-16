@@ -145,6 +145,16 @@ const MAPS = [
 		license: 'CC BY 4.0'
 	},
 	{
+		// 145 municipalities (without Kosovo), grouped into registration areas by rs.ts.
+		// ODbL (share-alike): this generated file is under the same licence.
+		file: 'rs-municipalities',
+		url: `${RELEASE}/gbOpen/SRB/ADM2/geoBoundaries-SRB-ADM2_simplified.geojson`,
+		simplify: '8%',
+		center: [20.9, 44.0],
+		attribution: '© OpenStreetMap contributors via geoBoundaries',
+		license: 'ODbL 1.0'
+	},
+	{
 		// 24 oblasts, Crimea, Kyiv and Sevastopol (official boundaries, 2022). Used by both
 		// Ukrainian collections (the 1995 system used the same regions).
 		file: 'ua-regions',

@@ -478,7 +478,9 @@ export const plRegions: Region[] = TABLE.trim()
 	.split('\n')
 	.map((line) => {
 		const [code, name, area] = line.split('|');
-		return area ? { code, name, area } : { code, name };
+		const region: Region = area ? { code, name, area } : { code, name };
+		// NOG: county dissolved in 2002, plates still valid but hardly seen.
+		return code === 'NOG' ? { ...region, rare: true } : region;
 	});
 
 /** Codes without a map area (county dissolved before the map data). */

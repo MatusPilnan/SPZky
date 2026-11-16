@@ -199,6 +199,26 @@ describe('detectPlate: Slovenia', () => {
 	});
 });
 
+describe('detectPlate: Serbia', () => {
+	const rs = (raw: string) =>
+		detectPlate(raw)
+			.filter((d) => d.collectionId === 'rs')
+			.map((d) => `${(d as { regionCode: string }).regionCode}:${d.confidence}`);
+
+	it('area + 3 digits + 2 letters; Belgrade with 4 digits', () => {
+		expect(rs('NS 123-AB')).toEqual(['NS:high']);
+		expect(rs('BG 1234-AB')).toEqual(['BG:high']);
+		expect(rs('NS 1234-AB')).toEqual([]); // 4 digits only in Belgrade
+	});
+
+	it('codes with Serbian letters, typed with or without diacritics', () => {
+		expect(rs('ČA 123-AB')).toEqual(['ČA:high']);
+		expect(rs('CA 123-AB')).toEqual(['ČA:medium']);
+		expect(rs('BČ 123-AB')).toEqual(['BČ:high']);
+		expect(rs('BC 123-AB').sort()).toEqual(['BĆ:medium', 'BČ:medium']);
+	});
+});
+
 describe('detectPlate: Poland', () => {
 	const pl = (raw: string) =>
 		detectPlate(raw)

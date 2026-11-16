@@ -1,6 +1,7 @@
 import { atUnmappedCodes } from '../../data/at';
 import { plUnmappedCodes } from '../../data/pl';
 import { frUnmappedCodes } from '../../data/fr';
+import { rsUnmappedCodes } from '../../data/rs';
 import type { CollectionDef, CollectionId } from '../../data/types';
 import type { RegionMapData } from './types';
 
@@ -22,6 +23,7 @@ const loaders: Partial<Record<CollectionId, () => Promise<{ map: RegionMapData }
 	fr: () => import('./fr-departments'),
 	bg: () => import('./bg-provinces'),
 	ro: () => import('./ro-counties'),
+	rs: () => import('./rs-municipalities'),
 	ua: () => import('./ua-regions'),
 	'ua-vintage': () => import('./ua-regions')
 };
@@ -85,7 +87,8 @@ const areaAliases: Partial<Record<CollectionId, Record<string, string[]>>> = {
 const unmapped: Partial<Record<CollectionId, Set<string>>> = {
 	at: atUnmappedCodes,
 	pl: plUnmappedCodes,
-	fr: frUnmappedCodes
+	fr: frUnmappedCodes,
+	rs: rsUnmappedCodes
 };
 
 export function isUnmappedCode(collectionId: CollectionId, code: string): boolean {

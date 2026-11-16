@@ -38,9 +38,10 @@
 			class:found={count > 0}
 			class:selected={selected === region.code}
 			aria-pressed={selected === region.code}
-			title={region.name}
+			title={region.rare ? `${region.name} (${t('region.rare')})` : region.name}
 			onclick={() => onpick(region.code)}
 		>
+			{#if region.rare}<span class="rare" aria-label={t('region.rare')}>✦</span>{/if}
 			<span class="code">{region.code}</span>
 			<span class="name">{region.name}</span>
 			{#if count > 1}<span class="count">{count}</span>{/if}
@@ -97,6 +98,13 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+	.rare {
+		position: absolute;
+		top: 2px;
+		left: 4px;
+		font-size: 0.65rem;
+		color: var(--special);
 	}
 	.count {
 		position: absolute;

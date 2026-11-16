@@ -107,6 +107,17 @@ checklist "Region data" in `CLAUDE.md` for every country added later.
   collection: the 1966–1992 plates were valid only until 2000. Left out: army (A), MAI,
   diplomatic (CD, TC, CO), temporary. Sources: ro.wikipedia "Numerele de înmatriculare auto
   în România", en.wikipedia "Vehicle registration plates of Romania" (checked 2026-11-16).
+- **Serbia** (phase 9, 2026-11-16): **81** registration areas, imported by
+  `scripts/import-rs-codes.mjs` from sr.wikipedia into `rs.generated.ts` (official list,
+  Правилник, Прилог 1, May 2025). Format since 2011 `NS 123-AB` (Belgrade `BG 1234-AB`).
+  Codes contain Č Ć Š Ž Đ (BČ Bečej ≠ BĆ Bogatić), so `normalizePlate` keeps them;
+  `foldPlate` lets a code typed without diacritics match at medium confidence. Decided
+  2026-11-16: the 7 Kosovo codes (ĐA, GL, KM, PE, PR, PZ, UR) are included and **marked
+  rare** (`Region.rare`, ✦ in the grid; since 2024 cars in Kosovo need RKS plates); Kosovo
+  gets its own collection. KU (Kula, since 2025) and SO both count. No bonus collection:
+  pre-2011 plates were valid only until the end of 2011. Left out: diplomatic, police,
+  army, temporary. Sources: sr.wikipedia "Регистарске ознаке у Србији", en.wikipedia
+  "Vehicle registration plates of Serbia" (checked 2026-11-16).
 - **Slovenia** (phase 9, 2026-11-16): **11** registration areas (CE, GO, KK, KP, KR, LJ, MB,
   MS, NM, PO, SG). The sources don't give the serial formats, so detection is loose (code +
   3–6 letters/digits with a digit, medium confidence); KK/PO also exist in Slovakia, GPS
@@ -221,13 +232,15 @@ raw, loaded on demand and precached for offline use):
 | FR | 96 metropolitan departments (overseas 971–976 without area) | gbOpen FRA ADM2: IGN, 2022 | Etalab Open Licence 2.0 (attribution) |
 | BG | 28 provinces (oblasti) | gbOpen BGR ADM1: Wikimedia Commons, 2019 | Public domain |
 | RO | 41 counties + Bucharest | gbOpen ROU ADM1: World Bank, 2017 | CC BY 4.0 |
+| RS | 145 municipalities, grouped into registration areas (Kosovo codes without area) | gbOpen SRB ADM2: OpenStreetMap | ODbL 1.0 (share-alike: the generated `rs-municipalities.ts` is under the same licence) |
 | UA, UA 1995–2004 | 27 regions (oblasts, Crimea, Kyiv, Sevastopol) | gbHumanitarian UKR ADM1: State Enterprise "Kartographia" via HDX, 2022 (Kyiv city renamed by location: both are "Kyivska") | CC BY 3.0 IGO |
 | DE | 401 districts and district-free cities (Kreise) | gbOpen DEU ADM3: BKG, 2021 (dissolved by name: coastal districts come in several parts) | dl-de/by-2-0 (attribution) |
 
 | AT pre-1990 | 9 states (Bundesländer) | gbOpen AUT ADM1: BEV, 2017 | CC BY-SA 2.0 (as above) |
 
 - Codes without a map area (`isUnmappedCode`): Austria's WU (Wien-Umgebung, dissolved
-  2017); Poland's NOG (Olecko-Gołdap until 2002).
+  2017); Poland's NOG (Olecko-Gołdap until 2002); France's overseas departments; Serbia's
+  Kosovo codes.
   They are in the grid but not on the map.
 - Polish county names repeat across voivodeships ("Bielski"…): `build-maps.mjs` appends the
   voivodeship (`disambiguateWith`), and each Polish region names its map area (`Region.area`).
