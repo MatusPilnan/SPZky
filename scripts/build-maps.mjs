@@ -170,6 +170,25 @@ const MAPS = [
 		}
 	},
 	{
+		// 7 districts = the 7 RKS codes. CC BY-SA (share-alike): this generated file is under
+		// the same licence.
+		file: 'xk-districts',
+		url: `${RELEASE}/gbOpen/XKX/ADM1/geoBoundaries-XKX-ADM1_simplified.geojson`,
+		simplify: '15%',
+		center: [20.9, 42.6],
+		attribution: '© OpenStreetMap contributors via geoBoundaries',
+		license: 'CC BY-SA 2.0',
+		rename: {
+			'District of Prishtina': 'Prishtina',
+			'District of Mitrovica': 'Mitrovica',
+			'District of Peja': 'Peja',
+			'District of Prizren': 'Prizren',
+			'District of Ferizaj': 'Ferizaj',
+			'District of Gjilan': 'Gjilan',
+			'District of Gjakova': 'Gjakova'
+		}
+	},
+	{
 		// 145 municipalities (without Kosovo), grouped into registration areas by rs.ts.
 		// ODbL (share-alike): this generated file is under the same licence.
 		file: 'rs-municipalities',

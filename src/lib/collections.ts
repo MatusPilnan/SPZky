@@ -9,6 +9,7 @@ import { plVintageRegions } from './data/pl-vintage';
 import { grRegions } from './data/gr';
 import { roRegions } from './data/ro';
 import { rsRegions } from './data/rs';
+import { xkRegions } from './data/xk';
 import { siRegions } from './data/si';
 import { uaRegions, uaVintageRegions } from './data/ua';
 import { skRegions } from './data/sk';
@@ -66,6 +67,7 @@ export const collections: CollectionDef[] = [
 	{ id: 'si', country: 'SI', bandCode: 'SLO', flag: '🇸🇮', bonus: false, plateStyle: 'eu', regions: siRegions, nationwideTypes: [] },
 	{ id: 'gr', country: 'GR', bandCode: 'GR', flag: '🇬🇷', bonus: false, plateStyle: 'eu', regions: grRegions, nationwideTypes: [] },
 	{ id: 'rs', country: 'RS', bandCode: 'SRB', flag: '🇷🇸', bonus: false, plateStyle: 'eu', regions: rsRegions, nationwideTypes: [] },
+	{ id: 'xk', country: 'XK', bandCode: 'RKS', flag: '🇽🇰', bonus: false, plateStyle: 'eu', regions: xkRegions, nationwideTypes: [] },
 	{ id: 'ua', country: 'UA', bandCode: 'UA', flag: '🇺🇦', bonus: false, plateStyle: 'eu', regions: uaRegions, nationwideTypes: [] },
 	{
 		id: 'ua-vintage',

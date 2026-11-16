@@ -8,14 +8,14 @@ describe('collection data', () => {
 		expect(new Set(codes).size).toBe(codes.length);
 		for (const r of c.regions) {
 			// Letters (incl. German umlauts, Serbian Č Ć Š Ž Đ) or French department numbers ("75", "2A", "974").
-			expect(r.code).toMatch(/^([A-ZÄÖÜČĆŠŽĐ]{1,3}|\d{2}|2[AB]|97\d)$/);
+			expect(r.code).toMatch(/^([A-ZÄÖÜČĆŠŽĐ]{1,3}|\d{2}|2[AB]|97\d)$/); // \d{2} also Kosovo
 			expect(r.name.trim()).not.toBe('');
 		}
 	});
 
 	it('has the expected sizes', () => {
 		const size = Object.fromEntries(collections.map((c) => [c.id, c.regions.length]));
-		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165, de: 714, ua: 107, 'ua-vintage': 105, fr: 101, bg: 30, ro: 42, si: 11, rs: 81, gr: 156 });
+		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165, de: 714, ua: 107, 'ua-vintage': 105, fr: 101, bg: 30, ro: 42, si: 11, rs: 81, gr: 156, xk: 7 });
 	});
 
 	it('Greece: current series only, ΚΟΗ/ΚΟΚ in Thessaloniki, no non-regional series', () => {

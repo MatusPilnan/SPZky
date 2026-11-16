@@ -115,7 +115,8 @@ git push --follow-tags        # pushes the commit and the tag → release workfl
   Etalab 2.0; Bulgarian provinces public domain; Romanian counties © World Bank, CC BY 4.0;
   Greek regions © EuroGeographics, CC BY 4.0;
   Serbian municipalities © OpenStreetMap contributors, ODbL 1.0 (the generated
-  `src/lib/geo/maps/rs-municipalities.ts` is shared under the same licence). All via
+  `src/lib/geo/maps/rs-municipalities.ts` is shared under the same licence); Kosovo
+  districts © OpenStreetMap contributors, CC BY-SA 2.0 (`xk-districts.ts` likewise). All via
   [geoBoundaries](https://www.geoboundaries.org/).
 - Country outlines: [Natural Earth](https://www.naturalearthdata.com/), public domain.
 - Plate formats and region codes: see the sources in each file of `src/lib/data/`.

@@ -241,6 +241,20 @@ describe('detectPlate: Greece', () => {
 	});
 });
 
+describe('detectPlate: Kosovo', () => {
+	const xk = (raw: string) =>
+		detectPlate(raw)
+			.filter((d) => d.collectionId === 'xk')
+			.map((d) => (d as { regionCode: string }).regionCode);
+
+	it('district 01–07 + 3 digits from 101 + 2 letters', () => {
+		expect(xk('01 234-AB')).toEqual(['01']);
+		expect(xk('07-101-KA')).toEqual(['07']);
+		expect(xk('08 234-AB')).toEqual([]); // no such district
+		expect(xk('01 034-AB')).toEqual([]); // numbers start at 101
+	});
+});
+
 describe('detectPlate: Poland', () => {
 	const pl = (raw: string) =>
 		detectPlate(raw)
