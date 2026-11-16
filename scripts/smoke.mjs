@@ -799,6 +799,11 @@ try {
 			!!box && Math.abs(box.dx) < 20 && Math.abs(box.dy) < 40 && /rgba\(0, 0, 0, 0\.[1-9]/.test(box.backdrop),
 			JSON.stringify(box)
 		);
+		// "What's new" comes from the new deployment's changelog.json (fake entry for this build).
+		const news = await page
+			.waitForSelector('[data-testid=whats-new] li', { timeout: 5000 })
+			.then((el) => el?.evaluate((li) => li.textContent), () => null);
+		check("new version: shows what's new from the deployed changelog", news === 'Smoke test release', String(news));
 		await shot('13-update');
 		await page.mouse.click(8, 120);
 		const dismissed = await page

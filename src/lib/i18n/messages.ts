@@ -285,6 +285,7 @@ export const en = {
 	'pwa.needRefresh': 'A new version is available.',
 	'pwa.needRefreshHint': 'Updating takes a few seconds. Your plates stay as they are.',
 	'pwa.later': 'Later',
+	'pwa.whatsNew': "What's new",
 	'pwa.reload': 'Update',
 	'pwa.close': 'Close',
 
@@ -609,6 +610,7 @@ export const sk: Messages = {
 	'pwa.needRefresh': 'Je dostupná nová verzia.',
 	'pwa.needRefreshHint': 'Aktualizácia trvá pár sekúnd. Tvoje ŠPZ-ky zostanú tak, ako sú.',
 	'pwa.later': 'Neskôr',
+	'pwa.whatsNew': 'Čo je nové (v angličtine)',
 	'pwa.reload': 'Aktualizovať',
 	'pwa.close': 'Zavrieť',
 

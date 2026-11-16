@@ -2,6 +2,7 @@
 	import { useRegisterSW } from 'virtual:pwa-register/svelte';
 	import { t } from '../i18n/i18n.svelte';
 	import { closeOnBackdrop } from '../dialog';
+	import { fetchChangelog, newerThan, type ChangelogEntry } from '../changelog';
 
 	/** How long the purely informational "ready to work offline" message stays. */
 	const OFFLINE_READY_MS = 5000;
@@ -14,6 +15,19 @@
 
 	let dialog = $state<HTMLDialogElement | null>(null);
 	let updating = $state(false);
+	/** What the waiting version brings (English, from the deployed changelog.json). */
+	let news = $state.raw<ChangelogEntry[]>([]);
+
+	$effect(() => {
+		if (!$needRefresh) return;
+		let cancelled = false;
+		void fetchChangelog(`${__BASE_PATH__}/changelog.json`).then((entries) => {
+			if (!cancelled) news = newerThan(entries, __APP_VERSION__);
+		});
+		return () => {
+			cancelled = true;
+		};
+	});
 
 	// "New version available" is a modal in the middle of the screen; it waits for the user.
 	$effect(() => {
@@ -62,6 +76,19 @@
 		<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M5 21h14" /></svg>
 		<h2 id="update-title">{t('pwa.needRefresh')}</h2>
 		<p class="muted">{t('pwa.needRefreshHint')}</p>
+		{#if news.length > 0}
+			<section class="news" lang="en" aria-label={t('pwa.whatsNew')} data-testid="whats-new">
+				<h3>{t('pwa.whatsNew')}</h3>
+				{#each news as entry (entry.version)}
+					{#if news.length > 1}<h4>{entry.version}</h4>{/if}
+					<ul>
+						{#each entry.items as item, i (i)}
+							<li>{item}</li>
+						{/each}
+					</ul>
+				{/each}
+			</section>
+		{/if}
 		<div class="buttons">
 			<button class="btn primary" onclick={update} disabled={updating}>{t('pwa.reload')}</button>
 			<button class="btn" onclick={() => dialog?.close()}>{t('pwa.later')}</button>
@@ -159,6 +186,33 @@
 	}
 	.body p {
 		margin: 0;
+	}
+	.news {
+		align-self: stretch;
+		max-height: 40vh;
+		overflow-y: auto;
+		margin-top: 0.5rem;
+		padding: 0.5rem 0.75rem;
+		border: 1px solid var(--border);
+		border-radius: calc(var(--radius) / 2);
+		text-align: left;
+		font-size: 0.9rem;
+	}
+	.news h3 {
+		margin: 0 0 0.25rem;
+		font-size: 0.95rem;
+	}
+	.news h4 {
+		margin: 0.5rem 0 0.15rem;
+		font-size: 0.85rem;
+		color: var(--muted, inherit);
+	}
+	.news ul {
+		margin: 0;
+		padding-left: 1.1rem;
+	}
+	.news li + li {
+		margin-top: 0.15rem;
 	}
 	.buttons {
 		display: flex;

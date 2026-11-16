@@ -603,6 +603,12 @@ All seven done; how they were solved is noted per item.
 - (2) `UpdatePrompt` uses a `<dialog>` (showModal); the smoke test simulates a real new
   release (rebuild with `SMOKE_VERSION_SUFFIX`, restart the preview server, which reads files
   only at startup).
+  Since 2026-11-16 it also shows **"What's new"** (owner: English is fine): the build turns
+  CHANGELOG.md into `changelog.json` (plugin in `vite.config.ts`, parser in
+  `src/lib/changelog.ts`: Features/Bug fixes/Performance only, scope and commit links
+  removed). It isn't precached, so the old app fetches the new deployment's file
+  (`cache: 'no-store'`) and lists the versions above its own. Offline or failed fetch: no
+  list.
 - (3) `closeOnBackdrop` in `src/lib/dialog.ts`.
 - (4) Even clearing the input right after `addSighting` was too late (the live query
   updates first), so the duplicate check is off while `saving`.

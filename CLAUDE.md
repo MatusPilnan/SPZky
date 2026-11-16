@@ -190,6 +190,8 @@ src/lib/sync/         rows (pure rules), engine (push/pull/sign-in check/sign-ou
 src/lib/progress.ts   region/nationwide counts, collectionProgress, regionStats (computed, never stored)
 src/lib/backup.ts     JSON export/import (format 1: parse + validate, preview, add/replace)
 src/lib/files.ts      saveTextFile: share sheet in installed apps, download otherwise
+src/lib/changelog.ts  CHANGELOG.md → changelog.json (built by vite.config.ts, not precached),
+                      "What's new" in the update dialog
 src/lib/i18n/         typed sk/en messages, plural-aware formatter, reactive locale
 src/lib/*.svelte.ts   prefs (localStorage), location tracker, toasts
 src/lib/components/   PlateInput, PlateBadge, RegionGrid (filterable), NationwidePicker, TypeChip,

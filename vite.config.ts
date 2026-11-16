@@ -1,9 +1,11 @@
 import { readFileSync } from 'node:fs';
 import adapter from '@sveltejs/adapter-static';
 import { withPwa } from '@vite-pwa/sveltekit';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
+import { parseChangelog } from './src/lib/changelog.ts';
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8'));
+const version = pkg.version + (process.env.SMOKE_VERSION_SUFFIX ?? '');
 
 /** PUBLIC_* settings from the environment (CI), else from .env / .env.local (local dev). */
 const env = { ...loadEnv('', process.cwd(), 'PUBLIC_'), ...process.env };
@@ -16,16 +18,46 @@ const base = (process.env.BASE_PATH ?? '').replace(/\/+$/, '');
 if (base && !base.startsWith('/')) throw new Error(`BASE_PATH must start with "/": ${base}`);
 const scope = `${base}/`;
 
+/**
+ * Serves CHANGELOG.md as changelog.json (last 20 versions) for the update dialog's
+ * "What's new". Not precached (only js/css/html/images are), so an installed app always
+ * fetches the newly deployed one. The smoke test's fake release gets a fake entry.
+ */
+function changelogJson(): Plugin {
+	const json = () => {
+		const entries = parseChangelog(readFileSync(new URL('./CHANGELOG.md', import.meta.url), 'utf-8'));
+		if (version !== pkg.version) entries.unshift({ version, date: '', items: ['Smoke test release'] });
+		return JSON.stringify(entries.slice(0, 20));
+	};
+	return {
+		name: 'changelog-json',
+		configureServer(server) {
+			server.middlewares.use(`${base}/changelog.json`, (_req, res) => {
+				res.setHeader('Content-Type', 'application/json');
+				res.end(json());
+			});
+		},
+		generateBundle() {
+			// Client build only (SvelteKit copies its output to build/).
+			if (this.environment?.name !== 'client') return;
+			this.emitFile({ type: 'asset', fileName: 'changelog.json', source: json() });
+		}
+	};
+}
+
 export default defineConfig({
 	define: {
 		// SMOKE_VERSION_SUFFIX: the smoke test rebuilds with a suffix to simulate a new release.
-		__APP_VERSION__: JSON.stringify(pkg.version + (process.env.SMOKE_VERSION_SUFFIX ?? '')),
+		__APP_VERSION__: JSON.stringify(version),
+		// For generated files outside static/ (changelog.json), which asset() can't type.
+		__BASE_PATH__: JSON.stringify(base),
 		// Sync backend (public values; row-level security protects the data). Empty
 		// in local dev and forks: the app then works offline-only, without accounts.
 		__SUPABASE_URL__: JSON.stringify(env.PUBLIC_SUPABASE_URL ?? ''),
 		__SUPABASE_KEY__: JSON.stringify(env.PUBLIC_SUPABASE_KEY ?? '')
 	},
 	plugins: [
+		changelogJson(),
 		withPwa(
 			{
 				// Every route is prerendered (ssr=false shells), so the build is a plain
