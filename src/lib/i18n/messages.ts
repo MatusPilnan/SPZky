@@ -18,7 +18,10 @@ export const en = {
 	'home.empty': 'No plates yet. Spot one and add it!',
 	'home.addCta': 'Add a plate',
 	'home.countries': 'Countries',
-	'home.bonus': 'Bonus collection',
+	'home.bonus': 'Bonus collections',
+	'home.bonusStarted': '{count} started',
+	'home.bonusFinished': '{count} finished',
+	'home.bonusUnstarted': '{count} not started',
 	'home.recent': 'Recently spotted',
 	'home.seeAll': 'See all',
 
@@ -173,6 +176,13 @@ export const en = {
 
 	'settings.title': 'Settings',
 	'settings.language': 'Language',
+	'settings.home': 'Home screen',
+	'settings.homeOrder': 'Order of countries',
+	'settings.homeOrder.recent': 'Most recently spotted',
+	'settings.homeOrder.progress': 'Most complete',
+	'settings.homeOrder.alpha': 'Alphabetical',
+	'settings.homeFullCount': 'Countries shown as large cards',
+	'settings.homeFullCountHint': 'The others are shown as small tiles with their progress.',
 	'settings.adding': 'Adding plates',
 	'settings.returnHomeAfterAdd': 'Return to the home screen after adding a plate',
 	'settings.returnHomeAfterAddHint':
@@ -329,7 +339,10 @@ export const sk: Messages = {
 	'home.empty': 'Zatiaľ žiadne ŠPZ. Nejakú zbadaj a pridaj!',
 	'home.addCta': 'Pridať ŠPZ',
 	'home.countries': 'Krajiny',
-	'home.bonus': 'Bonusová kolekcia',
+	'home.bonus': 'Bonusové kolekcie',
+	'home.bonusStarted': { one: '{count} rozbehnutá', few: '{count} rozbehnuté', other: '{count} rozbehnutých' },
+	'home.bonusFinished': { one: '{count} dokončená', few: '{count} dokončené', other: '{count} dokončených' },
+	'home.bonusUnstarted': { one: '{count} nezačatá', few: '{count} nezačaté', other: '{count} nezačatých' },
 	'home.recent': 'Naposledy videné',
 	'home.seeAll': 'Zobraziť všetko',
 
@@ -488,6 +501,13 @@ export const sk: Messages = {
 
 	'settings.title': 'Nastavenia',
 	'settings.language': 'Jazyk',
+	'settings.home': 'Domovská obrazovka',
+	'settings.homeOrder': 'Poradie krajín',
+	'settings.homeOrder.recent': 'Naposledy videné',
+	'settings.homeOrder.progress': 'Najviac nazbierané',
+	'settings.homeOrder.alpha': 'Abecedne',
+	'settings.homeFullCount': 'Krajiny zobrazené ako veľké karty',
+	'settings.homeFullCountHint': 'Ostatné sa zobrazia ako malé dlaždice s postupom.',
 	'settings.adding': 'Pridávanie ŠPZ',
 	'settings.returnHomeAfterAdd': 'Po pridaní ŠPZ sa vrátiť na domovskú obrazovku',
 	'settings.returnHomeAfterAddHint':

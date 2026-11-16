@@ -9,6 +9,10 @@
 	import AccountSection from '#lib/components/AccountSection.svelte';
 	import DataSection from '#lib/components/DataSection.svelte';
 	import { syncConfigured } from '#lib/sync/account.svelte.js';
+	import { clampFullCount, homeOrders } from '#lib/home.js';
+
+	/** Country collections on Home (the bonus ones are a separate section). */
+	const countryCount = collections.filter((c) => !c.bonus).length;
 
 	let persisted = $state<boolean | null>(null);
 	let locationDenied = $state(false);
@@ -73,6 +77,31 @@
 				{/each}
 			</select>
 		</label>
+	</section>
+
+	<section class="card stack home-prefs">
+		<h2>{t('settings.home')}</h2>
+		<label class="field">
+			{t('settings.homeOrder')}
+			<select bind:value={prefs.homeOrder} data-testid="home-order">
+				{#each homeOrders as o (o)}
+					<option value={o}>{t(`settings.homeOrder.${o}`)}</option>
+				{/each}
+			</select>
+		</label>
+		<label class="field">
+			{t('settings.homeFullCount')}
+			<input
+				type="number"
+				inputmode="numeric"
+				min="0"
+				max={countryCount}
+				value={prefs.homeFullCount}
+				onchange={(e) => (e.currentTarget.value = String((prefs.homeFullCount = clampFullCount(e.currentTarget.value, countryCount))))}
+				data-testid="home-full-count"
+			/>
+		</label>
+		<p class="muted small">{t('settings.homeFullCountHint')}</p>
 	</section>
 
 	<section class="card">

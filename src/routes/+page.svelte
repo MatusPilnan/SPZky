@@ -3,32 +3,39 @@
 	import { resolve } from '$app/paths';
 	import { listSightings } from '#lib/db/sightings.js';
 	import { collections, type CollectionDef } from '#lib/collections.js';
-	import { collectionProgress, countByRegion, countNationwide } from '#lib/progress.js';
-	import { t } from '#lib/i18n/i18n.svelte.js';
+	import { collectionProgress, countByRegion, countNationwide, type CollectionProgress } from '#lib/progress.js';
+	import { i18n, t } from '#lib/i18n/i18n.svelte.js';
 	import ProgressBar from '#lib/components/ProgressBar.svelte';
 	import SightingList from '#lib/components/SightingList.svelte';
 	import RegionMap from '#lib/components/RegionMap.svelte';
+	import CollectionTile from '#lib/components/CollectionTile.svelte';
 	import { hasMap } from '#lib/geo/maps/index.js';
 	import SyncButton from '#lib/components/SyncButton.svelte';
+	import { prefs } from '#lib/prefs.svelte.js';
+	import { bonusSummary, clampFullCount, lastSeenByCollection, orderCollections } from '#lib/home.js';
 
 	const sightings = liveQuery(() => listSightings());
 	const counts = $derived(countByRegion($sightings ?? []));
 	const nationwide = $derived(countNationwide($sightings ?? []));
+	const lastSeen = $derived(lastSeenByCollection($sightings ?? []));
 
-	// Countries with at least one plate first; otherwise the registry order.
-	const collected = $derived(new Set(($sightings ?? []).map((s) => s.collectionId)));
+	const withProgress = (c: CollectionDef) => ({ c, id: c.id, name: t(`collection.${c.id}`), progress: collectionProgress(c, counts, nationwide) });
+
+	// Countries in the chosen order: the first few as full cards, the rest as small tiles.
 	const main = $derived(
-		collections
-			.filter((c) => !c.bonus)
-			.map((c, i) => ({ c, i }))
-			.sort((a, b) => Number(collected.has(b.c.id)) - Number(collected.has(a.c.id)) || a.i - b.i)
-			.map(({ c }) => c)
+		orderCollections(
+			collections.filter((c) => !c.bonus).map(withProgress),
+			prefs.homeOrder,
+			lastSeen,
+			i18n.locale
+		)
 	);
-	const bonus = collections.filter((c) => c.bonus);
+	const fullCount = $derived(clampFullCount(prefs.homeFullCount, main.length));
+	const bonus = $derived(collections.filter((c) => c.bonus).map(withProgress));
+	const bonusStats = $derived(bonusSummary(bonus.map((b) => b.progress)));
 </script>
 
-{#snippet collectionCard(c: CollectionDef)}
-	{@const p = collectionProgress(c, counts, nationwide)}
+{#snippet collectionCard(c: CollectionDef, p: CollectionProgress)}
 	{@const name = t(`collection.${c.id}`)}
 	<a class="card collection" href="{resolve('/country')}?id={c.id}">
 		<div class="info">
@@ -65,18 +72,33 @@
 
 	<section class="stack tight">
 		<h2>{t('home.countries')}</h2>
-		{#each main as c (c.id)}
-			{@render collectionCard(c)}
+		{#each main.slice(0, fullCount) as m (m.id)}
+			{@render collectionCard(m.c, m.progress)}
 		{/each}
+		{#if main.length > fullCount}
+			<div class="tiles">
+				{#each main.slice(fullCount) as m (m.id)}
+					<CollectionTile collection={m.c} progress={m.progress} />
+				{/each}
+			</div>
+		{/if}
 	</section>
 
 	{#if bonus.length}
-		<section class="stack tight">
-			<h2>{t('home.bonus')}</h2>
-			{#each bonus as c (c.id)}
-				{@render collectionCard(c)}
+		<details class="bonus stack tight" bind:open={prefs.bonusOpen} data-testid="bonus">
+			<summary class="card">
+				<h2>{t('home.bonus')} <span class="badge">{bonusStats.total}</span></h2>
+				<svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+				<span class="bonus-stats muted">
+					<span>{t('home.bonusStarted', { count: bonusStats.started })}</span>
+					<span>{t('home.bonusFinished', { count: bonusStats.finished })}</span>
+					<span>{t('home.bonusUnstarted', { count: bonusStats.unstarted })}</span>
+				</span>
+			</summary>
+			{#each bonus as b (b.id)}
+				{@render collectionCard(b.c, b.progress)}
 			{/each}
-		</section>
+		</details>
 	{/if}
 
 	{#if $sightings && $sightings.length > 0}
@@ -166,6 +188,62 @@
 		justify-content: space-between;
 		gap: 0.25rem 1rem;
 		font-size: 0.85rem;
+	}
+	.tiles {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr));
+		gap: 0.5rem;
+	}
+	/* Title + count, chevron on the right, the three counts below. */
+	.bonus summary {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		align-items: center;
+		gap: 0.35rem 0.5rem;
+		cursor: pointer;
+		list-style: none;
+	}
+	.bonus summary::-webkit-details-marker {
+		display: none;
+	}
+	.bonus summary h2 {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.badge {
+		min-width: 1.6rem;
+		padding: 0.05rem 0.45rem;
+		border-radius: 999px;
+		background: var(--surface-2);
+		font-size: 0.85rem;
+		font-weight: 700;
+		text-align: center;
+	}
+	.chevron {
+		width: 1.25rem;
+		height: 1.25rem;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		transition: transform 0.2s ease;
+	}
+	.bonus[open] .chevron {
+		transform: rotate(180deg);
+	}
+	.bonus-stats {
+		grid-column: 1 / -1;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.15rem 1rem;
+		font-size: 0.85rem;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.chevron {
+			transition: none;
+		}
 	}
 	.row {
 		display: flex;

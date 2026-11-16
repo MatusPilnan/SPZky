@@ -237,8 +237,15 @@ removed (e.g. when GPS and last used are the same country).
 ## Progress screens — phase 5
 
 - **Home:** per-collection cards (flag, % and progress bar, "found of total", "+ N nationwide
-  plates"); the pre-2001 CZ collection is listed separately as the bonus collection; the three
-  most recent sightings with a link to History.
+  plates"); the three most recent sightings with a link to History.
+  Since 2026-11-17 (owner's request, with more countries): only the first **N countries get
+  a full card** (default 3), the rest are square **tiles** (flag inside a donut chart of the
+  share found, % below; `CollectionTile.svelte`). Order: **most recently spotted**
+  (default; countries without plates alphabetically after), **most complete**, or
+  **alphabetical**. N and the order are per-device prefs in Settings → Home screen. The
+  **bonus collections** are one collapsible section: closed it shows how many there are and
+  how many are started / finished / not started; open/closed is remembered. Logic in
+  `src/lib/home.ts` (`orderCollections`, `bonusSummary`).
 - **Country screen** `/country?id=<collection>` (query param, so it is one precached shell):
   progress header, code grid with All / Found / Missing filter, nationwide section. Tapping a
   code or nationwide type opens a detail sheet (`<dialog>`) with count, first/last seen and
@@ -549,7 +556,7 @@ regions was offered and not chosen.)
   1960–2001, format with example `BN 12-34`, still valid, rarest codes (GT/GV, BI, Prague
   AB–AZ as A), map drawn with today's districts. Facts as in `src/lib/data/cz-vintage.ts`.
 
-## More countries — phase 9 (planned 2026-11-16, not started)
+## More countries — phase 9 (planned 2026-11-16, done 2026-11-16, released in v0.10.0–v0.12.0)
 
 Goal: more collections beyond SK + CZ, one country per release, each through the
 **"Region data" checklist in CLAUDE.md** (issued codes only, still on the road, two sources

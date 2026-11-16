@@ -379,40 +379,116 @@ try {
 			{ timeout: 10000 }
 		)
 		.catch(() => {});
-	const cards = await page.$$eval('a.collection', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ')));
+	// Countries (default: most recently spotted first, 3 large cards, the rest as tiles).
+	const fullCards = () => page.$$eval('section a.collection', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ')));
+	const tileLabels = () => page.$$eval('[data-testid=collection-tile]', (els) => els.map((e) => e.getAttribute('aria-label')));
+	const cards = await fullCards();
 	check(
 		'home shows progress per country',
 		cards.some((c) => c.includes('Slovakia') && c.includes('3 of 74 found') && c.includes('+ 3 nationwide plates')) &&
-			cards.some((c) => c.includes('Czechia') && c.includes('1 of 14 found') && c.includes('+ 1 nationwide plate')) &&
-			cards.some((c) => c.includes('pre-2001') && c.includes('0 of 96 found')),
+			cards.some((c) => c.includes('Czechia') && c.includes('1 of 14 found') && c.includes('+ 1 nationwide plate')),
 		cards.join(' || ')
 	);
 	check('home lists recent sightings', (await page.$$('main ul li')).length === 3);
+	// KE-111AA (SK) was the last plate added, then CZ: most recently spotted first.
+	check(
+		'home: 3 large cards, most recently spotted first',
+		cards.length === 3 && cards[0].includes('Slovakia') && cards[1].includes('Czechia'),
+		cards.map((c) => c.split(' ').slice(0, 2).join(' ')).join(', ')
+	);
+	const tiles = await tileLabels();
+	// Countries without plates follow alphabetically: Austria is the 3rd card, Bulgaria the 1st tile.
+	check('home: the other countries as tiles', tiles.length >= 8 && tiles[0] === 'Bulgaria: 0 of 30 found', tiles.join(', '));
+	// Tiles are square; flag and percentage sit centred inside the donut's hole.
+	const tileShape = await page.$$eval('[data-testid=collection-tile]', (els) =>
+		els.map((t) => {
+			const r = t.getBoundingClientRect();
+			// The donut's square (the SVG is rotated, which doesn't change its square box).
+			const d = t.querySelector('svg.donut').getBoundingClientRect();
+			const parts = [...t.querySelectorAll('.flag, .pct')].map((e) => e.getBoundingClientRect());
+			const left = Math.min(...parts.map((p) => p.left));
+			const right = Math.max(...parts.map((p) => p.right));
+			const top = Math.min(...parts.map((p) => p.top));
+			const bottom = Math.max(...parts.map((p) => p.bottom));
+			// Ring's outer diameter: (15.9 + 1.8) / 18 = 98 % of the box; the text may overlap
+			// the ring a little but stays within it.
+			const dx = Math.abs((left + right) / 2 - (d.left + d.width / 2));
+			const dy = Math.abs((top + bottom) / 2 - (d.top + d.height / 2));
+			return {
+				square: Math.abs(r.width - r.height) <= 1,
+				centred: dx <= 1 && dy <= 1,
+				// The circle is centred in the SVG box with the box's shorter side as diameter.
+				inside: Math.hypot(right - left, bottom - top) <= Math.min(d.width, d.height) * 0.98,
+				named: !!t.querySelector('.name')?.textContent && t.querySelector('.name').scrollWidth <= t.querySelector('.name').clientWidth,
+				w: Math.round(r.width),
+				h: Math.round(r.height),
+				dx: Math.round(dx * 10) / 10,
+				dy: Math.round(dy * 10) / 10
+			};
+		})
+	);
+	const tileOk = (s) => s.square && s.centred && s.inside && s.named;
+	check(
+		'home tiles: square, full name, flag and % centred inside the donut',
+		tileShape.length > 0 && tileShape.every(tileOk),
+		JSON.stringify(tileShape.find((s) => !tileOk(s)) ?? tileShape[0])
+	);
+	await page
+		.waitForFunction(() => document.querySelectorAll('section a.collection svg.map').length === 3, { timeout: 5000 })
+		.catch(() => {});
+	check('home: large cards show map thumbnails', (await page.$$('section a.collection svg.map')).length === 3);
+
+	// Bonus collections: collapsed to a summary, open on tap.
+	const bonusSummary = await page.$eval('[data-testid=bonus] summary', (s) => s.innerText.replace(/\s+/g, ' '));
+	const bonusOpen = () => page.$eval('[data-testid=bonus]', (d) => d.open);
+	check(
+		'home: bonus collections collapsed to counts',
+		!(await bonusOpen()) && /Bonus collections 4\b/.test(bonusSummary) && bonusSummary.includes('0 started') && bonusSummary.includes('4 not started'),
+		bonusSummary
+	);
+	await page.click('[data-testid=bonus] summary');
+	const bonusCards = await page.$$eval('[data-testid=bonus] a.collection', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ')));
+	check('home: bonus collections open on tap', (await bonusOpen()) && bonusCards.some((c) => c.includes('pre-2001') && c.includes('0 of 96 found')), bonusCards.join(' || '));
+	// Every card has a map thumbnail, except collections without a map (Poland before 2000).
+	const withoutThumb = await page.$$eval('[data-testid=bonus] a.collection', (els) =>
+		els.filter((c) => !c.querySelector('svg.map')).map((c) => c.querySelector('strong')?.innerText)
+	);
+	check('home: bonus cards show map thumbnails (except Poland pre-2000)', withoutThumb.join() === 'Poland (pre-2000)', withoutThumb.join());
 	// The percentage never wraps ("0 %" on two lines next to a long name).
 	const wrappedPct = await page.$$eval('a.collection .pct', (els) =>
 		els.filter((e) => e.getClientRects().length > 1 || e.getBoundingClientRect().height > parseFloat(getComputedStyle(e).lineHeight) * 1.5).map((e) => e.closest('a')?.querySelector('strong')?.textContent)
 	);
 	check('home: collection percentages stay on one line', wrappedPct.length === 0, wrappedPct.join(', '));
-
-	// Every card has a map thumbnail, except collections without a map (Poland before 2000).
-	const MAPLESS = ['Poland (pre-2000)'];
-	const cardCount = (await page.$$('a.collection')).length;
-	await page
-		.waitForFunction((n) => document.querySelectorAll('a.collection svg.map').length === n, { timeout: 5000 }, cardCount - MAPLESS.length)
-		.catch(() => {});
-	const withoutThumb = await page.$$eval('a.collection', (cards) =>
-		cards.filter((c) => !c.querySelector('svg.map')).map((c) => c.querySelector('strong')?.innerText)
-	);
-	check(
-		'home cards show map thumbnails (except mapless collections)',
-		cardCount >= 6 && withoutThumb.sort().join() === MAPLESS.join(),
-		withoutThumb.join()
-	);
-	check('home lists Austria (no plates yet)', cards.some((c) => c.includes('Austria') && c.includes('0 of 106 found')));
-	// Countries with plates come before those without.
-	const order = await page.$$eval('a.collection strong', (els) => els.map((e) => e.innerText));
-	check('home: countries with plates first', order.indexOf('Austria') > order.indexOf('Czechia'), order.join(', '));
 	await shot('09-home');
+
+	// Settings: alphabetical order, no large cards → every country is a tile, Austria first.
+	await page.goto(`${APP}/settings`, { waitUntil: 'networkidle0' });
+	const setHome = async (order, full) => {
+		await page.select('[data-testid=home-order]', order);
+		await page.$eval(
+			'[data-testid=home-full-count]',
+			(el, n) => {
+				el.value = String(n);
+				el.dispatchEvent(new Event('change', { bubbles: true }));
+			},
+			full
+		);
+	};
+	await setHome('alpha', 0);
+	await page.goto(`${APP}/`, { waitUntil: 'networkidle0' });
+	await page.waitForSelector('[data-testid=collection-tile]');
+	const alphaTiles = await tileLabels();
+	check(
+		'home settings: alphabetical, all as tiles',
+		(await fullCards()).length === 0 && alphaTiles[0]?.startsWith('Austria') && alphaTiles.length === tiles.length + 3,
+		alphaTiles.slice(0, 3).join(', ')
+	);
+	check('home: bonus section stays open (remembered)', await bonusOpen());
+	await shot('09b-home-tiles');
+	await page.goto(`${APP}/settings`, { waitUntil: 'networkidle0' });
+	await setHome('recent', 3);
+	await page.goto(`${APP}/`, { waitUntil: 'networkidle0' });
+	await page.waitForSelector('section a.collection');
 	await page.evaluate(() => [...document.querySelectorAll('a.collection')].find((a) => a.innerText.includes('Slovakia')).click());
 	await page.waitForFunction(() => location.pathname.endsWith('/country') && document.querySelector('main h1'));
 	const gridSize = () => page.$$eval('.grid button', (b) => b.length);

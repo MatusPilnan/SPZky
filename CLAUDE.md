@@ -188,13 +188,14 @@ src/lib/db/           Dexie schema (v2 plateType, v3 data fix, v4 meta + userId 
 src/lib/sync/         rows (pure rules), engine (push/pull/sign-in check/sign-out), remote
                       (Supabase), account.svelte (auth + state + triggers), fake-remote (tests)
 src/lib/progress.ts   region/nationwide counts, collectionProgress, regionStats (computed, never stored)
+src/lib/home.ts       Home: collection order (recent/progress/alpha), bonus summary, full-card count
 src/lib/backup.ts     JSON export/import (format 1: parse + validate, preview, add/replace)
 src/lib/files.ts      saveTextFile: share sheet in installed apps, download otherwise
 src/lib/changelog.ts  CHANGELOG.md → changelog.json (built by vite.config.ts, not precached),
                       "What's new" in the update dialog
 src/lib/i18n/         typed sk/en messages, plural-aware formatter, reactive locale
 src/lib/*.svelte.ts   prefs (localStorage), location tracker, toasts
-src/lib/components/   PlateInput, PlateBadge, RegionGrid (filterable), NationwidePicker, TypeChip,
+src/lib/components/   PlateInput, PlateBadge, RegionGrid (filterable), CollectionTile (Home donut tile), NationwidePicker, TypeChip,
                       SightingList, ProgressBar, RegionMap, Switch, CollectionSwitch, Toasts,
                       UpdatePrompt, AccountSection (Settings), SignInConflict (layout),
                       DataSection + ExportButton (export/import), SyncButton (Home),
