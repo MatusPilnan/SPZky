@@ -3,6 +3,12 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.9.0](https://github.com/MatusPilnan/SPZky/compare/v0.8.0...v0.9.0) - 2026-11-16
+
+### Features
+
+- **vintage:** pre-2001 CZ plates without the EU band and an about card ([b2e0627](https://github.com/MatusPilnan/SPZky/commit/b2e06278330389ab18021d0c949f781ac02fb2c6))
+
 ## [0.8.0](https://github.com/MatusPilnan/SPZky/compare/v0.7.0...v0.8.0) - 2026-11-16
 
 ### Features
