@@ -3,6 +3,12 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.12.0](https://github.com/MatusPilnan/SPZky/compare/v0.11.0...v0.12.0) - 2026-11-16
+
+### Features
+
+- **si:** map of the 11 registration areas ([951add0](https://github.com/MatusPilnan/SPZky/commit/951add093c4d15d9c34ba8c45c278b38252b9ba2))
+
 ## [0.11.0](https://github.com/MatusPilnan/SPZky/compare/v0.10.0...v0.11.0) - 2026-11-16
 
 ### Features
