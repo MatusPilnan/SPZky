@@ -32,6 +32,11 @@ Setup and scripts for humans: [README.md](README.md).
   UTF8` adds one, which ends up at the start of the subject and breaks the Conventional
   Commit parsing for CHANGELOG.md. Use the Write tool, `-Encoding ASCII`, or
   `[IO.File]::WriteAllText(path, text, (New-Object Text.UTF8Encoding $false))`.
+- **Never edit files with `Get-Content`/`Set-Content` in PowerShell 5.1:** `Get-Content`
+  reads UTF-8 without BOM as Windows-1252 and `Set-Content -Encoding UTF8` writes a BOM, so a
+  round trip garbles every non-ASCII character (happened to docs/PLAN.md in v0.9.0). Use the
+  Edit/Write tools, or `[IO.File]::ReadAllText/WriteAllText` with
+  `New-Object Text.UTF8Encoding $false`.
 - `npm i <package>` removes the generated `node_modules/$app` (tsconfig/types from
   `svelte-kit sync`), and then Vitest fails with "Failed to load tsconfig '$app/tsconfig'".
   `npm test` runs `svelte-kit sync` first; otherwise run `npx svelte-kit sync`.
