@@ -166,7 +166,7 @@ src/lib/*.svelte.ts   prefs (localStorage), location tracker, toasts
 src/lib/components/   PlateInput, PlateBadge, RegionGrid (filterable), NationwidePicker, TypeChip,
                       SightingList, ProgressBar, RegionMap, Switch, CollectionSwitch, Toasts,
                       UpdatePrompt, AccountSection (Settings), SignInConflict (layout),
-                      DataSection + ExportButton (export/import)
+                      DataSection + ExportButton (export/import), SyncButton (Home)
 src/routes/           home (overview), country (?id=), add (plate + quick), history,
                       sighting (edit, ?id=), settings
 supabase/             config.toml, migrations/, templates/, tests/database/ (pgTAP)

@@ -311,6 +311,31 @@ try {
 	await syncNow(phone);
 	check('offline change syncs after reconnecting', (await plates(phone)).includes('ZA-444DD'), String(await plates(phone)));
 
+	// 4b. Without reloading: the Home sync button and opening History fetch the other device's plates.
+	current = 'home button + history';
+	await goto(tablet, '/');
+	await tablet.page.waitForSelector('[data-testid=sync-now]:not([disabled])');
+	await tablet.page.evaluate(() => (window.__sameDocument = true));
+	await addPlate(phone, 'TN-555XX');
+	await openSettings(phone);
+	await synced(phone);
+	const homeCount = () => tablet.page.$eval('.hero .count', (e) => e.innerText);
+	const countBefore = await homeCount();
+	await tablet.page.click('[data-testid=sync-now]');
+	await tablet.page.waitForFunction((before) => document.querySelector('.hero .count')?.innerText !== before, { timeout: 15_000 }, countBefore);
+	check('Home “Sync now” brings in the other device’s plate', (await plates(tablet)).includes('TN-555XX'), `${countBefore} → ${await homeCount()}`);
+	await shot(tablet, '04-home-sync');
+
+	await addPlate(phone, 'PD-666YY');
+	await openSettings(phone);
+	await synced(phone);
+	await tablet.page.click('nav a[href$="/history"]');
+	await tablet.page.waitForFunction(() => document.querySelector('main')?.innerText.includes('PD-666YY'), { timeout: 15_000 });
+	check(
+		'opening History fetches new plates (no reload)',
+		await tablet.page.evaluate(() => window.__sameDocument === true)
+	);
+
 	// 5. Sign-out removes the plates (default); signing in with a different local plate and
 	//    choosing "use the account's data" drops the local one.
 	current = 'sign-out + use cloud';
@@ -322,7 +347,7 @@ try {
 	await conflictOpen(tablet);
 	await choose(tablet, 'cloud');
 	await synced(tablet);
-	const accountPlates = '["BA-111AA","KE-222BB","NR-333CC","ZA-444DD"]';
+	const accountPlates = '["BA-111AA","KE-222BB","NR-333CC","PD-666YY","TN-555XX","ZA-444DD"]';
 	check('“use the account’s data” replaces the device’s plates', JSON.stringify(await plates(tablet)) === accountPlates, String(await plates(tablet)));
 
 	// 6. Cancel at the conflict: signed out again, nothing changed.

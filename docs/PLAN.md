@@ -249,7 +249,10 @@ triggers, auth), `fake-remote.ts` (in-memory server for the unit tests).
    - A local edit always gets `updatedAt = max(now, previous + 1)` (`nextUpdatedAt`), so it
      beats the version it was made on even when this device's clock is behind.
 3. **When:** on app start, when coming back online, a few seconds after a local change
-   (debounced), when the app returns to the foreground, and via "Sync now" in Settings.
+   (debounced), when the app returns to the foreground, when History is opened, and via
+   "Sync now" (Settings, and a button on Home while signed in). No polling or Realtime
+   while the app just sits open (decided 2026-11-16: not needed); the screens read the
+   local database live, so pulled plates appear without a reload.
 4. **Sign-in on a device: conflict check** (decided 2026-11-16). Before anything is pushed,
    the client fetches all of the account's cloud rows into memory (not yet into Dexie) and
    compares them with the local rows that have no account (never synced, or kept at

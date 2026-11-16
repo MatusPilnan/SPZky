@@ -8,6 +8,7 @@
 	import ProgressBar from '#lib/components/ProgressBar.svelte';
 	import SightingList from '#lib/components/SightingList.svelte';
 	import RegionMap from '#lib/components/RegionMap.svelte';
+	import SyncButton from '#lib/components/SyncButton.svelte';
 
 	const sightings = liveQuery(() => listSightings());
 	const counts = $derived(countByRegion($sightings ?? []));
@@ -47,7 +48,10 @@
 		{:else}
 			<p class="count">{t('home.total', { count: $sightings.length })}</p>
 		{/if}
-		<a class="btn primary" href={resolve('/add')}>{t('home.addCta')}</a>
+		<div class="actions">
+			<a class="btn primary" href={resolve('/add')}>{t('home.addCta')}</a>
+			<SyncButton />
+		</div>
 	</section>
 
 	<section class="stack tight">
@@ -89,6 +93,12 @@
 	}
 	.hero p {
 		margin: 0 0 0.5rem;
+	}
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		gap: 0.5rem;
 	}
 	.count {
 		font-size: 1.1rem;
