@@ -66,7 +66,7 @@ export async function updateSighting(
 	patch: SightingPatch,
 	database: SpzDatabase = defaultDb
 ): Promise<void> {
-	const changes: Partial<Sighting> = { ...patch, updatedAt: Date.now(), dirty: 1 };
+	const changes: Partial<Sighting> = { ...patch, dirty: 1 };
 	if ('plate' in patch) Object.assign(changes, cleanPlate(patch.plate));
 	if (patch.regionCode) changes.regionCode = patch.regionCode.toUpperCase();
 	if (patch.note !== undefined) changes.note = patch.note.trim();
@@ -74,15 +74,28 @@ export async function updateSighting(
 	await database.transaction('rw', database.sightings, async () => {
 		const current = await database.sightings.get(id);
 		if (!current) throw new Error(`Sighting ${id} not found`);
+		changes.updatedAt = nextUpdatedAt(current);
 		assertConsistent({ ...current, ...changes });
 		await database.sightings.update(id, changes);
 	});
 }
 
+/**
+ * Timestamp for a local change: now, but always later than the version being
+ * changed (which may come from a device whose clock runs ahead), so the change
+ * wins last-write-wins sync.
+ */
+export function nextUpdatedAt(current: Pick<Sighting, 'updatedAt'>, now = Date.now()): number {
+	return Math.max(now, current.updatedAt + 1);
+}
+
 /** Soft-deletes so the deletion can propagate to other devices on sync. */
 export async function deleteSighting(id: string, database: SpzDatabase = defaultDb): Promise<void> {
-	const updated = await database.sightings.update(id, { deleted: 1, updatedAt: Date.now(), dirty: 1 });
-	if (!updated) throw new Error(`Sighting ${id} not found`);
+	await database.transaction('rw', database.sightings, async () => {
+		const current = await database.sightings.get(id);
+		if (!current) throw new Error(`Sighting ${id} not found`);
+		await database.sightings.update(id, { deleted: 1, updatedAt: nextUpdatedAt(current), dirty: 1 });
+	});
 }
 
 /** All non-deleted sightings, newest first. */

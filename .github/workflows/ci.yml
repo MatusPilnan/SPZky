@@ -47,3 +47,44 @@ jobs:
           path: .smoke/*.png
           if-no-files-found: ignore
           retention-days: 7
+
+  database:
+    name: Database and sync
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # Local Supabase stack in Docker (database, auth, API, Mailpit) with all
+      # migrations from supabase/migrations applied. The CLI version is pinned in package.json.
+      - name: Start local Supabase
+        run: npm run db:start
+
+      - name: Database tests (pgTAP, row-level security)
+        run: npm run db:test
+
+      - name: Database lint
+        run: npm run db:lint
+
+      # Builds against the local stack and drives several browser "devices"
+      # through sign-in (code read from Mailpit), the conflict choices and sync.
+      - name: Sync end-to-end test
+        run: npm run sync:e2e
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}
+
+      - name: Upload sync screenshots
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sync-screenshots
+          path: .smoke/sync-*.png
+          if-no-files-found: ignore
+          retention-days: 7

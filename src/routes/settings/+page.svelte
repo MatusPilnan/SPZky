@@ -6,6 +6,8 @@
 	import Switch from '#lib/components/Switch.svelte';
 	import { collections, type CollectionId } from '#lib/collections.js';
 	import { loadMap } from '#lib/geo/maps/index.js';
+	import AccountSection from '#lib/components/AccountSection.svelte';
+	import { syncConfigured } from '#lib/sync/account.svelte.js';
 
 	let persisted = $state<boolean | null>(null);
 	let locationDenied = $state(false);
@@ -99,10 +101,7 @@
 		{/if}
 	</section>
 
-	<section class="card">
-		<h2>{t('settings.account')}</h2>
-		<p class="muted">{t('settings.accountSoon')}</p>
-	</section>
+	{#if syncConfigured}<AccountSection />{/if}
 
 	<section class="card credits">
 		<h2>{t('settings.mapData')}</h2>

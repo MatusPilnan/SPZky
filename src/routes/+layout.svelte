@@ -6,10 +6,14 @@
 	import type { MessageKey } from '#lib/i18n/messages.js';
 	import UpdatePrompt from '#lib/components/UpdatePrompt.svelte';
 	import Toasts from '#lib/components/Toasts.svelte';
+	import SignInConflict from '#lib/components/SignInConflict.svelte';
+	import { initSync, syncConfigured } from '#lib/sync/account.svelte.js';
+	import { onMount } from 'svelte';
 
 	let { children } = $props();
 
 	i18n.init();
+	onMount(() => void initSync());
 
 	const nav: { href: '/' | '/add' | '/history' | '/settings'; label: MessageKey; icon: string }[] = [
 		{ href: '/', label: 'nav.home', icon: 'M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z' },
@@ -51,6 +55,7 @@
 
 	<Toasts />
 	<UpdatePrompt />
+	{#if syncConfigured}<SignInConflict />{/if}
 </div>
 
 <style>

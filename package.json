@@ -21,6 +21,13 @@
 		"presmoke": "node scripts/check-node.cjs",
 		"smoke": "vite build && node scripts/smoke.mjs",
 		"icons": "pwa-assets-generator",
+		"db:start": "supabase start -x storage-api,realtime,edge-runtime,logflare,vector,imgproxy,supavisor,studio,postgres-meta",
+		"db:stop": "supabase stop",
+		"db:reset": "supabase db reset",
+		"db:test": "supabase test db",
+		"db:lint": "supabase db lint --level warning --fail-on warning",
+		"presync:e2e": "node scripts/check-node.cjs",
+		"sync:e2e": "node scripts/sync-e2e.mjs",
 		"preversion": "npm run check && npm test",
 		"version": "node scripts/release-notes.mjs changelog && git add CHANGELOG.md",
 		"release": "npm version -m \"chore(release): v%s\""
@@ -36,6 +43,7 @@
 		"magicast": "^0.5.5",
 		"mapshaper": "^0.7.101",
 		"puppeteer-core": "^24.43.1",
+		"supabase": "^3.1.0",
 		"svelte": "^5.57.3",
 		"svelte-check": "^4.7.8",
 		"topojson-client": "^3.1.0",
@@ -48,6 +56,7 @@
 		"world-atlas": "^2.0.2"
 	},
 	"dependencies": {
+		"@supabase/supabase-js": "^2.119.0",
 		"dexie": "^4.4.7"
 	},
 	"imports": {

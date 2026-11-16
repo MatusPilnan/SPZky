@@ -53,6 +53,30 @@ Setup and scripts for humans: [README.md](README.md).
 - TS narrows arrays through inferred type predicates (`arr.every(x => x === null)` makes
   `arr` a `null[]`). Use `some` or a separate variable.
 
+## Sync and database (Supabase, phase 7)
+
+Design and reasons: `docs/PLAN.md`, "Sync — phase 7". Practical rules:
+
+- **The database lives in `supabase/`** (migrations, config, email template, pgTAP tests).
+  Change the schema only with a **new migration file**; never edit an applied one. Every
+  change gets tests in `supabase/tests/database/` and keeps `npm run db:lint` clean.
+- Local stack needs **Docker Desktop running**. `npm run db:start` / `db:stop` / `db:reset`
+  / `db:test` / `db:lint` use the CLI pinned in package.json (`npx supabase …`).
+- `npm run sync:e2e` builds the app against the local stack and runs the multi-device test
+  (codes come from Mailpit). `SKIP_BUILD=1` reuses the last build. After `db:stop` the stack
+  restarts from a backup, so tests must not assume an empty database.
+- For manual testing against the local stack, put `PUBLIC_SUPABASE_URL` and
+  `PUBLIC_SUPABASE_KEY` (publishable key from `npx supabase status`) into `.env.local`
+  (gitignored). Without them the account section is hidden.
+- CLI 3 gotchas: `supabase db push` targets the **local** database unless `--remote`;
+  hosted changes need `--yes`; `config push` writes every setting `config.toml` declares
+  (that's why `[db.pooler]` and the storage add-on sections were removed).
+- SMTP stays `enabled = false` in `config.toml`; only release.yml turns it on before
+  `config push`. Secrets are only in GitHub Actions secrets, never in files or chats.
+- Local rows: `userId` null = not in an account; `dirty` = not pushed. Any local edit must
+  use `nextUpdatedAt` (in `db/sightings.ts`) so it wins last-write-wins sync.
+- Supabase allows one sign-in code per address per 60 s.
+
 ## Region data: checklist for new or changed countries
 
 Collections may contain **only codes that were actually issued and can still be seen on
@@ -90,6 +114,8 @@ like normal codes. For every country added or changed in `src/lib/data/`:
 npm run check   # svelte-check, must be 0 errors / 0 warnings
 npm test        # Vitest unit tests
 npm run smoke   # builds, then drives the app in headless Edge/Chrome (scripts/smoke.mjs)
+# after touching supabase/ or src/lib/sync/ (needs Docker + npm run db:start):
+npm run db:test && npm run db:lint && npm run sync:e2e
 ```
 
 For a readable stack trace from the smoke test, run `MODE=dev node scripts/smoke.mjs`
@@ -102,8 +128,10 @@ after touching links, paths, the manifest or the service worker (PowerShell:
 
 - GitHub Pages at `https://matuspilnan.github.io/SPZky/`. Workflows live in
   `.github/workflows/` at the repo root: `ci.yml` (push/PR to `main`, also reused by
-  release) and `release.yml` (tags `v*.*.*`: verify tag = `package.json` version, CI,
-  build, deploy, GitHub Release).
+  release; jobs: check/test/smoke and database/sync) and `release.yml` (tags `v*.*.*`:
+  verify tag = `package.json` version, CI, migrate Supabase, build with the public Supabase
+  values, deploy, GitHub Release). Secret/variable names: `docs/PLAN.md`, "GitHub
+  configuration".
 - The base path comes from `BASE_PATH` (CI: `/${{ github.event.repository.name }}`). Never
   hardcode `/` or `/SPZky` in app code: use `resolve()` for links, `%sveltekit.assets%` /
   relative paths for assets, `page.route.id` (not `page.url.pathname`) for route checks.
@@ -123,16 +151,20 @@ src/lib/collections.ts collection registry, nationwide types per country, highli
 src/lib/plates/       normalizePlate, detectPlate (region + nationwide candidates), orderByCountry
 src/lib/geo/          countryAt (offline point-in-polygon); borders.ts is GENERATED
 src/lib/geo/maps/     region maps (GENERATED *.ts), loadMap, codesOfArea, areaStatus
-src/lib/db/           Dexie schema (v2: plateType), sighting repository (soft delete, sync fields)
+src/lib/db/           Dexie schema (v2 plateType, v3 data fix, v4 meta + userId index),
+                      sighting repository (soft delete, sync fields, nextUpdatedAt)
+src/lib/sync/         rows (pure rules), engine (push/pull/sign-in check/sign-out), remote
+                      (Supabase), account.svelte (auth + state + triggers), fake-remote (tests)
 src/lib/progress.ts   region/nationwide counts, collectionProgress, regionStats (computed, never stored)
 src/lib/i18n/         typed sk/en messages, plural-aware formatter, reactive locale
 src/lib/*.svelte.ts   prefs (localStorage), location tracker, toasts
 src/lib/components/   PlateInput, PlateBadge, RegionGrid (filterable), NationwidePicker, TypeChip,
                       SightingList, ProgressBar, RegionMap, Switch, CollectionSwitch, Toasts,
-                      UpdatePrompt
+                      UpdatePrompt, AccountSection (Settings), SignInConflict (layout)
 src/routes/           home (overview), country (?id=), add (plate + quick), history,
                       sighting (edit, ?id=), settings
-scripts/              check-node.cjs, smoke.mjs, release-notes.mjs (+ test),
+supabase/             config.toml, migrations/, templates/, tests/database/ (pgTAP)
+scripts/              check-node.cjs, smoke.mjs, sync-e2e.mjs, release-notes.mjs (+ test),
                       build-borders.mjs (regenerates src/lib/geo/borders.ts),
                       build-maps.mjs (regenerates src/lib/geo/maps/*; keep attribution/licence)
 .github/workflows/    ci.yml, release.yml

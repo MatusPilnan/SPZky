@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import Dexie from 'dexie';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { SpzDatabase } from './db';
-import { addSighting, deleteSighting, findByPlate, listSightings, updateSighting } from './sightings';
+import { addSighting, deleteSighting, findByPlate, listSightings, nextUpdatedAt, updateSighting } from './sightings';
 
 let db: SpzDatabase;
 
@@ -149,5 +149,21 @@ describe('schema upgrade v2 → v3', () => {
 		expect(rows.kc).toMatchObject({ regionCode: 'KC', plateType: null, dirty: 0 });
 		expect(rows.ba).toMatchObject({ regionCode: 'BA', plateType: 'sk-district', dirty: 0, updatedAt: 1 });
 		await v3.delete();
+	});
+});
+
+describe('nextUpdatedAt', () => {
+	it('is now, but always later than the version being changed', async () => {
+		expect(nextUpdatedAt({ updatedAt: 100 }, 500)).toBe(500);
+		// The stored version came from a device whose clock runs ahead.
+		expect(nextUpdatedAt({ updatedAt: 900 }, 500)).toBe(901);
+
+		const s = await addSighting({ collectionId: 'sk', regionCode: 'BA' }, db);
+		const future = Date.now() + 3_600_000;
+		await db.sightings.update(s.id, { updatedAt: future, dirty: 0 });
+		await updateSighting(s.id, { note: 'x' }, db);
+		expect((await db.sightings.get(s.id))?.updatedAt).toBe(future + 1);
+		await deleteSighting(s.id, db);
+		expect(await db.sightings.get(s.id)).toMatchObject({ deleted: 1, dirty: 1, updatedAt: future + 2 });
 	});
 });

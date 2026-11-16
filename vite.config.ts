@@ -1,9 +1,12 @@
 import { readFileSync } from 'node:fs';
 import adapter from '@sveltejs/adapter-static';
 import { withPwa } from '@vite-pwa/sveltekit';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8'));
+
+/** PUBLIC_* settings from the environment (CI), else from .env / .env.local (local dev). */
+const env = { ...loadEnv('', process.cwd(), 'PUBLIC_'), ...process.env };
 
 /**
  * Sub-path the app is served from: "" locally, "/SPZky" on GitHub Pages
@@ -15,7 +18,11 @@ const scope = `${base}/`;
 
 export default defineConfig({
 	define: {
-		__APP_VERSION__: JSON.stringify(pkg.version)
+		__APP_VERSION__: JSON.stringify(pkg.version),
+		// Sync backend (public values; row-level security protects the data). Empty
+		// in local dev and forks: the app then works offline-only, without accounts.
+		__SUPABASE_URL__: JSON.stringify(env.PUBLIC_SUPABASE_URL ?? ''),
+		__SUPABASE_KEY__: JSON.stringify(env.PUBLIC_SUPABASE_KEY ?? '')
 	},
 	plugins: [
 		withPwa(

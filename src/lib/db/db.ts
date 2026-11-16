@@ -3,8 +3,15 @@ import { getRegion } from '../collections';
 import { detectPlate } from '../plates/detect';
 import type { Sighting } from './types';
 
+/** Small key/value store for sync state (cursor, account the data belongs to). */
+export interface MetaEntry {
+	key: string;
+	value: unknown;
+}
+
 export class SpzDatabase extends Dexie {
 	sightings!: EntityTable<Sighting, 'id'>;
+	meta!: EntityTable<MetaEntry, 'key'>;
 
 	constructor(name = 'spz-ky') {
 		super(name);
@@ -39,6 +46,12 @@ export class SpzDatabase extends Dexie {
 						if (fixed) Object.assign(s, fixed, { updatedAt: Date.now(), dirty: 1 });
 					})
 			);
+		// v4: sync (phase 7). `meta` holds the pull cursor and the signed-in account;
+		// userId is indexed to find data that doesn't belong to the account yet.
+		this.version(4).stores({
+			sightings: 'id, collectionId, [collectionId+regionCode], plateNormalized, seenAt, updatedAt, dirty, userId',
+			meta: 'key'
+		});
 	}
 }
 

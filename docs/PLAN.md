@@ -158,7 +158,7 @@ Sync (phase 7) must include `plateType` and a nullable `region_code`.
 
 Sync: see "Sync — phase 7" below.
 
-## Sync — phase 7 (plan, 2026-11-15)
+## Sync — phase 7 (planned 2026-11-15, built 2026-11-16)
 
 Goal: the same collection on every device of a user, while the app stays fully usable
 offline and without an account. The local IndexedDB stays the source of truth; Supabase is
@@ -188,13 +188,21 @@ a sync target, not a dependency.
 
 ```
 supabase/
-  config.toml                     auth settings (site URL, OTP length/expiry, rate limits,
-                                  email template, SMTP with env(SUPABASE_SMTP_PASSWORD)),
-                                  [remotes.production] for the hosted project
+  config.toml                     local stack + hosted auth settings (OTP 6 digits, 15 min,
+                                  one code per address per 60 s, 30 emails/hour, templates,
+                                  SMTP via env(SMTP_USER) / env(SUPABASE_SMTP_PASSWORD))
   templates/sign-in-code.html     email with {{ .Token }} (sk + en text)
-  migrations/<timestamp>_sightings.sql
-  tests/rls.test.sql              pgTAP: user A can't see/change user B's rows, etc.
+  migrations/20261116120000_sightings.sql
+  tests/database/sightings.test.sql   pgTAP: RLS, last-write-wins, replace, validation
 ```
+
+- **SMTP is `enabled = false` in the committed config**, so the local stack keeps using its
+  mail catcher (Mailpit). The release workflow flips it to `true` with `sed` right before
+  `config push`. (CLI `[remotes.*]` blocks were not used: they need the project ref in the
+  file, and the matching rules are not documented.)
+- `config push` writes **every setting the file declares**. Sections the app doesn't use
+  and that would change the hosted project (`[db.pooler]`, storage S3/analytics/vector)
+  were removed from `config.toml` on purpose; don't add them back without checking.
 
 ### Database schema (migration)
 
@@ -216,18 +224,30 @@ supabase/
   auth.uid()`; hard delete only for their own rows (used by "delete my cloud data").
 - Index on `(user_id, server_updated_at)`.
 - RPC `push_sightings(rows jsonb)`: upsert where an existing row is only overwritten if the
-  incoming `updated_at` is newer (last-write-wins enforced on the server, in one call).
+  incoming `updated_at` is newer (last-write-wins enforced on the server, in one call; at
+  most 500 rows). It **returns the server's version of every row it rejected**, and the
+  device adopts it right away (otherwise a rejected row whose newer server version was
+  already pulled would never be corrected).
 - RPC `replace_sightings(rows jsonb)`: for "use this device's data" at sign-in; upserts the
   rows and soft-deletes all other rows of the caller, in one transaction (only own rows,
   `security invoker`).
 
 ### Sync algorithm (client, `src/lib/sync/`)
 
-1. **Push:** send all local rows with `dirty = 1` (batches of ~200) via `push_sightings`;
-   then mark them clean (a rejected, older row is corrected by the pull).
-2. **Pull:** fetch rows with `server_updated_at > cursor` (pages of 500), apply each one
-   locally if it is new or its `updated_at` is newer than the local row; store the cursor
-   in a new local `meta` table (Dexie schema v4).
+Code: `rows.ts` (pure conversion and rules), `engine.ts` (push/pull/sign-in/sign-out against
+an injectable `Remote`), `remote.ts` (Supabase implementation), `account.svelte.ts` (UI state,
+triggers, auth), `fake-remote.ts` (in-memory server for the unit tests).
+
+1. **Push:** send local rows with `dirty = 1` (batches of 200) via `push_sightings`; mark
+   them clean only if they weren't edited again while the request ran; adopt the rejected
+   rows the server returns.
+2. **Pull:** fetch rows with `server_updated_at >= cursor − 60 s` (pages of 500, keyed by
+   the timestamp), apply each one locally if it is new or its `updated_at` is newer than
+   the local row (equal: only if the local row has no pending change); store the cursor in
+   the local `meta` table (Dexie schema v4). The 60-second overlap covers transactions that
+   commit after a pull has already moved past their timestamp.
+   - A local edit always gets `updatedAt = max(now, previous + 1)` (`nextUpdatedAt`), so it
+     beats the version it was made on even when this device's clock is behind.
 3. **When:** on app start, when coming back online, a few seconds after a local change
    (debounced), when the app returns to the foreground, and via "Sync now" in Settings.
 4. **Sign-in on a device: conflict check** (decided 2026-11-16). Before anything is pushed,
@@ -239,7 +259,8 @@ supabase/
      assigned to the account, pushed, and the cloud rows pulled (merge).
    - **Both sides hold different sightings:** a dialog shows the counts ("on this device:
      N, in the cloud: M, only here: X, only in the cloud: Y") and offers:
-     - **Merge both** (preselected): as above; duplicates are resolved by rule 5.
+     - **Merge both** (preselected): as above; local entries the account already has
+       (same key) are dropped as duplicates.
      - **Use the cloud data:** local rows are removed from this device, then the cloud
        rows are pulled.
      - **Use this device's data:** RPC `replace_sightings(rows jsonb)` in one transaction
@@ -247,19 +268,34 @@ supabase/
        devices drop them on their next pull). The dialog warns that this also removes the
        plates from the account's other devices, and asks for a second confirmation.
      - **Cancel:** signs out again; nothing changes on either side.
-   - The check runs only at sign-in, never on later syncs.
-5. **Same plate logged on two devices while offline:** after a pull, for duplicates of the
-   same `plate_normalized` the oldest (`created_at`, then `id`) is kept and the others are
-   soft-deleted, so every device ends up with the same result. Quick entries without a
-   plate are never merged.
-6. **Errors:** network errors, a paused project or an expired session never block the app;
-   the status line in Settings shows the state and the last successful sync.
+   - The check runs only at sign-in, never on later syncs. The device counts as linked
+     (`meta` key `sync.account`) only after the choice; if the app closes or goes offline
+     in between, the check runs again on the next start / when back online.
+5. **Same plate logged on two devices while offline:** changed while building (2026-11-16):
+   **no automatic de-duplication on normal syncs.** The app allows saving a plate twice on
+   purpose (it only warns), so merging by plate would delete intended entries, and
+   duplicates don't change progress (a region counts once). Duplicates are only dropped in
+   the sign-in merge (step 4).
+6. **Sign-out** (decided 2026-11-16, see Open points): local part in `signOutLocal`.
+   "Keep" gives the kept plates **new ids** and no account, so they can later go into any
+   account without clashing with the old account's rows on the server (ids are global).
+   A session ending elsewhere (revoked, account deleted) is handled like "keep".
+   **Delete my cloud data** hard-deletes the account's rows, then signs out keeping the
+   plates on the device (staying signed in would push them straight back).
+7. **Errors:** network errors, a paused project or an expired session never block the app;
+   the status line in Settings shows the state (synced / syncing / offline / unavailable /
+   failed) and the last successful sync. Supabase allows one code per address per 60 s;
+   the sign-in form then says "try again in a minute".
 
 ### App changes
 
 - `@supabase/supabase-js`, configured from build-time values `PUBLIC_SUPABASE_URL` and
-  `PUBLIC_SUPABASE_KEY` (the public key; RLS protects the data). Without them (local dev,
-  forks) the account section is hidden and the app works as today.
+  `PUBLIC_SUPABASE_KEY` (the public key; RLS protects the data), passed into the bundle via
+  Vite `define` (`__SUPABASE_URL__`, `__SUPABASE_KEY__`), from the environment or
+  `.env.local`. Without them (local dev, forks) the account section is hidden, supabase-js is
+  never downloaded (dynamic import) and the app works as before.
+- The sign-in conflict dialog (`SignInConflict.svelte`) lives in the layout, so it appears
+  wherever the user is when the check finishes.
 - Settings → **Account & sync:** email → "Send code" → 6-digit code → signed in; then the
   email, sync status, last sync, "Sync now", "Sign out", "Delete my cloud data".
 - Session stored by supabase-js in localStorage under an `spz-ky.*` key (shared origin on
@@ -267,15 +303,18 @@ supabase/
 
 ### CI/CD
 
-- **ci.yml**, new job *database*: `supabase/setup-cli`, start a local database on the runner
-  (Docker), apply all migrations, run `supabase test db` (RLS tests) and the linter.
-- **Sync end-to-end test** against the local Supabase stack in CI (it includes a mail
-  catcher, so the smoke test can read the sign-in code): two browser profiles act as two
-  devices, log plates offline, sync, and must end up identical. It also covers the sign-in
-  conflict dialog: merge, use cloud, use this device, cancel.
-- **release.yml**, new job *migrate* after the tests and before the deploy: `supabase link`,
-  `supabase db push`, `supabase config push` (auth settings and SMTP). The build gets the
-  public URL and key from repo variables.
+- The Supabase CLI is a pinned dev dependency (`supabase` in package.json), so local runs
+  and CI use the same version.
+- **ci.yml**, job *Database and sync*: `npm run db:start` (local stack in Docker with all
+  migrations), `db:test` (pgTAP), `db:lint`, then `sync:e2e`.
+- **Sync end-to-end test** (`scripts/sync-e2e.mjs`): builds against the local stack, reads
+  sign-in codes from Mailpit, and drives three browser contexts ("phone", "tablet",
+  "laptop") through sign-in, all conflict choices incl. cancel, offline changes, both
+  sign-out choices and "Delete my cloud data".
+- **release.yml**, job *migrate* after the tests and before the build: checks the secrets,
+  `supabase link`, `supabase db push --remote` (**without `--remote` CLI 3 pushes to the
+  local database**), turns SMTP on, `supabase config push --yes`. The build gets the public
+  URL and key from repo variables and fails if they're missing.
 
 ### GitHub configuration
 
@@ -308,8 +347,10 @@ supabase/
 - **Delete account completely** (including the email in Supabase Auth) needs a server-side
   function with admin rights (Edge Function). Decided 2026-11-15: **later**, not in phase 7;
   phase 7 has "Delete my cloud data" (the rows).
-- Verify during setup: Gmail app passwords and limits on Google's own pages, Supabase's
-  current OTP email template variables and `config push` support for SMTP settings.
+- **First release with sync:** watch the *Migrate Supabase* job (the first `config push`
+  shows the diff it applies) and sign in once on the live app to check that the Gmail
+  mail arrives (and isn't in spam).
+- "Sign in with Google" as a second option: later, if wanted.
 
 ## Phases
 
@@ -321,7 +362,7 @@ supabase/
 | 4   | Nationwide plates: save plates without region per country, plate types + highlighting; country choice ordered by GPS, then last used (see above) | ✅ done (v0.3.0) |
 | 5   | Progress: per-country screens incl. nationwide subcollection, code grids, home overview    | ✅ done (v0.3.0) |
 | 6   | Maps: boundary data → SVG, colored map views                                               | ✅ done (v0.5.0)          |
-| 7   | Sync: Supabase project, schema + RLS, email-code sign-in, sync engine, first-login merge  | next; planned in "Sync — phase 7"; owner's setup steps done 2026-11-16 |
+| 7   | Sync: Supabase project, schema + RLS, email-code sign-in, sync engine, first-login merge  | built 2026-11-16, not released yet (see "Sync — phase 7") |
 | 8   | Vintage CZ polish                                                                          |                           |
 
 Deploy comes before the remaining features so the app can be installed and tested on a phone
