@@ -71,6 +71,19 @@ checklist "Region data" in `CLAUDE.md` for every country added later.
   collection** like CZ pre-2001.
   Sources: pl.wikipedia "Tablice rejestracyjne w Polsce", en.wikipedia "Vehicle
   registration plates of Poland" (checked 2026-11-16).
+- **Germany** (phase 9, 2026-11-16): **714** codes, imported by
+  `scripts/import-de-codes.mjs` from de.wikipedia "Liste der Kfz-Kennzeichen in
+  Deutschland" (as of 1 Dec 2023) into `de.generated.ts`: every current district code and
+  every old code reintroduced since 2013. Codes can cover several districts (city + district
+  of the same name, or one old code reintroduced in several districts). Names = what the
+  code stands for (AA Aalen, ANK Anklam). Umlauts are distinct letters (MÜ ≠ MU), so
+  `normalizePlate` keeps Ä Ö Ü. Format: code 1–3 letters + 1–2 letters + 1–4 digits, ≤ 8
+  characters; E = electric, H = historic (highlighted). Left out: authority series (BD, BP,
+  BW, THW, X, Y), state-parliament codes (BBL, BWL… THL), diplomatic plates, old codes never
+  reintroduced. **No bonus collection:** GDR plates had to be exchanged by 31 Dec 1993.
+  Many plates also fit SK/AT formats (e.g. `BA-MA001` Bamberg); GPS decides the order.
+  Sources: de.wikipedia list (above), en.wikipedia "Vehicle registration plates of Germany",
+  de.wikipedia "Kfz-Kennzeichen (DDR)" (checked 2026-11-16).
 - Sources, with details in the header of each file in `src/lib/data/`: en.wikipedia (plates
   of Slovakia / Czech Republic), sk.wikipedia "Zoznam skratiek okresov Slovenska" (reserved
   codes) and "Evidenčné číslo vozidiel na Slovensku", cs.wikipedia "Státní poznávací značky v
@@ -160,6 +173,7 @@ raw, loaded on demand and precached for offline use):
 
 | PL | 380 counties and city counties (powiaty) | gbHumanitarian POL ADM2: Państwowy Rejestr Granic via HDX, 2022 | CC BY 3.0 IGO |
 | PL pre-2000 | — (no map) | — | — |
+| DE | 401 districts and district-free cities (Kreise) | gbOpen DEU ADM3: BKG, 2021 (dissolved by name: coastal districts come in several parts) | dl-de/by-2-0 (attribution) |
 
 | AT pre-1990 | 9 states (Bundesländer) | gbOpen AUT ADM1: BEV, 2017 | CC BY-SA 2.0 (as above) |
 

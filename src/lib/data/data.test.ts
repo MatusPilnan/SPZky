@@ -7,14 +7,21 @@ describe('collection data', () => {
 		const codes = c.regions.map((r) => r.code);
 		expect(new Set(codes).size).toBe(codes.length);
 		for (const r of c.regions) {
-			expect(r.code).toMatch(/^[A-Z]{1,3}$/);
+			expect(r.code).toMatch(/^[A-ZÄÖÜ]{1,3}$/);
 			expect(r.name.trim()).not.toBe('');
 		}
 	});
 
 	it('has the expected sizes', () => {
 		const size = Object.fromEntries(collections.map((c) => [c.id, c.regions.length]));
-		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165 });
+		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165, de: 714 });
+	});
+
+	it('Germany: district codes incl. reintroduced ones, no authority series', () => {
+		const de = collections.find((c) => c.id === 'de')!.regions.map((r) => r.code);
+		for (const code of ['BD', 'BP', 'BW', 'THW', 'X', 'Y', 'BBL', 'NRW', 'LSA']) expect(de).not.toContain(code);
+		// Current, reintroduced, with umlauts, shared by city and district.
+		for (const code of ['B', 'M', 'HH', 'MTL', 'HGW', 'ANK', 'MÜ', 'MU', 'BÜS', 'A']) expect(de).toContain(code);
 	});
 
 	it('Poland: no never-used codes, secondary codes kept, every voivodeship letter valid', () => {

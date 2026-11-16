@@ -18,7 +18,8 @@ describe('countryAt', () => {
 		['Bratislava (next to the AT border)', 48.1486, 17.1077, 'SK'],
 		['Budapest', 47.4979, 19.0402, null],
 		['Kraków', 50.0647, 19.945, 'PL'],
-		['Dresden', 51.0504, 13.7373, null],
+		['Dresden', 51.0504, 13.7373, 'DE'],
+		['Budapest (not supported)', 47.4979, 19.0402, null],
 		['Atlantic', 0, 0, null]
 	])('%s → %s', (_, lat, lng, expected) => {
 		expect(countryAt(lat as number, lng as number)).toBe(expected);

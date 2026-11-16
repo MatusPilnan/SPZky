@@ -57,6 +57,37 @@ describe('detectPlate: Austria', () => {
 	});
 });
 
+describe('detectPlate: Germany', () => {
+	const de = (raw: string) =>
+		detectPlate(raw)
+			.filter((d) => d.collectionId === 'de')
+			.map((d) => `${(d as { regionCode: string }).regionCode}:${d.format}`);
+
+	it('district code, then 1–2 letters and 1–4 digits', () => {
+		expect(de('B-MW 1234')).toEqual(['B:de-standard']);
+		expect(de('M AB 123')).toEqual(['M:de-standard']);
+		expect(de('HGW-X 1')).toEqual(['HGW:de-standard']);
+	});
+
+	it('E = electric, H = historic', () => {
+		expect(de('B-EV 123E')).toEqual(['B:de-ev']);
+		expect(de('M-OT 12H')).toEqual(['M:de-historic']);
+	});
+
+	it('umlaut codes are their own codes', () => {
+		expect(de('MÜ-AB 12')).toEqual(['MÜ:de-standard']);
+		expect(de('MU-AB 12')).toEqual(['MU:de-standard']);
+	});
+
+	it('without a separator, every split that fits is offered', () => {
+		expect(de('BMW1234').sort()).toEqual(['B:de-standard', 'BM:de-standard']);
+	});
+
+	it('at most 8 characters', () => {
+		expect(de('HGW-XY 1234')).toEqual([]);
+	});
+});
+
 describe('detectPlate: Poland', () => {
 	const pl = (raw: string) =>
 		detectPlate(raw)
@@ -121,10 +152,12 @@ describe('detectPlate: Slovakia', () => {
 	});
 
 	it('detects special plates with a district code at medium confidence', () => {
-		expect(first('BA-MA001')).toMatchObject({ regionCode: 'BA', format: 'sk-district-special', confidence: 'medium' });
-		expect(first('NR-M 001')).toMatchObject({ regionCode: 'NR', format: 'sk-district-special' });
-		expect(first('TT-123 X')).toMatchObject({ regionCode: 'TT', format: 'sk-district-special' });
-		expect(first('ZA-HELLO')).toMatchObject({ regionCode: 'ZA', format: 'sk-district-special' });
+		// Some of these also fit German plates (BA-MA001 = Bamberg); GPS orders them in the app.
+		const sk = (raw: string) => detectPlate(raw).find((d) => d.collectionId === 'sk');
+		expect(sk('BA-MA001')).toMatchObject({ regionCode: 'BA', format: 'sk-district-special', confidence: 'medium' });
+		expect(sk('NR-M 001')).toMatchObject({ regionCode: 'NR', format: 'sk-district-special' });
+		expect(sk('TT-123 X')).toMatchObject({ regionCode: 'TT', format: 'sk-district-special' });
+		expect(sk('ZA-HELLO')).toMatchObject({ regionCode: 'ZA', format: 'sk-district-special' });
 	});
 
 	it('marks personalised plates without a district as nationwide', () => {

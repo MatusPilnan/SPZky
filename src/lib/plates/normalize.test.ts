@@ -12,6 +12,12 @@ describe('normalizePlate', () => {
 		expect(normalizePlate('čA-123ŠŽ')).toBe('CA123SZ');
 	});
 
+	it('keeps German umlauts (they are distinct codes: MÜ ≠ MU)', () => {
+		expect(normalizePlate('mü-ab 123')).toBe('MÜAB123');
+		expect(normalizePlate('KÜN X 1')).toBe('KÜNX1');
+		expect(normalizePlate('LÖ-A 1')).not.toBe(normalizePlate('LO-A 1'));
+	});
+
 	it('returns empty string for input without letters or digits', () => {
 		expect(normalizePlate(' - . ')).toBe('');
 	});

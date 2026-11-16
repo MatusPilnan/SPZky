@@ -11,7 +11,7 @@ import mapshaper from 'mapshaper';
 
 const RELEASE = 'https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData';
 
-/** @type {{ file: string, url: string, simplify: string, center: [number, number], attribution: string, license: string, rename?: Record<string, string>, disambiguateWith?: string }[]} */
+/** @type {{ file: string, url: string, simplify: string, center: [number, number], attribution: string, license: string, rename?: Record<string, string>, disambiguateWith?: string, dissolve?: boolean }[]} */
 const MAPS = [
 	{
 		file: 'sk-districts',
@@ -104,6 +104,17 @@ const MAPS = [
 		center: [19.4, 52.1],
 		attribution: 'Państwowy Rejestr Granic (GUGiK) via geoBoundaries / HDX',
 		license: 'CC BY 3.0 IGO'
+	},
+	{
+		// 401 districts and district-free cities (2021; Eisenach still separate). Coastal
+		// districts come as several features (sea areas), hence dissolve.
+		file: 'de-districts',
+		url: `${RELEASE}/gbOpen/DEU/ADM3/geoBoundaries-DEU-ADM3_simplified.geojson`,
+		dissolve: true,
+		simplify: '5%',
+		center: [10.4, 51.2],
+		attribution: '© GeoBasis-DE / BKG (Federal Agency for Cartography and Geodesy) via geoBoundaries',
+		license: 'dl-de/by-2-0'
 	}
 ];
 
@@ -167,8 +178,10 @@ for (const m of MAPS) {
 	if (m.disambiguateWith) input = await disambiguate(input, m.disambiguateWith);
 
 	const proj = `+proj=laea +lat_0=${m.center[1]} +lon_0=${m.center[0]} +datum=WGS84`;
+	// dissolve: one area per name (some datasets split a district into several features).
+	const dissolve = m.dissolve ? '-dissolve shapeName ' : '';
 	const out = await mapshaper.applyCommands(
-		`-i in.json -simplify ${m.simplify} keep-shapes -proj ${proj} -o out.json format=geojson`,
+		`-i in.json ${dissolve}-simplify ${m.simplify} keep-shapes -proj ${proj} -o out.json format=geojson`,
 		{ 'in.json': input }
 	);
 	const gj = JSON.parse(out['out.json']);

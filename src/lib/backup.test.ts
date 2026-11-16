@@ -80,7 +80,7 @@ describe('parseBackup', () => {
 		const parsed = parseBackup(
 			file([
 				entry(),
-				entry({ collectionId: 'de' }), // unknown country
+				entry({ collectionId: 'xx' }), // unknown country
 				entry({ regionCode: 'XX', plate: null }), // unknown region, nothing to re-detect
 				entry({ regionCode: null, plateType: 'cz-personalized' }), // not a nationwide type of SK
 				entry({ seenAt: 'yesterday' }),

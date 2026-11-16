@@ -1,6 +1,7 @@
 import { atRegions, atVintageRegions } from './data/at';
 import { czRegions } from './data/cz';
 import { czVintageRegions } from './data/cz-vintage';
+import { deRegions } from './data/de';
 import { plRegions } from './data/pl';
 import { plVintageRegions } from './data/pl-vintage';
 import { skRegions } from './data/sk';
@@ -51,6 +52,7 @@ export const collections: CollectionDef[] = [
 		regions: atVintageRegions,
 		nationwideTypes: []
 	},
+	{ id: 'de', country: 'DE', bandCode: 'D', flag: '🇩🇪', bonus: false, plateStyle: 'eu', regions: deRegions, nationwideTypes: [] },
 	{ id: 'pl', country: 'PL', bandCode: 'PL', flag: '🇵🇱', bonus: false, plateStyle: 'eu', regions: plRegions, nationwideTypes: [] },
 	{
 		id: 'pl-vintage',
@@ -109,7 +111,9 @@ export function isNationwideType(collectionId: string, type: string | null | und
 export function highlightOf(type: PlateFormat | null | undefined): 'ev' | 'special' | null {
 	switch (type) {
 		case 'ev':
+		case 'de-ev':
 			return 'ev';
+		case 'de-historic':
 		case 'sk-personalized':
 		case 'cz-personalized':
 		case 'sk-district-special':

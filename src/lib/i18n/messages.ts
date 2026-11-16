@@ -114,6 +114,9 @@ export const en = {
 	'format.at-personalized': 'personalised plate',
 	'format.at-black': 'black plate (before 1990)',
 	'format.pl-standard': 'standard plate',
+	'format.de-standard': 'standard plate',
+	'format.de-ev': 'electric vehicle (E)',
+	'format.de-historic': 'historic vehicle (H)',
 	'format.pl-vintage': 'black plate (before 2000)',
 
 	'location.idle': 'Location is not saved (enable in Settings)',
@@ -271,6 +274,7 @@ export const en = {
 	'collection.cz-vintage': 'Czechia (pre-2001)',
 	'collection.at': 'Austria',
 	'collection.at-vintage': 'Austria (pre-1990)',
+	'collection.de': 'Germany',
 	'collection.pl': 'Poland',
 	'collection.pl-vintage': 'Poland (pre-2000)'
 } satisfies Record<string, Message>;
@@ -395,6 +399,9 @@ export const sk: Messages = {
 	'format.at-personalized': 'personalizovaná ŠPZ',
 	'format.at-black': 'čierna ŠPZ (pred 1990)',
 	'format.pl-standard': 'štandardná ŠPZ',
+	'format.de-standard': 'štandardná ŠPZ',
+	'format.de-ev': 'elektromobil (E)',
+	'format.de-historic': 'historické vozidlo (H)',
 	'format.pl-vintage': 'čierna ŠPZ (pred 2000)',
 
 	'location.idle': 'Poloha sa neukladá (zapni v Nastaveniach)',
@@ -562,6 +569,7 @@ export const sk: Messages = {
 	'collection.cz-vintage': 'Česko (do 2001)',
 	'collection.at': 'Rakúsko',
 	'collection.at-vintage': 'Rakúsko (do 1990)',
+	'collection.de': 'Nemecko',
 	'collection.pl': 'Poľsko',
 	'collection.pl-vintage': 'Poľsko (do 2000)'
 };

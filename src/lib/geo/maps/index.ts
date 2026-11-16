@@ -16,7 +16,8 @@ const loaders: Partial<Record<CollectionId, () => Promise<{ map: RegionMapData }
 	'cz-vintage': () => import('./cz-districts'),
 	at: () => import('./at-districts'),
 	'at-vintage': () => import('./at-states'),
-	pl: () => import('./pl-counties')
+	pl: () => import('./pl-counties'),
+	de: () => import('./de-districts')
 };
 
 export function hasMap(collectionId: CollectionId): boolean {
@@ -84,7 +85,9 @@ export function isUnmappedCode(collectionId: CollectionId, code: string): boolea
 /** Region codes of the collection that belong to a map area. */
 export function codesOfArea(collection: CollectionDef, areaName: string): string[] {
 	const names = areaAliases[collection.id]?.[areaName] ?? [areaName];
-	return collection.regions.filter((r) => names.includes(r.area ?? r.name)).map((r) => r.code);
+	return collection.regions
+		.filter((r) => (r.areas ?? [r.area ?? r.name]).some((a) => names.includes(a)))
+		.map((r) => r.code);
 }
 
 export type AreaStatus = 'found' | 'partial' | 'missing';

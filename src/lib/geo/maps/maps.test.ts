@@ -27,6 +27,7 @@ describe('region maps', () => {
 		expect((await loadMap('at'))!.shapes).toHaveLength(94);
 		expect((await loadMap('at-vintage'))!.shapes).toHaveLength(9);
 		expect((await loadMap('pl'))!.shapes).toHaveLength(380);
+		expect((await loadMap('de'))!.shapes).toHaveLength(401);
 		expect(await loadMap('pl-vintage')).toBeNull();
 	});
 
@@ -52,6 +53,11 @@ describe('region maps', () => {
 		expect(codesOfArea(pl, 'Bielski (Śląskie)').sort()).toEqual(['IBI', 'SBI']);
 		expect(codesOfArea(pl, 'Bielski (Podlaskie)')).toEqual(['BBI']);
 		expect(codesOfArea(pl, 'Warszawa')).toHaveLength(16);
+		const de = collections.find((c) => c.id === 'de')!;
+		// City and district share a code; reintroduced codes count in their current district.
+		expect(codesOfArea(de, 'Augsburg, Kreisfreie Stadt')).toEqual(['A']);
+		expect(codesOfArea(de, 'Augsburg, Landkreis')).toContain('A');
+		expect(codesOfArea(de, 'Vorpommern-Greifswald')).toEqual(expect.arrayContaining(['VG', 'ANK', 'HGW']));
 	});
 
 	it('derives the area status from its codes', () => {

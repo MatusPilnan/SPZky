@@ -10,12 +10,14 @@ export interface Region {
 	 * names counties by their adjective without diacritics: "Boleslawiecki").
 	 */
 	area?: string;
+	/** Several map areas, when a code belongs to more than one (e.g. German city + district). */
+	areas?: string[];
 }
 
-export type CollectionId = 'sk' | 'cz' | 'cz-vintage' | 'at' | 'at-vintage' | 'pl' | 'pl-vintage';
+export type CollectionId = 'sk' | 'cz' | 'cz-vintage' | 'at' | 'at-vintage' | 'pl' | 'pl-vintage' | 'de';
 
 /** ISO 3166-1 alpha-2 codes of the supported countries. */
-export type CountryCode = 'SK' | 'CZ' | 'AT' | 'PL';
+export type CountryCode = 'SK' | 'CZ' | 'AT' | 'PL' | 'DE';
 
 /** Collections that have a nationwide subcollection (plates without a region). */
 export type NationwideCollectionId = 'sk' | 'cz';

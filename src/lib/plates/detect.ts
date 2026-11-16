@@ -24,7 +24,13 @@ export type RegionFormat =
 	/** PL since 2000: 2–3 letter county code + serial (WA 12345, KRA 1A23). */
 	| 'pl-standard'
 	/** PL 1976–2000 black plate: area code + series letter + 4 digits or 3 digits + letter. */
-	| 'pl-vintage';
+	| 'pl-vintage'
+	/** DE: district code (1–3 letters) + 1–2 letters + 1–4 digits (B MW 1234). */
+	| 'de-standard'
+	/** DE electric vehicle: as standard, with a trailing E. */
+	| 'de-ev'
+	/** DE historic vehicle (30+ years): as standard, with a trailing H. */
+	| 'de-historic';
 
 /** Recognised plate formats without a region; they go to the country's nationwide subcollection. */
 export type NationwideFormat =
@@ -176,6 +182,26 @@ function detectPolish(n: string): Detection[] {
 	return out.filter((d): d is Detection => d !== null);
 }
 
+/**
+ * Germany: district code of 1–3 letters (umlauts are letters of their own), then 1–2
+ * letters and 1–4 digits, at most 8 characters; a trailing E marks electric, H historic
+ * vehicles. Typed with a separator after the code ("B-MW 1234"), only that split is tried;
+ * without one, every code length that fits is offered (B MW… vs BM W…).
+ */
+function detectGerman(n: string, raw: string): Detection[] {
+	const out: (Detection | null)[] = [];
+	const groups = raw.trim().toUpperCase().split(/[\s\-.·]+/);
+	const typedCode = groups.length > 1 && /^[A-ZÄÖÜ]{1,3}$/.test(groups[0]) ? groups[0] : null;
+	for (const len of typedCode ? [typedCode.length] : [1, 2, 3]) {
+		const code = n.slice(0, len);
+		const m = /^([A-Z]{1,2}\d{1,4})([EH])?$/.exec(n.slice(len));
+		if (!m || code.length + m[1].length > 8) continue;
+		const format = m[2] === 'E' ? 'de-ev' : m[2] === 'H' ? 'de-historic' : 'de-standard';
+		out.push(region('de', code, format, 'high'));
+	}
+	return out.filter((d): d is Detection => d !== null);
+}
+
 export function detectionKey(d: Detection): string {
 	return d.type === 'region' ? `${d.collectionId}:${d.regionCode}` : `${d.collectionId}:*${d.format}`;
 }
@@ -191,7 +217,7 @@ export function detectPlate(raw: string): Detection[] {
 	if (n.length < 5) return [];
 
 	const seen = new Set<string>();
-	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n)]
+	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw)]
 		.filter((d) => {
 			const key = detectionKey(d);
 			if (seen.has(key)) return false;
