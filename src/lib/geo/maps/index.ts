@@ -15,6 +15,7 @@ const loaders: Partial<Record<CollectionId, () => Promise<{ map: RegionMapData }
 	cz: () => import('./cz-regions'),
 	'cz-vintage': () => import('./cz-districts'),
 	at: () => import('./at-districts'),
+	'at-vintage': () => import('./at-states'),
 	pl: () => import('./pl-counties')
 };
 
@@ -62,6 +63,11 @@ const areaAliases: Partial<Record<CollectionId, Record<string, string[]>>> = {
 		'Bruck an der Leitha': ['Bruck an der Leitha', 'Schwechat'],
 		// Rust is a statutory city but uses Eisenstadt's code E.
 		Rust: ['Eisenstadt']
+	},
+	// Black plates before 1990: Graz (G) and Linz (L) had their own codes within their states.
+	'at-vintage': {
+		Steiermark: ['Steiermark', 'Graz'],
+		Oberösterreich: ['Oberösterreich', 'Linz']
 	}
 };
 

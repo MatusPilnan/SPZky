@@ -16,17 +16,13 @@ import type { Region } from './types';
 //   JU, KF, MZ, RA, WU. Standard plates stay valid until the car is re-registered
 //   ("verlieren bei Ummeldung die Gültigkeit"), personalised ones for their 15 years, so
 //   they are still on the road.
-// - State codes N, O, ST, T, V of the black plates 1947–1989 (B, K, S, W are also city
-//   codes). Black plates stay valid "solange sich an der Zulassung nichts ändert";
-//   >126,000 were still registered in 2025 (de.wikipedia).
 // What's out (not regional): A (federal top officials), BB, BD, BG, BH (army), BP
 // (police), FV, FW, JW, PT, ZW, and the diplomatic/consular series (WD, WK, GK, KK, LK, SK,
-// TD, TK, VD, BK, KD, LD).
-// Plausibility: 111 codes = 93 of the 94 map areas with a code of their own (Rust shares
+// TD, TK, VD, BK, KD, LD). The black plates 1947–1989 are their own bonus collection
+// (atVintageRegions below).
+// Plausibility: 106 codes = 93 of the 94 map areas with a code of their own (Rust shares
 // E with Eisenstadt) + 5 second codes in one area (LN Leoben, BA/GB Liezen, KG Tulln, SW
-// Bruck an der Leitha) + 8 codes of merged/dissolved districts + 5 black-plate state codes.
-// Note: B on a black plate means Burgenland, on a current plate Bregenz; K/S/W are both city
-// and state. They are one code each here, named after the current district.
+// Bruck an der Leitha) + 8 codes of merged/dissolved districts.
 export const atRegions: Region[] = [
 	{ code: 'AM', name: 'Amstetten' },
 	{ code: 'B', name: 'Bregenz' },
@@ -92,10 +88,8 @@ export const atRegions: Region[] = [
 	{ code: 'MT', name: 'Murtal' },
 	{ code: 'MU', name: 'Murau' },
 	{ code: 'MZ', name: 'Mürzzuschlag' },
-	{ code: 'N', name: 'Niederösterreich' },
 	{ code: 'ND', name: 'Neusiedl am See' },
 	{ code: 'NK', name: 'Neunkirchen' },
-	{ code: 'O', name: 'Oberösterreich' },
 	{ code: 'OP', name: 'Oberpullendorf' },
 	{ code: 'OW', name: 'Oberwart' },
 	{ code: 'P', name: 'St. Pölten' },
@@ -113,15 +107,12 @@ export const atRegions: Region[] = [
 	{ code: 'SO', name: 'Südoststeiermark' },
 	{ code: 'SP', name: 'Spittal an der Drau' },
 	{ code: 'SR', name: 'Steyr' },
-	{ code: 'ST', name: 'Steiermark' },
 	{ code: 'SV', name: 'St. Veit an der Glan' },
 	{ code: 'SW', name: 'Schwechat' },
 	{ code: 'SZ', name: 'Schwaz' },
-	{ code: 'T', name: 'Tirol' },
 	{ code: 'TA', name: 'Tamsweg' },
 	{ code: 'TU', name: 'Tulln' },
 	{ code: 'UU', name: 'Urfahr-Umgebung' },
-	{ code: 'V', name: 'Vorarlberg' },
 	{ code: 'VB', name: 'Vöcklabruck' },
 	{ code: 'VI', name: 'Villach' },
 	{ code: 'VK', name: 'Völkermarkt' },
@@ -141,8 +132,26 @@ export const atRegions: Region[] = [
 	{ code: 'ZT', name: 'Zwettl' }
 ];
 
-/** Codes used on the black plates 1947–1989 (states, plus the cities Graz and Linz). */
-export const atBlackPlateCodes = new Set(['B', 'G', 'K', 'L', 'N', 'O', 'S', 'ST', 'T', 'V', 'W']);
+/** Codes without a map area (dissolved Wien-Umgebung). */
+export const atUnmappedCodes = new Set(['WU']);
 
-/** Codes without a map area of their own (states of the old black plates, dissolved Wien-Umgebung). */
-export const atUnmappedCodes = new Set(['N', 'O', 'ST', 'T', 'V', 'WU']);
+// Bonus collection: black plates 1947–1989, white on black, "W 123.456" (state or city code +
+// up to six digits; "XX 999.A99" once the numbers ran out). Since 1 January 1990 only the
+// current plates are issued, but black plates stay valid "solange sich an der Zulassung
+// nichts ändert": >126,000 were still registered in 2025 (de.wikipedia). Codes: the nine
+// states (B Burgenland, K Kärnten, N Niederösterreich, O Oberösterreich, S Salzburg,
+// ST Steiermark, T Tirol, V Vorarlberg, W Wien) and the cities G (Graz) and L (Linz).
+// Left out: BH (army) and PT (post). Sources as above (checked 2026-11-16).
+export const atVintageRegions: Region[] = [
+	{ code: 'B', name: 'Burgenland' },
+	{ code: 'G', name: 'Graz' },
+	{ code: 'K', name: 'Kärnten' },
+	{ code: 'L', name: 'Linz' },
+	{ code: 'N', name: 'Niederösterreich' },
+	{ code: 'O', name: 'Oberösterreich' },
+	{ code: 'S', name: 'Salzburg' },
+	{ code: 'ST', name: 'Steiermark' },
+	{ code: 'T', name: 'Tirol' },
+	{ code: 'V', name: 'Vorarlberg' },
+	{ code: 'W', name: 'Wien' }
+];

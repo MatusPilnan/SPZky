@@ -42,6 +42,12 @@ export const en = {
 	'about.cz-vintage.rare':
 		'Rarest: GT and GV (Gottwaldov, renamed Zlín in 1990) and BI (Brno-venkov, trucks only). Prague used AB to AZ; they count as one code, A.',
 	'about.cz-vintage.map': 'The map shows today’s districts, which are very close to the districts of that time.',
+	'about.at-vintage.title': 'About these plates',
+	'about.at-vintage.what':
+		'Austrian plates issued from 1947 to 1989: white on black, the letter of the state (or G for Graz, L for Linz) and up to six digits, e.g. W 123.456.',
+	'about.at-vintage.valid':
+		'They stay valid as long as the registration doesn’t change – more than 120,000 were still on the road in 2025.',
+	'about.at-vintage.map': 'The map shows the nine states; Graz and Linz count within Styria and Upper Austria.',
 	'about.pl-vintage.title': 'About these plates',
 	'about.pl-vintage.what':
 		'Polish plates of the system used from 1976 to 2000: white on black, three letters and four digits, e.g. KRA 1234. The first two letters stand for one of the 49 voivodeships of that time (Kraków used KR, KK, KW and KV).',
@@ -264,6 +270,7 @@ export const en = {
 	'collection.cz': 'Czechia',
 	'collection.cz-vintage': 'Czechia (pre-2001)',
 	'collection.at': 'Austria',
+	'collection.at-vintage': 'Austria (pre-1990)',
 	'collection.pl': 'Poland',
 	'collection.pl-vintage': 'Poland (pre-2000)'
 } satisfies Record<string, Message>;
@@ -316,6 +323,12 @@ export const sk: Messages = {
 	'about.cz-vintage.rare':
 		'Najvzácnejšie: GT a GV (Gottwaldov, od roku 1990 Zlín) a BI (Brno-venkov, len nákladné autá). Praha mala AB až AZ; rátajú sa ako jeden kód, A.',
 	'about.cz-vintage.map': 'Mapa zobrazuje dnešné okresy, ktoré sa s vtedajšími takmer zhodujú.',
+	'about.at-vintage.title': 'O týchto ŠPZ',
+	'about.at-vintage.what':
+		'Rakúske ŠPZ vydávané v rokoch 1947 až 1989: biele písmo na čiernom, písmeno spolkovej krajiny (alebo G pre Graz, L pre Linz) a až šesť číslic, napr. W 123.456.',
+	'about.at-vintage.valid':
+		'Platia, kým sa registrácia nezmení – v roku 2025 ich jazdilo ešte vyše 120 000.',
+	'about.at-vintage.map': 'Mapa zobrazuje deväť spolkových krajín; Graz a Linz sa rátajú v Štajersku a Hornom Rakúsku.',
 	'about.pl-vintage.title': 'O týchto ŠPZ',
 	'about.pl-vintage.what':
 		'Poľské ŠPZ systému z rokov 1976 až 2000: biele písmo na čiernom, tri písmená a štyri číslice, napr. KRA 1234. Prvé dve písmená označujú jedno zo 49 vtedajších vojvodstiev (Krakov mal KR, KK, KW a KV).',
@@ -548,6 +561,7 @@ export const sk: Messages = {
 	'collection.cz': 'Česko',
 	'collection.cz-vintage': 'Česko (do 2001)',
 	'collection.at': 'Rakúsko',
+	'collection.at-vintage': 'Rakúsko (do 1990)',
 	'collection.pl': 'Poľsko',
 	'collection.pl-vintage': 'Poľsko (do 2000)'
 };

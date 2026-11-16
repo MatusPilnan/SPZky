@@ -12,7 +12,7 @@ export interface Region {
 	area?: string;
 }
 
-export type CollectionId = 'sk' | 'cz' | 'cz-vintage' | 'at' | 'pl' | 'pl-vintage';
+export type CollectionId = 'sk' | 'cz' | 'cz-vintage' | 'at' | 'at-vintage' | 'pl' | 'pl-vintage';
 
 /** ISO 3166-1 alpha-2 codes of the supported countries. */
 export type CountryCode = 'SK' | 'CZ' | 'AT' | 'PL';

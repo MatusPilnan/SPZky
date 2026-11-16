@@ -14,7 +14,7 @@ function first(raw: string) {
 describe('detectPlate: Austria', () => {
 	const at = (raw: string) =>
 		detectPlate(raw)
-			.filter((d) => d.collectionId === 'at')
+			.filter((d) => d.collectionId.startsWith('at'))
 			.map((d) => `${(d as { regionCode: string }).regionCode}:${d.format}`);
 
 	it('standard plates: district code, digits, letters', () => {
@@ -38,6 +38,7 @@ describe('detectPlate: Austria', () => {
 
 	it('black plates before 1990: state/city code + digits', () => {
 		expect(at('W 123.456')).toEqual(['W:at-black']);
+		expect(detectPlate('W 123.456')[0]).toMatchObject({ collectionId: 'at-vintage', regionCode: 'W' });
 		expect(at('ST 12.345')).toEqual(['ST:at-black']);
 		expect(at('O 999 A 99')).toEqual(['O:at-black']);
 		// District codes never had black plates.

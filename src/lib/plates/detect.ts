@@ -1,5 +1,4 @@
 import { countryOf, getRegion } from '../collections';
-import { atBlackPlateCodes } from '../data/at';
 import { czNumericToLetter } from '../data/cz';
 import type { CollectionId, NationwideCollectionId } from '../data/types';
 import { normalizePlate } from './normalize';
@@ -137,12 +136,14 @@ function detectAustrian(n: string, raw: string): Detection[] {
 	for (const len of typedCode ? [typedCode.length] : [1, 2]) {
 		const code = n.slice(0, len);
 		const serial = n.slice(len);
-		if (!/^[A-Z]+$/.test(code) || !getRegion('at', code) || serial.includes('Q')) continue;
+		if (!/^[A-Z]+$/.test(code) || serial.includes('Q')) continue;
 		const sized = serial.length >= 3 && serial.length <= 6;
+		// region() returns null for codes the collection doesn't have.
 		if (sized && /^\d{1,5}[A-Z]{1,3}$/.test(serial)) out.push(region('at', code, 'at-standard', 'high'));
 		else if (sized && /^[A-Z]{1,5}\d{1,3}$/.test(serial)) out.push(region('at', code, 'at-personalized', 'medium'));
-		else if (atBlackPlateCodes.has(code) && (/^\d{1,6}$/.test(serial) || /^\d{3}[A-Z]\d{2}$/.test(serial))) {
-			out.push(region('at', code, 'at-black', 'medium'));
+		else if (/^\d{1,6}$/.test(serial) || /^\d{3}[A-Z]\d{2}$/.test(serial)) {
+			// Black plate 1947–1989: its own (bonus) collection.
+			out.push(region('at-vintage', code, 'at-black', 'medium'));
 		}
 	}
 	return out.filter((d): d is Detection => d !== null);

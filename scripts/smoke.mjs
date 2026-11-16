@@ -397,7 +397,7 @@ try {
 		cards.filter((c) => !c.querySelector('svg.map')).map((c) => c.querySelector('strong')?.innerText)
 	);
 	check('home cards show map thumbnails (except mapless collections)', cardCount >= 6 && withoutThumb.join() === 'Poland (pre-2000)', withoutThumb.join());
-	check('home lists Austria (no plates yet)', cards.some((c) => c.includes('Austria') && c.includes('0 of 111 found')));
+	check('home lists Austria (no plates yet)', cards.some((c) => c.includes('Austria') && c.includes('0 of 106 found')));
 	// Countries with plates come before those without.
 	const order = await page.$$eval('a.collection strong', (els) => els.map((e) => e.innerText));
 	check('home: countries with plates first', order.indexOf('Austria') > order.indexOf('Czechia'), order.join(', '));

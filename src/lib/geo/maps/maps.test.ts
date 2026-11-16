@@ -25,6 +25,7 @@ describe('region maps', () => {
 		expect((await loadMap('cz'))!.shapes).toHaveLength(14);
 		expect((await loadMap('cz-vintage'))!.shapes).toHaveLength(77);
 		expect((await loadMap('at'))!.shapes).toHaveLength(94);
+		expect((await loadMap('at-vintage'))!.shapes).toHaveLength(9);
 		expect((await loadMap('pl'))!.shapes).toHaveLength(380);
 		expect(await loadMap('pl-vintage')).toBeNull();
 	});
@@ -42,6 +43,9 @@ describe('region maps', () => {
 		expect(codesOfArea(at, 'Murtal').sort()).toEqual(['JU', 'KF', 'MT']);
 		expect(codesOfArea(at, 'Leoben').sort()).toEqual(['LE', 'LN']);
 		expect(codesOfArea(at, 'Rust')).toEqual(['E']);
+		const atOld = collections.find((c) => c.id === 'at-vintage')!;
+		expect(codesOfArea(atOld, 'Steiermark').sort()).toEqual(['G', 'ST']);
+		expect(codesOfArea(atOld, 'Wien')).toEqual(['W']);
 		const pl = collections.find((c) => c.id === 'pl')!;
 		expect(codesOfArea(pl, 'Krakow').sort()).toEqual(['JR', 'KK', 'KR']);
 		// Same county name in two voivodeships, told apart by the voivodeship.

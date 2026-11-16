@@ -85,6 +85,15 @@ const MAPS = [
 		}
 	},
 	{
+		// The nine states, for the black plates before 1990 (state codes). Same source/licence.
+		file: 'at-states',
+		url: `${RELEASE}/gbOpen/AUT/ADM1/geoBoundaries-AUT-ADM1_simplified.geojson`,
+		simplify: '8%',
+		center: [13.33, 47.6],
+		attribution: 'BEV (Austrian Federal Office of Metrology and Surveying) via geoBoundaries',
+		license: 'CC BY-SA 2.0'
+	},
+	{
 		// 380 counties and city counties from the official border register (PRG). Names
 		// have no diacritics and repeat across voivodeships (e.g. "Bielski"), so repeated
 		// names get the voivodeship appended; regions point to areas via `area` in pl.ts.

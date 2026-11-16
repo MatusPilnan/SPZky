@@ -106,8 +106,9 @@ git push --follow-tags        # pushes the commit and the tag → release workfl
 ## Data and licences
 
 - Region maps: Slovakia © Geoportal.SK (ÚGKK SR), CC BY 3.0 IGO; Czech regions © ČÚZK,
-  CC BY 4.0; Czech districts public domain; Austrian districts © BEV, CC BY-SA 2.0 (the
-  generated `src/lib/geo/maps/at-districts.ts` is shared under the same licence); Polish
+  CC BY 4.0; Czech districts public domain; Austrian districts and states © BEV, CC BY-SA
+  2.0 (the generated `src/lib/geo/maps/at-districts.ts` and `at-states.ts` are shared under
+  the same licence); Polish
   counties © Państwowy Rejestr Granic (GUGiK), CC BY 3.0 IGO. All via
   [geoBoundaries](https://www.geoboundaries.org/).
 - Country outlines: [Natural Earth](https://www.naturalearthdata.com/), public domain.

@@ -14,7 +14,7 @@ describe('collection data', () => {
 
 	it('has the expected sizes', () => {
 		const size = Object.fromEntries(collections.map((c) => [c.id, c.regions.length]));
-		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 111, pl: 441, 'pl-vintage': 165 });
+		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 106, 'at-vintage': 11, pl: 441, 'pl-vintage': 165 });
 	});
 
 	it('Poland: no never-used codes, secondary codes kept, every voivodeship letter valid', () => {
@@ -38,7 +38,7 @@ describe('collection data', () => {
 		expect(byName.get('Katowice')).toBe(6);
 	});
 
-	it('Austria: regional codes only, merged districts and black-plate state codes kept', () => {
+	it('Austria: regional codes only, merged districts kept, black plates separate', () => {
 		const at = collections.find((c) => c.id === 'at')!.regions.map((r) => r.code);
 		// Authority, diplomatic and consular series are not regional.
 		for (const code of ['A', 'BB', 'BD', 'BG', 'BH', 'BP', 'FV', 'FW', 'JW', 'PT', 'ZW', 'WD', 'WK', 'GK', 'KK', 'LK', 'SK', 'TD', 'TK', 'VD']) {
@@ -46,8 +46,10 @@ describe('collection data', () => {
 		}
 		// Merged/dissolved districts: plates still on the road.
 		for (const code of ['FB', 'FF', 'HB', 'JU', 'KF', 'MZ', 'RA', 'WU']) expect(at).toContain(code);
-		// Black plates 1947–1989.
-		for (const code of ['N', 'O', 'ST', 'T', 'V']) expect(at).toContain(code);
+		// Black plates 1947–1989 are the bonus collection: states + Graz/Linz, not in the main list.
+		for (const code of ['N', 'O', 'ST', 'T', 'V']) expect(at).not.toContain(code);
+		const black = collections.find((c) => c.id === 'at-vintage')!.regions.map((r) => r.code);
+		expect(black.sort()).toEqual(['B', 'G', 'K', 'L', 'N', 'O', 'S', 'ST', 'T', 'V', 'W']);
 		// Bad Aussee was reinstated in 2025.
 		expect(at).toContain('BA');
 	});
