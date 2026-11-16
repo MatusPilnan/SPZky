@@ -3,6 +3,12 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.11.0](https://github.com/MatusPilnan/SPZky/compare/v0.10.0...v0.11.0) - 2026-11-16
+
+### Features
+
+- what's new in the update dialog ([ca27830](https://github.com/MatusPilnan/SPZky/commit/ca27830c96b3648ee8e2119aa8918e1c4326040a))
+
 ## [0.10.0](https://github.com/MatusPilnan/SPZky/compare/v0.9.0...v0.10.0) - 2026-11-16
 
 ### Features
