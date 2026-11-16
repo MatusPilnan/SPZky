@@ -8,7 +8,7 @@ import { db as defaultDb, type SpzDatabase } from '../db/db';
 import { nextUpdatedAt } from '../db/sightings';
 import type { GeoPoint } from '../db/types';
 import { isCoarse } from './accuracy';
-import { countryAt } from './country';
+import { countryAt, type CountryCode } from './country';
 
 const ENDPOINT = 'https://nominatim.openstreetmap.org/reverse';
 /** Gap between requests (policy: max 1/s). */
@@ -46,10 +46,14 @@ export function formatPlace(a: NominatimAddress, coarse: boolean): string {
 	return parts.join(', ').slice(0, 300);
 }
 
-/** Names in the language of the place (Slovak towns in Slovak, Czech in Czech). */
+/** Main language per supported country, so place names come in their local form. */
+const LOCAL_LANGUAGE: Record<CountryCode, string> = { SK: 'sk', CZ: 'cs', AT: 'de' };
+
+/** Names in the language of the place (Slovak towns in Slovak, Czech in Czech…). */
 function languageFor(p: GeoPoint): string {
 	const country = countryAt(p.lat, p.lng);
-	return country === 'CZ' ? 'cs,sk,en' : 'sk,cs,en';
+	const local = country ? LOCAL_LANGUAGE[country] : null;
+	return [...new Set([local, 'sk', 'cs', 'en'].filter(Boolean))].join(',');
 }
 
 export class LookupError extends Error {}

@@ -98,6 +98,9 @@ export const en = {
 	'format.cz-historic': 'historic vehicle',
 	'format.cz-personalized': 'personalised plate',
 	'format.cz-vintage': 'plate before 2001',
+	'format.at-standard': 'standard plate',
+	'format.at-personalized': 'personalised plate',
+	'format.at-black': 'black plate (before 1990)',
 
 	'location.idle': 'Location is not saved (enable in Settings)',
 	'location.waiting': 'Getting location…',
@@ -251,7 +254,8 @@ export const en = {
 
 	'collection.sk': 'Slovakia',
 	'collection.cz': 'Czechia',
-	'collection.cz-vintage': 'Czechia (pre-2001)'
+	'collection.cz-vintage': 'Czechia (pre-2001)',
+	'collection.at': 'Austria'
 } satisfies Record<string, Message>;
 
 export type MessageKey = keyof typeof en;
@@ -358,6 +362,9 @@ export const sk: Messages = {
 	'format.cz-historic': 'historické vozidlo',
 	'format.cz-personalized': 'personalizovaná ŠPZ',
 	'format.cz-vintage': 'ŠPZ spred roku 2001',
+	'format.at-standard': 'štandardná ŠPZ',
+	'format.at-personalized': 'personalizovaná ŠPZ',
+	'format.at-black': 'čierna ŠPZ (pred 1990)',
 
 	'location.idle': 'Poloha sa neukladá (zapni v Nastaveniach)',
 	'location.waiting': 'Zisťujem polohu…',
@@ -521,5 +528,6 @@ export const sk: Messages = {
 
 	'collection.sk': 'Slovensko',
 	'collection.cz': 'Česko',
-	'collection.cz-vintage': 'Česko (do 2001)'
+	'collection.cz-vintage': 'Česko (do 2001)',
+	'collection.at': 'Rakúsko'
 };

@@ -1,6 +1,7 @@
+import type { CountryCode } from '../data/types';
 import { borders, type CountryShape, type Ring } from './borders';
 
-export type CountryCode = 'SK' | 'CZ';
+export type { CountryCode };
 
 type BBox = [minLng: number, minLat: number, maxLng: number, maxLat: number];
 

@@ -388,8 +388,16 @@ try {
 		cards.join(' || ')
 	);
 	check('home lists recent sightings', (await page.$$('main ul li')).length === 3);
-	await page.waitForFunction(() => document.querySelectorAll('a.collection svg.map').length === 3, { timeout: 5000 }).catch(() => {});
-	check('home cards show map thumbnails', (await page.$$('a.collection svg.map')).length === 3);
+	const cardCount = (await page.$$('a.collection')).length;
+	await page
+		.waitForFunction((n) => document.querySelectorAll('a.collection svg.map').length === n, { timeout: 5000 }, cardCount)
+		.catch(() => {});
+	const thumbs = (await page.$$('a.collection svg.map')).length;
+	check('home cards show map thumbnails (one per card)', cardCount >= 4 && thumbs === cardCount, `${thumbs} of ${cardCount}`);
+	check('home lists Austria (no plates yet)', cards.some((c) => c.includes('Austria') && c.includes('0 of 111 found')));
+	// Countries with plates come before those without.
+	const order = await page.$$eval('a.collection strong', (els) => els.map((e) => e.innerText));
+	check('home: countries with plates first', order.indexOf('Austria') > order.indexOf('Czechia'), order.join(', '));
 	await shot('09-home');
 	await page.evaluate(() => [...document.querySelectorAll('a.collection')].find((a) => a.innerText.includes('Slovakia')).click());
 	await page.waitForFunction(() => location.pathname.endsWith('/country') && document.querySelector('main h1'));
@@ -535,6 +543,35 @@ try {
 	}
 	await shot('08b-country-sk');
 	await page.setViewport({ width: 400, height: 860, deviceScaleFactor: 1 });
+
+	// Austria: own band code "A"; SK/AT overlaps are listed, GPS (Bratislava) puts SK first
+	// without the "fits more than one country" notice.
+	await page.goto(`${APP}/add`, { waitUntil: 'networkidle0' });
+	// The UI is Slovak here, so find the input by its plate frame, not its label.
+	const typeAny = async (value) => {
+		await page.click('.plate input', { clickCount: 3 });
+		await page.keyboard.press('Backspace');
+		await page.type('.plate input', value);
+		await sleep(150);
+	};
+	await page.waitForSelector('.plate input');
+	await typeAny('BA 123 AB');
+	const overlap = await page.evaluate(() => ({
+		candidates: [...document.querySelectorAll('.candidates .candidate')].map((c) => c.innerText.replace(/\s+/g, ' ')),
+		notice: !!document.querySelector('p.notice:not(.warn)')
+	}));
+	check(
+		'SK/AT overlap: both listed, Slovakia first, no notice with GPS in SK',
+		overlap.candidates.length === 2 && /Slovensko|Slovakia/.test(overlap.candidates[0]) && !overlap.notice,
+		JSON.stringify(overlap)
+	);
+	await typeAny('W 12345 A');
+	const austrian = await page.evaluate(() => ({
+		band: document.querySelector('.plate .cc')?.textContent,
+		candidate: document.querySelector('.candidates .candidate')?.innerText.replace(/\s+/g, ' ')
+	}));
+	check('Austrian plate: Wien, band shows "A"', austrian.band === 'A' && /W\b.*Wien/.test(austrian.candidate ?? ''), JSON.stringify(austrian));
+	await shot('02c-add-austria');
 
 	// Bonus collection (CZ pre-2001): explanation with a band-less plate as wide as the others.
 	await page.goto(`${APP}/country?id=cz-vintage`, { waitUntil: 'networkidle0' });

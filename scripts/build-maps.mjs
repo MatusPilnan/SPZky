@@ -49,6 +49,40 @@ const MAPS = [
 			'Plzeň-South': 'Plzeň-jih',
 			Rakovnik: 'Rakovník'
 		}
+	},
+	{
+		// 94 districts and statutory cities (BEV data, 2017: after the Styrian mergers and
+		// the dissolution of Wien-Umgebung). Share-alike: this generated file is CC BY-SA 2.0.
+		file: 'at-districts',
+		url: `${RELEASE}/gbOpen/AUT/ADM2/geoBoundaries-AUT-ADM2_simplified.geojson`,
+		simplify: '8%',
+		center: [13.33, 47.6],
+		attribution: 'BEV (Austrian Federal Office of Metrology and Surveying) via geoBoundaries',
+		license: 'CC BY-SA 2.0',
+		rename: {
+			'Eisenstadt(Stadt)': 'Eisenstadt',
+			'Graz(Stadt)': 'Graz',
+			'Innsbruck-Stadt': 'Innsbruck',
+			'Klagenfurt Land': 'Klagenfurt-Land',
+			'Klagenfurt(Stadt)': 'Klagenfurt',
+			'Krems an der Donau(Stadt)': 'Krems an der Donau',
+			'Krems(Land)': 'Krems-Land',
+			'Linz(Stadt)': 'Linz',
+			'Rust(Stadt)': 'Rust',
+			'Salzburg(Stadt)': 'Salzburg',
+			'Sankt Johann im Pongau': 'St. Johann im Pongau',
+			'Sankt Pölten(Land)': 'St. Pölten-Land',
+			'Sankt Pölten(Stadt)': 'St. Pölten',
+			'Sankt Veit an der Glan': 'St. Veit an der Glan',
+			'Steyr(Stadt)': 'Steyr',
+			'Villach Land': 'Villach-Land',
+			'Villach(Stadt)': 'Villach',
+			'Waidhofen an der Ybbs(Stadt)': 'Waidhofen an der Ybbs',
+			'Wels(Stadt)': 'Wels',
+			'Wien(Stadt)': 'Wien',
+			'Wiener Neustadt(Land)': 'Wiener Neustadt-Land',
+			'Wiener Neustadt(Stadt)': 'Wiener Neustadt'
+		}
 	}
 ];
 

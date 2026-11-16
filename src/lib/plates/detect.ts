@@ -1,4 +1,5 @@
 import { countryOf, getRegion } from '../collections';
+import { atBlackPlateCodes } from '../data/at';
 import { czNumericToLetter } from '../data/cz';
 import type { CollectionId, NationwideCollectionId } from '../data/types';
 import { normalizePlate } from './normalize';
@@ -14,7 +15,13 @@ export type RegionFormat =
 	/** CZ historic vehicle: NNV XXXX, NN = numeric region code. */
 	| 'cz-historic'
 	/** CZ pre-2001: XX NN-NN / XXX NN-NN, first two letters = district. */
-	| 'cz-vintage';
+	| 'cz-vintage'
+	/** AT standard: district code + digits then letters (BN 123 AB, W 12345 A). */
+	| 'at-standard'
+	/** AT personalised (Wunschkennzeichen): district code + letters then digits (W JOHN 1). */
+	| 'at-personalized'
+	/** AT black plate 1947–1989: state/city code + digits (W 123.456). */
+	| 'at-black';
 
 /** Recognised plate formats without a region; they go to the country's nationwide subcollection. */
 export type NationwideFormat =
@@ -113,6 +120,30 @@ function detectCzech(n: string): Detection[] {
 	return out.filter((d): d is Detection => d !== null);
 }
 
+/**
+ * Austria: 1–2 letter district code, then the serial (no Q):
+ * standard = digits then letters, personalised = letters then digits (3–6 characters);
+ * black plates 1947–1989 = state/city code + up to 6 digits (or 999A99 once those ran out).
+ * Typed with a separator after the code ("BN 123AB"), only that split is tried.
+ */
+function detectAustrian(n: string, raw: string): Detection[] {
+	const out: (Detection | null)[] = [];
+	const firstGroup = raw.trim().toUpperCase().split(/[\s\-.·]+/);
+	const typedCode = firstGroup.length > 1 && /^[A-Z]{1,2}$/.test(firstGroup[0]) ? firstGroup[0] : null;
+	for (const len of typedCode ? [typedCode.length] : [1, 2]) {
+		const code = n.slice(0, len);
+		const serial = n.slice(len);
+		if (!/^[A-Z]+$/.test(code) || !getRegion('at', code) || serial.includes('Q')) continue;
+		const sized = serial.length >= 3 && serial.length <= 6;
+		if (sized && /^\d{1,5}[A-Z]{1,3}$/.test(serial)) out.push(region('at', code, 'at-standard', 'high'));
+		else if (sized && /^[A-Z]{1,5}\d{1,3}$/.test(serial)) out.push(region('at', code, 'at-personalized', 'medium'));
+		else if (atBlackPlateCodes.has(code) && (/^\d{1,6}$/.test(serial) || /^\d{3}[A-Z]\d{2}$/.test(serial))) {
+			out.push(region('at', code, 'at-black', 'medium'));
+		}
+	}
+	return out.filter((d): d is Detection => d !== null);
+}
+
 export function detectionKey(d: Detection): string {
 	return d.type === 'region' ? `${d.collectionId}:${d.regionCode}` : `${d.collectionId}:*${d.format}`;
 }
@@ -128,7 +159,7 @@ export function detectPlate(raw: string): Detection[] {
 	if (n.length < 5) return [];
 
 	const seen = new Set<string>();
-	return [...detectSlovak(n), ...detectCzech(n)]
+	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw)]
 		.filter((d) => {
 			const key = detectionKey(d);
 			if (seen.has(key)) return false;

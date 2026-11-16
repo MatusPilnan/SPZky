@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { collections } from '../../collections';
-import { areaStatus, codesOfArea, loadMap } from './index';
+import { areaStatus, codesOfArea, isUnmappedCode, loadMap } from './index';
 
 describe('region maps', () => {
 	it.each(collections.map((c) => [c.id, c] as const))('%s: every area has codes and every code an area', async (_, c) => {
@@ -8,7 +8,9 @@ describe('region maps', () => {
 		const areasWithoutCodes = map.shapes.filter((s) => codesOfArea(c, s.name).length === 0).map((s) => s.name);
 		expect(areasWithoutCodes).toEqual([]);
 		const covered = new Set(map.shapes.flatMap((s) => codesOfArea(c, s.name)));
-		expect(c.regions.filter((r) => !covered.has(r.code)).map((r) => r.code)).toEqual([]);
+		expect(c.regions.filter((r) => !covered.has(r.code) && !isUnmappedCode(c.id, r.code)).map((r) => r.code)).toEqual([]);
+		// …and codes declared as unmapped really have no area.
+		expect(c.regions.filter((r) => covered.has(r.code) && isUnmappedCode(c.id, r.code)).map((r) => r.code)).toEqual([]);
 		expect(map.shapes.every((s) => /^M[\d. MZ-]+Z$/.test(s.d))).toBe(true);
 	});
 
@@ -16,6 +18,7 @@ describe('region maps', () => {
 		expect((await loadMap('sk')).shapes).toHaveLength(79);
 		expect((await loadMap('cz')).shapes).toHaveLength(14);
 		expect((await loadMap('cz-vintage')).shapes).toHaveLength(77);
+		expect((await loadMap('at')).shapes).toHaveLength(94);
 	});
 
 	it('maps shared codes to all areas of a city', () => {
@@ -26,6 +29,11 @@ describe('region maps', () => {
 		const vintage = collections.find((c) => c.id === 'cz-vintage')!;
 		expect(codesOfArea(vintage, 'Zlín').sort()).toEqual(['GT', 'GV', 'ZL']);
 		expect(codesOfArea(vintage, 'Brno-město').sort()).toEqual(['BM', 'BS', 'BZ']);
+		const at = collections.find((c) => c.id === 'at')!;
+		expect(codesOfArea(at, 'Liezen').sort()).toEqual(['BA', 'GB', 'LI']);
+		expect(codesOfArea(at, 'Murtal').sort()).toEqual(['JU', 'KF', 'MT']);
+		expect(codesOfArea(at, 'Leoben').sort()).toEqual(['LE', 'LN']);
+		expect(codesOfArea(at, 'Rust')).toEqual(['E']);
 	});
 
 	it('derives the area status from its codes', () => {

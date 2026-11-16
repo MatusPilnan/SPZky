@@ -1,3 +1,4 @@
+import { atUnmappedCodes } from '../../data/at';
 import type { CollectionDef, CollectionId } from '../../data/types';
 import type { RegionMapData } from './types';
 
@@ -7,7 +8,8 @@ export type { MapShape, RegionMapData } from './types';
 const loaders: Record<CollectionId, () => Promise<{ map: RegionMapData }>> = {
 	sk: () => import('./sk-districts'),
 	cz: () => import('./cz-regions'),
-	'cz-vintage': () => import('./cz-districts')
+	'cz-vintage': () => import('./cz-districts'),
+	at: () => import('./at-districts')
 };
 
 export async function loadMap(collectionId: CollectionId): Promise<RegionMapData> {
@@ -34,8 +36,32 @@ const areaAliases: Record<CollectionId, Record<string, string[]>> = {
 	},
 	cz: {},
 	// Gottwaldov was renamed Zlín in 1990; its old codes belong to the same district.
-	'cz-vintage': { Zlín: ['Zlín', 'Gottwaldov'] }
+	'cz-vintage': { Zlín: ['Zlín', 'Gottwaldov'] },
+	at: {
+		// Offices of BH Liezen with their own codes.
+		Liezen: ['Liezen', 'Bad Aussee', 'Gröbming'],
+		// Districts merged 2012/13: old codes still on the road.
+		'Bruck-Mürzzuschlag': ['Bruck-Mürzzuschlag', 'Mürzzuschlag'],
+		Südoststeiermark: ['Südoststeiermark', 'Feldbach', 'Bad Radkersburg'],
+		'Hartberg-Fürstenfeld': ['Hartberg-Fürstenfeld', 'Hartberg', 'Fürstenfeld'],
+		Murtal: ['Murtal', 'Judenburg', 'Knittelfeld'],
+		// Klosterneuburg (KG) belongs to Tulln, Schwechat (SW) to Bruck an der Leitha.
+		Tulln: ['Tulln', 'Klosterneuburg'],
+		'Bruck an der Leitha': ['Bruck an der Leitha', 'Schwechat'],
+		// Rust is a statutory city but uses Eisenstadt's code E.
+		Rust: ['Eisenstadt']
+	}
 };
+
+/**
+ * Codes with no area on the map: Austrian state codes of the pre-1990 black plates and
+ * the dissolved district Wien-Umgebung. They still count in the grid.
+ */
+const unmapped: Partial<Record<CollectionId, Set<string>>> = { at: atUnmappedCodes };
+
+export function isUnmappedCode(collectionId: CollectionId, code: string): boolean {
+	return unmapped[collectionId]?.has(code) ?? false;
+}
 
 /** Region codes of the collection that belong to a map area. */
 export function codesOfArea(collection: CollectionDef, areaName: string): string[] {

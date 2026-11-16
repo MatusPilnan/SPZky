@@ -29,7 +29,7 @@
 			<a class="card item" class:compact href="{resolve('/sighting')}?id={encodeURIComponent(s.id)}">
 				<PlateBadge
 					text={s.plate ?? s.regionCode ?? nationwideSymbol(s.plateType)}
-					country={collection?.country ?? '?'}
+					country={collection?.bandCode ?? '?'}
 					muted={s.plate === null}
 					ev={s.plateType === 'ev'}
 					plain={collection?.plateStyle === 'plain'}

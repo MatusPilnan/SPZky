@@ -14,7 +14,15 @@
 	const counts = $derived(countByRegion($sightings ?? []));
 	const nationwide = $derived(countNationwide($sightings ?? []));
 
-	const main = collections.filter((c) => !c.bonus);
+	// Countries with at least one plate first; otherwise the registry order.
+	const collected = $derived(new Set(($sightings ?? []).map((s) => s.collectionId)));
+	const main = $derived(
+		collections
+			.filter((c) => !c.bonus)
+			.map((c, i) => ({ c, i }))
+			.sort((a, b) => Number(collected.has(b.c.id)) - Number(collected.has(a.c.id)) || a.i - b.i)
+			.map(({ c }) => c)
+	);
 	const bonus = collections.filter((c) => c.bonus);
 </script>
 

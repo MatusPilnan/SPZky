@@ -14,7 +14,21 @@ describe('collection data', () => {
 
 	it('has the expected sizes', () => {
 		const size = Object.fromEntries(collections.map((c) => [c.id, c.regions.length]));
-		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96 });
+		expect(size).toEqual({ sk: 74, cz: 14, 'cz-vintage': 96, at: 111 });
+	});
+
+	it('Austria: regional codes only, merged districts and black-plate state codes kept', () => {
+		const at = collections.find((c) => c.id === 'at')!.regions.map((r) => r.code);
+		// Authority, diplomatic and consular series are not regional.
+		for (const code of ['A', 'BB', 'BD', 'BG', 'BH', 'BP', 'FV', 'FW', 'JW', 'PT', 'ZW', 'WD', 'WK', 'GK', 'KK', 'LK', 'SK', 'TD', 'TK', 'VD']) {
+			expect(at).not.toContain(code);
+		}
+		// Merged/dissolved districts: plates still on the road.
+		for (const code of ['FB', 'FF', 'HB', 'JU', 'KF', 'MZ', 'RA', 'WU']) expect(at).toContain(code);
+		// Black plates 1947–1989.
+		for (const code of ['N', 'O', 'ST', 'T', 'V']) expect(at).toContain(code);
+		// Bad Aussee was reinstated in 2025.
+		expect(at).toContain('BA');
 	});
 
 	it('contains only Slovak codes that were actually issued (no reserved ones)', () => {

@@ -151,7 +151,7 @@
 		<form class="stack" onsubmit={save}>
 			<PlateInput
 				bind:value={plate}
-				country={getCollection(collectionId)?.country ?? ''}
+				country={getCollection(collectionId)?.bandCode ?? ''}
 				plain={getCollection(collectionId)?.plateStyle === 'plain'}
 				oninput={onPlateInput}
 				aria-label={t('add.plate')}

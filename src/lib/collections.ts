@@ -1,23 +1,44 @@
+import { atRegions } from './data/at';
 import { czRegions } from './data/cz';
 import { czVintageRegions } from './data/cz-vintage';
 import { skRegions } from './data/sk';
-import type { CollectionDef, CollectionId, NationwideCollectionId, Region } from './data/types';
+import type { CollectionDef, CollectionId, CountryCode, NationwideCollectionId, Region } from './data/types';
 import type { NationwideFormat, PlateFormat } from './plates/detect';
 
-export type { CollectionDef, CollectionId, NationwideCollectionId, Region };
+export type { CollectionDef, CollectionId, CountryCode, NationwideCollectionId, Region };
 
 export const collections: CollectionDef[] = [
 	{
 		id: 'sk',
 		country: 'SK',
+		bandCode: 'SK',
 		flag: '🇸🇰',
 		bonus: false,
 		plateStyle: 'eu',
 		regions: skRegions,
 		nationwideTypes: ['sk-2023', 'ev', 'sk-personalized']
 	},
-	{ id: 'cz', country: 'CZ', flag: '🇨🇿', bonus: false, plateStyle: 'eu', regions: czRegions, nationwideTypes: ['ev', 'cz-personalized'] },
-	{ id: 'cz-vintage', country: 'CZ', flag: '🇨🇿', bonus: true, plateStyle: 'plain', regions: czVintageRegions, nationwideTypes: [] }
+	{
+		id: 'cz',
+		country: 'CZ',
+		bandCode: 'CZ',
+		flag: '🇨🇿',
+		bonus: false,
+		plateStyle: 'eu',
+		regions: czRegions,
+		nationwideTypes: ['ev', 'cz-personalized']
+	},
+	{
+		id: 'cz-vintage',
+		country: 'CZ',
+		bandCode: 'CZ',
+		flag: '🇨🇿',
+		bonus: true,
+		plateStyle: 'plain',
+		regions: czVintageRegions,
+		nationwideTypes: []
+	},
+	{ id: 'at', country: 'AT', bandCode: 'A', flag: '🇦🇹', bonus: false, plateStyle: 'eu', regions: atRegions, nationwideTypes: [] }
 ];
 
 const byId = new Map(collections.map((c) => [c.id as string, c]));
@@ -38,7 +59,7 @@ export function isCollectionId(id: string): id is CollectionId {
 }
 
 /** Country of a collection ("cz-vintage" → "CZ"). */
-export function countryOf(collectionId: string): 'SK' | 'CZ' | undefined {
+export function countryOf(collectionId: string): CountryCode | undefined {
 	return byId.get(collectionId)?.country;
 }
 
@@ -60,6 +81,8 @@ export function highlightOf(type: PlateFormat | null | undefined): 'ev' | 'speci
 		case 'cz-personalized':
 		case 'sk-district-special':
 		case 'cz-historic':
+		case 'at-personalized':
+		case 'at-black':
 			return 'special';
 		default:
 			return null;

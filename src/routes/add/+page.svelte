@@ -91,6 +91,13 @@
 	const recognized = $derived(candidates.length > 0);
 	const ambiguousCountry = $derived(spansCountries(candidates.map((c) => c.selection)));
 	const evAmbiguous = $derived(ambiguousCountry && candidates.some((c) => c.format === 'ev'));
+	// Many formats fit several countries (e.g. BA-123AB is Slovak and Austrian). When GPS puts
+	// the country you're in first, the choice is still listed but needs no extra notice;
+	// electric plates keep the notice for the letter-colour tip.
+	const gpsDecides = $derived(
+		!!gpsCountry && !!candidates[0] && countryOf(candidates[0].selection.collectionId) === gpsCountry
+	);
+	const showCountryNotice = $derived(ambiguousCountry && (evAmbiguous || !gpsDecides));
 
 	const selection = $derived.by((): Selection | null => {
 		if (manual) return manual;
@@ -105,7 +112,7 @@
 			: undefined
 	);
 
-	const bandCountry = $derived(selection ? (countryOf(selection.collectionId) ?? '') : '');
+	const bandCountry = $derived(selection ? (getCollection(selection.collectionId)?.bandCode ?? '') : '');
 
 	// Unrecognised plates go straight to the manual picker.
 	const manualVisible = $derived(showManual || (normalized.length >= 5 && !recognized));
@@ -268,7 +275,7 @@
 			/>
 
 			{#if candidates.length > 0 && !manual}
-				{#if ambiguousCountry}
+				{#if showCountryNotice}
 					<p class="notice">
 						{t('add.chooseCountry')}
 						{#if evAmbiguous}<br /><small>{t('add.evColorHint')}</small>{/if}

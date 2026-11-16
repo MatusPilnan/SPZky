@@ -43,6 +43,17 @@ checklist "Region data" in `CLAUDE.md` for every country added later.
   plates are still valid but getting rare; GT/GV (Gottwaldov, until 1990) and BI (trucks only)
   are the rarest. FI and US were allocated but never used and are left out. Prague's codes
   AB–AZ count as one region `A` (`AA` = government).
+- **Austria** (phase 9, 2026-11-16): **111** codes: 1–2 letter district/city codes
+  (`BN 123 AB`, `W 12345 A`; personalised `W JOHN 1` = letters then digits; no Q). Includes
+  the codes of the districts merged in 2012/13 (FB, FF, HB, JU, KF, MZ, RA) and of
+  Wien-Umgebung (WU, dissolved 2017): standard plates stay valid until re-registration. Also
+  the state codes of the black plates 1947–1989 (N, O, ST, T, V; B/K/S/W are city codes
+  too), still valid while the registration is unchanged (>126,000 in 2025). BA (Bad
+  Aussee) was reinstated in 2025. Left out: authority (A, BH army, BP police, FV, JW, PT…)
+  and diplomatic/consular series. The band shows "A". Many 2-letter codes equal Slovak
+  ones (BA, BL, BN, BR…), so `BA-123AB` fits both countries; GPS decides the order.
+  Sources: de.wikipedia "Kfz-Kennzeichen (Österreich)", en.wikipedia "Vehicle registration
+  plates of Austria" (checked 2026-11-16).
 - Sources, with details in the header of each file in `src/lib/data/`: en.wikipedia (plates
   of Slovakia / Czech Republic), sk.wikipedia "Zoznam skratiek okresov Slovenska" (reserved
   codes) and "Evidenčné číslo vozidiel na Slovensku", cs.wikipedia "Státní poznávací značky v
@@ -128,6 +139,10 @@ raw, loaded on demand and precached for offline use):
 | SK | 79 districts (okresy) | gbHumanitarian SVK ADM2: Geoportal.SK (ÚGKK SR) via HDX, 2022 | CC BY 3.0 IGO |
 | CZ | 14 regions (kraje) | gbOpen CZE ADM1: ČÚZK, 2021 | CC BY 4.0 |
 | CZ pre-2001 | 77 districts (okresy) | gbOpen CZE ADM2: Wikimedia Commons, 2010 | Public domain |
+| AT | 94 districts and statutory cities (Bezirke) | gbOpen AUT ADM2: BEV, 2017 | CC BY-SA 2.0 (share-alike: the generated `at-districts.ts` is under the same licence) |
+
+- Codes without a map area (`isUnmappedCode`): Austria's black-plate state codes N, O, ST,
+  T, V and WU (Wien-Umgebung, dissolved 2017). They are in the grid but not on the map.
 
 - The gbOpen SVK ADM2 data (OSM, ODbL with share-alike) has garbled names, so the
   humanitarian release is used instead.

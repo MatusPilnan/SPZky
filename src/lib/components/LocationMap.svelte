@@ -4,6 +4,7 @@
 	import { onDestroy } from 'svelte';
 	import type { Map as LeafletMap } from 'leaflet';
 	import type { GeoPoint } from '../db/types';
+	import { mainCollectionOf } from '../collections';
 	import { countryAt } from '../geo/country';
 	import { loadMap } from '../geo/maps/index';
 	import { metresToMap, projectToMap } from '../geo/maps/project';
@@ -76,12 +77,12 @@
 	$effect(() => {
 		if (street) return;
 		const country = countryAt(location.lat, location.lng);
-		const collection = country === 'SK' ? 'sk' : country === 'CZ' ? 'cz' : null;
+		const collection = country ? mainCollectionOf(country) : undefined;
 		if (!collection) {
 			pinMap = null;
 			return;
 		}
-		void loadMap(collection).then((m) => (pinMap = m));
+		void loadMap(collection.id).then((m) => (pinMap = m));
 	});
 	const pin = $derived(pinMap ? projectToMap(pinMap.projection, location.lat, location.lng) : null);
 	const pinRadius = $derived(pinMap && location.accuracy ? metresToMap(pinMap.projection, location.accuracy) : 0);

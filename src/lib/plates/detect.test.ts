@@ -11,6 +11,51 @@ function first(raw: string) {
 	return detectPlate(raw)[0];
 }
 
+describe('detectPlate: Austria', () => {
+	const at = (raw: string) =>
+		detectPlate(raw)
+			.filter((d) => d.collectionId === 'at')
+			.map((d) => `${(d as { regionCode: string }).regionCode}:${d.format}`);
+
+	it('standard plates: district code, digits, letters', () => {
+		expect(at('W 12345 A')).toEqual(['W:at-standard']);
+		expect(at('G-1234 XY')).toEqual(['G:at-standard']);
+		expect(at('MD 123 AB')).toEqual(['MD:at-standard']);
+		expect(at('KS 12 ABC')).toEqual(['KS:at-standard']);
+	});
+
+	it('personalised plates: letters then digits', () => {
+		expect(at('W JOHN 1')).toEqual(['W:at-personalized']);
+		expect(at('SL-ABC 12')).toEqual(['SL:at-personalized']);
+	});
+
+	it('uses a typed separator to split code and serial', () => {
+		// Without it, BNABC1 could be Bregenz (B NABC1) or Baden (BN ABC1).
+		expect(at('BNABC1').sort()).toEqual(['B:at-personalized', 'BN:at-personalized']);
+		expect(at('BN ABC1')).toEqual(['BN:at-personalized']);
+		expect(at('B NABC1')).toEqual(['B:at-personalized']);
+	});
+
+	it('black plates before 1990: state/city code + digits', () => {
+		expect(at('W 123.456')).toEqual(['W:at-black']);
+		expect(at('ST 12.345')).toEqual(['ST:at-black']);
+		expect(at('O 999 A 99')).toEqual(['O:at-black']);
+		// District codes never had black plates.
+		expect(at('MD 12345')).toEqual([]);
+	});
+
+	it('merged-district codes are still recognised; authority codes are not', () => {
+		expect(at('MZ 123 AB')).toEqual(['MZ:at-standard']);
+		expect(at('WU 123 AB')).toEqual(['WU:at-standard']);
+		expect(at('BH 12345')).toEqual([]); // army
+		expect(at('WD 1234 A')).toEqual([]); // diplomatic
+	});
+
+	it('never uses Q in the serial', () => {
+		expect(at('W 1234 Q')).toEqual([]);
+	});
+});
+
 describe('detectPlate: Slovakia', () => {
 	it('detects standard district plates in any formatting', () => {
 		for (const raw of ['BA-123AB', 'ba 123 ab', 'BA123AB']) {
@@ -78,7 +123,8 @@ describe('detectPlate: Czechia', () => {
 
 	it('treats personalised plates as nationwide, respecting the forbidden letters', () => {
 		expect(first('JIRKA123')).toMatchObject({ type: 'nationwide', collectionId: 'cz', format: 'cz-personalized' });
-		expect(detectPlate('HOLKA123')).toEqual([]); // O is not allowed on CZ personalised plates
+		// O is not allowed on CZ personalised plates (it is a valid Austrian wish plate of Horn, HO).
+		expect(detectPlate('HOLKA123').filter((d) => d.collectionId === 'cz')).toEqual([]);
 	});
 
 	it('detects CZ EV plates (EL + 3 digits + 2 letters)', () => {
@@ -135,10 +181,17 @@ describe('orderByCountry', () => {
 		expect(countries(orderByCountry(el, ['AT', 'CZ']))).toBe('cz,sk'); // unsupported GPS country ignored
 	});
 
+	it('orders SK/AT overlaps by the GPS country', () => {
+		const ba = detectPlate('BA-123AB'); // Bratislava, or Bad Aussee
+		expect(spansCountries(ba)).toBe(true);
+		expect(orderByCountry(ba, ['SK'])[0]).toMatchObject({ collectionId: 'sk', regionCode: 'BA' });
+		expect(orderByCountry(ba, ['AT'])[0]).toMatchObject({ collectionId: 'at', regionCode: 'BA' });
+	});
+
 	it('leaves single-country results alone', () => {
-		const ba = detectPlate('BA-123AB');
-		expect(orderByCountry(ba, ['CZ'])).toBe(ba);
-		expect(spansCountries(ba)).toBe(false);
+		const ke = detectPlate('KE-123AB'); // KE is not an Austrian code
+		expect(orderByCountry(ke, ['CZ'])).toBe(ke);
+		expect(spansCountries(ke)).toBe(false);
 		expect(spansCountries(el)).toBe(true);
 	});
 

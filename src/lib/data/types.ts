@@ -7,15 +7,20 @@ export interface Region {
 	name: string;
 }
 
-export type CollectionId = 'sk' | 'cz' | 'cz-vintage';
+export type CollectionId = 'sk' | 'cz' | 'cz-vintage' | 'at';
+
+/** ISO 3166-1 alpha-2 codes of the supported countries. */
+export type CountryCode = 'SK' | 'CZ' | 'AT';
 
 /** Collections that have a nationwide subcollection (plates without a region). */
 export type NationwideCollectionId = 'sk' | 'cz';
 
 export interface CollectionDef {
 	id: CollectionId;
-	/** ISO country code shown in the plate's EU band. */
-	country: 'SK' | 'CZ';
+	/** ISO country code (GPS country, grouping). */
+	country: CountryCode;
+	/** Code in the plate's EU band (international vehicle code: "SK", "CZ", "A"…). */
+	bandCode: string;
 	flag: string;
 	/** Bonus collections (e.g. pre-2001 plates) are shown separately. */
 	bonus: boolean;

@@ -123,7 +123,17 @@ like normal codes. For every country added or changed in `src/lib/data/`:
 9. **Map:** add the country's boundaries to `scripts/build-maps.mjs` (check the licence per
    dataset on geoBoundaries; prefer CC BY / public domain, check the names aren't garbled),
    add name aliases in `src/lib/geo/maps/index.ts` where areas share codes, and run the
-   maps test (every area has codes, every code has an area).
+   maps test (every area has codes, every code has an area; codes that really have no area,
+   e.g. Austria's black-plate state codes, are declared via `isUnmappedCode`). Share-alike
+   map data (CC BY-SA) is acceptable: note that the generated file carries that licence.
+10. **Wiring for a new country** (Austria was the first, see its commit):
+    `CountryCode` and `CollectionId` in `src/lib/data/types.ts`; the collection in
+    `src/lib/collections.ts` (`bandCode` = international code in the EU band, e.g. "A",
+    `plateStyle`, flag); detection in `src/lib/plates/detect.ts` with tests for its formats
+    **and its overlaps with other countries**; `collection.<id>` and `format.<format>` texts
+    (sk + en); outline in `scripts/build-borders.mjs` (ISO numeric code) + a `countryAt` test;
+    `LOCAL_LANGUAGE` in `src/lib/geo/place.ts`; facts and map licence in docs/PLAN.md and
+    README.md. One commit per country.
 
 ## Checks before committing
 
@@ -163,7 +173,7 @@ after touching links, paths, the manifest or the service worker (PowerShell:
 ## Code map
 
 ```
-src/lib/data/         region lists (sk, cz, cz-vintage) with sources
+src/lib/data/         region lists (sk, cz, cz-vintage, at) with sources; types.ts (CountryCode)
 src/lib/collections.ts collection registry, nationwide types per country, highlightOf, countryOf
 src/lib/plates/       normalizePlate, detectPlate (region + nationwide candidates), orderByCountry
 src/lib/geo/          countryAt (offline point-in-polygon); borders.ts is GENERATED
