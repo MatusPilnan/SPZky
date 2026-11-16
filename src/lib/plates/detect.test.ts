@@ -140,6 +140,32 @@ describe('detectPlate: France', () => {
 	});
 });
 
+describe('detectPlate: Bulgaria', () => {
+	const bg = (raw: string) =>
+		detectPlate(raw)
+			.filter((d) => d.collectionId === 'bg')
+			.map((d) => (d.type === 'region' ? `${d.regionCode}:${d.format}` : `*${d.format}`));
+
+	it('province code + 4 digits + series, typed in Latin or Cyrillic', () => {
+		expect(bg('CA 1234 AB')).toEqual(['CA:bg-standard']);
+		expect(bg('СА 1234 АВ')).toEqual(['CA:bg-standard']); // Cyrillic
+		expect(bg('A 1234 K')).toEqual(['A:bg-standard']); // Burgas, one-letter series
+		expect(bg('TX 0001 PP')).toEqual(['TX:bg-standard']);
+	});
+
+	it('electric plates (EA/EM) have no province: nationwide', () => {
+		expect(bg('EA 1234 AB')).toEqual(['*ev']);
+		expect(bg('EM 1234 A')).toEqual(['*ev']);
+	});
+
+	it('same format as Ukrainian plates: CA is Sofia or Cherkasy', () => {
+		const both = detectPlate('CA 1234 AB');
+		expect(spansCountries(both)).toBe(true);
+		expect(orderByCountry(both, ['BG'])[0]).toMatchObject({ collectionId: 'bg' });
+		expect(orderByCountry(both, ['UA'])[0]).toMatchObject({ collectionId: 'ua' });
+	});
+});
+
 describe('detectPlate: Poland', () => {
 	const pl = (raw: string) =>
 		detectPlate(raw)

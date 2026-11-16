@@ -39,7 +39,9 @@ export type RegionFormat =
 	/** FR since 2009 (SIV) with the department of the right band typed after it (AB-123-CD 75). */
 	| 'fr-siv'
 	/** FR 1950–2009 (FNI): digits, letters, department (1234 AB 75). */
-	| 'fr-fni';
+	| 'fr-fni'
+	/** BG: province code + 4 digits + series (CA 1234 AB). */
+	| 'bg-standard';
 
 /** Recognised plate formats without a region; they go to the country's nationwide subcollection. */
 export type NationwideFormat =
@@ -250,6 +252,21 @@ export function isBareFrenchPlate(raw: string): boolean {
 	return frSivBare.test(normalizePlate(raw));
 }
 
+/**
+ * Bulgaria: province code (1–2 letters) + 4 digits + series of 1–2 letters (A B E K M H O
+ * P C T Y X). Electric (since Nov 2022): EA + 4 digits + 2 letters, EM + 4 digits + 1 letter,
+ * no province: nationwide.
+ */
+function detectBulgarian(n: string): Detection[] {
+	const out: (Detection | null)[] = [];
+	if (/^EA\d{4}[ABEKMHOPCTYX]{2}$/.test(n) || /^EM\d{4}[ABEKMHOPCTYX]$/.test(n)) {
+		out.push(nationwide('bg', 'ev', 'high'));
+	}
+	const m = /^([A-Z]{1,2})\d{4}[ABEKMHOPCTYX]{1,2}$/.exec(n);
+	if (m) out.push(region('bg', m[1], 'bg-standard', 'high'));
+	return out.filter((d): d is Detection => d !== null);
+}
+
 export function detectionKey(d: Detection): string {
 	return d.type === 'region' ? `${d.collectionId}:${d.regionCode}` : `${d.collectionId}:*${d.format}`;
 }
@@ -265,7 +282,7 @@ export function detectPlate(raw: string): Detection[] {
 	if (n.length < 5) return [];
 
 	const seen = new Set<string>();
-	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw), ...detectUkrainian(n), ...detectFrench(n)]
+	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw), ...detectUkrainian(n), ...detectFrench(n), ...detectBulgarian(n)]
 		.filter((d) => {
 			const key = detectionKey(d);
 			if (seen.has(key)) return false;

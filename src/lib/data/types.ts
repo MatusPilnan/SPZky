@@ -25,13 +25,14 @@ export type CollectionId =
 	| 'de'
 	| 'ua'
 	| 'ua-vintage'
-	| 'fr';
+	| 'fr'
+	| 'bg';
 
 /** ISO 3166-1 alpha-2 codes of the supported countries. */
-export type CountryCode = 'SK' | 'CZ' | 'AT' | 'PL' | 'DE' | 'UA' | 'FR';
+export type CountryCode = 'SK' | 'CZ' | 'AT' | 'PL' | 'DE' | 'UA' | 'FR' | 'BG';
 
 /** Collections that have a nationwide subcollection (plates without a region). */
-export type NationwideCollectionId = 'sk' | 'cz';
+export type NationwideCollectionId = 'sk' | 'cz' | 'bg';
 
 export interface CollectionDef {
 	id: CollectionId;

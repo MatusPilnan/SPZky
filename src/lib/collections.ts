@@ -1,4 +1,5 @@
 import { atRegions, atVintageRegions } from './data/at';
+import { bgRegions } from './data/bg';
 import { czRegions } from './data/cz';
 import { czVintageRegions } from './data/cz-vintage';
 import { deRegions } from './data/de';
@@ -56,6 +57,7 @@ export const collections: CollectionDef[] = [
 	},
 	{ id: 'de', country: 'DE', bandCode: 'D', flag: '🇩🇪', bonus: false, plateStyle: 'eu', regions: deRegions, nationwideTypes: [] },
 	{ id: 'fr', country: 'FR', bandCode: 'F', flag: '🇫🇷', bonus: false, plateStyle: 'eu', regions: frRegions, nationwideTypes: [] },
+	{ id: 'bg', country: 'BG', bandCode: 'BG', flag: '🇧🇬', bonus: false, plateStyle: 'eu', regions: bgRegions, nationwideTypes: ['ev'] },
 	{ id: 'ua', country: 'UA', bandCode: 'UA', flag: '🇺🇦', bonus: false, plateStyle: 'eu', regions: uaRegions, nationwideTypes: [] },
 	{
 		id: 'ua-vintage',

@@ -112,7 +112,7 @@ git push --follow-tags        # pushes the commit and the tag → release workfl
   counties © Państwowy Rejestr Granic (GUGiK), CC BY 3.0 IGO; German districts ©
   GeoBasis-DE / BKG, Datenlizenz Deutschland – Namensnennung 2.0; Ukrainian regions ©
   State Enterprise "Kartographia", CC BY 3.0 IGO; French departments © IGN, Licence Ouverte
-  Etalab 2.0. All via
+  Etalab 2.0; Bulgarian provinces public domain. All via
   [geoBoundaries](https://www.geoboundaries.org/).
 - Country outlines: [Natural Earth](https://www.naturalearthdata.com/), public domain.
 - Plate formats and region codes: see the sources in each file of `src/lib/data/`.

@@ -127,6 +127,15 @@ const MAPS = [
 		rename: { "Côtes d'Armor": "Côtes-d'Armor" }
 	},
 	{
+		// The 28 provinces (oblasti).
+		file: 'bg-provinces',
+		url: `${RELEASE}/gbOpen/BGR/ADM1/geoBoundaries-BGR-ADM1_simplified.geojson`,
+		simplify: '8%',
+		center: [25.4, 42.7],
+		attribution: 'geoBoundaries, Wikimedia Commons',
+		license: 'Public domain'
+	},
+	{
 		// 24 oblasts, Crimea, Kyiv and Sevastopol (official boundaries, 2022). Used by both
 		// Ukrainian collections (the 1995 system used the same regions).
 		file: 'ua-regions',

@@ -94,6 +94,14 @@ checklist "Region data" in `CLAUDE.md` for every country added later.
   else matched or GPS is in France. Overseas departments have no map area. Sources:
   fr.wikipedia "Plaque d'immatriculation française", en.wikipedia "Vehicle registration
   plates of France" (checked 2026-11-16).
+- **Bulgaria** (phase 9, 2026-11-16): **30** province codes (28 provinces, Sofia city C/CA/CB),
+  `CA 1234 AB` with Cyrillic look-alike letters. Electric plates since 17 Nov 2022 (`ЕА
+  NNNN XX`, motorcycles `ЕМ NNNN X`) have no province: nationwide type "Electric". Same
+  format as Ukraine: `CA 1234 AB` is Sofia or Cherkasy, GPS decides. No bonus collection:
+  plates of the pre-1992 systems became invalid (1992/1993). Left out: army (BA), civil
+  protection, temporary, foreigners', diplomatic. Sources: bg.wikipedia "Регистрационен
+  номер на МПС (България)", en.wikipedia "Vehicle registration plates of Bulgaria"
+  (checked 2026-11-16).
 - **Ukraine** (phase 9, 2026-11-16): **107** region codes of the system since 2004
   (`AA 1234 BB`): four per region (2004, 2013, 2021×2), only the 12 Cyrillic letters that
   look Latin; typed Cyrillic is mapped to Latin by `normalizePlate` (also Greek for later).
@@ -196,6 +204,7 @@ raw, loaded on demand and precached for offline use):
 | PL | 380 counties and city counties (powiaty) | gbHumanitarian POL ADM2: Państwowy Rejestr Granic via HDX, 2022 | CC BY 3.0 IGO |
 | PL pre-2000 | — (no map) | — | — |
 | FR | 96 metropolitan departments (overseas 971–976 without area) | gbOpen FRA ADM2: IGN, 2022 | Etalab Open Licence 2.0 (attribution) |
+| BG | 28 provinces (oblasti) | gbOpen BGR ADM1: Wikimedia Commons, 2019 | Public domain |
 | UA, UA 1995–2004 | 27 regions (oblasts, Crimea, Kyiv, Sevastopol) | gbHumanitarian UKR ADM1: State Enterprise "Kartographia" via HDX, 2022 (Kyiv city renamed by location: both are "Kyivska") | CC BY 3.0 IGO |
 | DE | 401 districts and district-free cities (Kreise) | gbOpen DEU ADM3: BKG, 2021 (dissolved by name: coastal districts come in several parts) | dl-de/by-2-0 (attribution) |
 

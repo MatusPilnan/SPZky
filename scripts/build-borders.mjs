@@ -10,7 +10,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { feature } from 'topojson-client';
 
-const COUNTRIES = { SK: '703', CZ: '203', AT: '040', PL: '616', DE: '276', UA: '804', FR: '250' };
+const COUNTRIES = { SK: '703', CZ: '203', AT: '040', PL: '616', DE: '276', UA: '804', FR: '250', BG: '100' };
 const resolution = process.argv[2] ?? '10m';
 
 const require = createRequire(import.meta.url);
