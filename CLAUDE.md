@@ -204,6 +204,7 @@ src/routes/           home (overview), country (?id=), add (plate + quick), hist
 supabase/             config.toml, migrations/, templates/, tests/database/ (pgTAP)
 scripts/              check-node.cjs, smoke.mjs, sync-e2e.mjs, release-notes.mjs (+ test),
                       build-borders.mjs (regenerates src/lib/geo/borders.ts),
-                      build-maps.mjs (regenerates src/lib/geo/maps/*; keep attribution/licence)
+                      build-maps.mjs (regenerates src/lib/geo/maps/*; keep attribution/licence),
+                      import-si-areas.mjs → data/si-municipality-areas.json (SI map grouping)
 .github/workflows/    ci.yml, release.yml
 ```

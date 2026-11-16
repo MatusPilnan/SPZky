@@ -150,9 +150,15 @@ checklist "Region data" in `CLAUDE.md` for every country added later.
   MS, NM, PO, SG). The sources don't give the serial formats, so detection is loose (code +
   3–6 letters/digits with a digit, medium confidence); KK/PO also exist in Slovakia, GPS
   decides. Older Slovenian designs use the same codes (no bonus); the sources don't say
-  Yugoslav-era plates are valid. **No map**: the areas group 58 administrative units, not
-  available as boundary data (only 2 macro-regions, or 212 municipalities with garbled
-  names under ODbL); revisit if a usable dataset turns up. Sources: sl.wikipedia
+  Yugoslav-era plates are valid. **Map** (added 2026-11-16): the areas group the 58
+  administrative units (upravne enote), which have no boundary data, so the map merges
+  the 212 municipalities (geoBoundaries SVN ADM2, OSM, ODbL) into the 11 areas.
+  `scripts/import-si-areas.mjs` writes the municipality → area table
+  (`scripts/data/si-municipality-areas.json`; units → areas from sl.wikipedia, municipalities
+  → units from the units' gov.si pages, Wikipedia as fallback, 3 units by hand). The
+  map's municipality names lost Č/Š/Ž (e.g. "Lentjur" = Šentjur), so matching allows any
+  letter at those positions and fails on ambiguity; it also fails if a municipality lands
+  in two areas (Škocjan is resolved to Novo mesto by hand). Sources: sl.wikipedia
   "Registrske tablice Slovenije", en.wikipedia "Vehicle registration plates of Slovenia"
   (checked 2026-11-16).
 - **Ukraine** (phase 9, 2026-11-16): **107** region codes of the system since 2004
@@ -256,7 +262,7 @@ raw, loaded on demand and precached for offline use):
 
 | PL | 380 counties and city counties (powiaty) | gbHumanitarian POL ADM2: Państwowy Rejestr Granic via HDX, 2022 | CC BY 3.0 IGO |
 | PL pre-2000 | — (no map) | — | — |
-| SI | — (no map: registration areas aren't boundary data) | — | — |
+| SI | 11 registration areas, merged from 212 municipalities (`groupBy` + `dissolve`) | gbOpen SVN ADM2: OpenStreetMap | ODbL 1.0 (share-alike: the generated `si-areas.ts` is under the same licence) |
 | FR | 96 metropolitan departments (overseas 971–976 without area) | gbOpen FRA ADM2: IGN, 2022 | Etalab Open Licence 2.0 (attribution) |
 | BG | 28 provinces (oblasti) | gbOpen BGR ADM1: Wikimedia Commons, 2019 | Public domain |
 | RO | 41 counties + Bucharest | gbOpen ROU ADM1: World Bank, 2017 | CC BY 4.0 |

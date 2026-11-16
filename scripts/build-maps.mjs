@@ -6,12 +6,12 @@
 // them with mapshaper (topology-aware, so neighbours keep shared borders), projects them
 // (Lambert azimuthal equal-area) and writes compact SVG paths. Licences and attribution
 // are stored next to the data and shown in the app (Settings → Map data).
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import mapshaper from 'mapshaper';
 
 const RELEASE = 'https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData';
 
-/** @type {{ file: string, url: string, simplify: string, center: [number, number], attribution: string, license: string, rename?: Record<string, string>, disambiguateWith?: string, dissolve?: boolean, nameAt?: { from: string, point: [number, number], to: string }[] }[]} */
+/** @type {{ file: string, url: string, simplify: string, center: [number, number], attribution: string, license: string, rename?: Record<string, string>, disambiguateWith?: string, dissolve?: boolean, groupBy?: string, nameAt?: { from: string, point: [number, number], to: string }[] }[]} */
 const MAPS = [
 	{
 		file: 'sk-districts',
@@ -170,6 +170,19 @@ const MAPS = [
 		}
 	},
 	{
+		// The 11 registration areas, merged from the 212 municipalities (names garbled in
+		// the data; scripts/import-si-areas.mjs matched them to their areas). ODbL
+		// (share-alike): this generated file is under the same licence.
+		file: 'si-areas',
+		url: `${RELEASE}/gbOpen/SVN/ADM2/geoBoundaries-SVN-ADM2_simplified.geojson`,
+		groupBy: 'scripts/data/si-municipality-areas.json',
+		dissolve: true,
+		simplify: '10%',
+		center: [14.8, 46.1],
+		attribution: '© OpenStreetMap contributors via geoBoundaries',
+		license: 'ODbL 1.0'
+	},
+	{
 		// 26 cantons, one code each. swisstopo open data: free use with attribution.
 		file: 'ch-cantons',
 		url: `${RELEASE}/gbOpen/CHE/ADM1/geoBoundaries-CHE-ADM1_simplified.geojson`,
@@ -251,6 +264,21 @@ function renameAt(input, rules) {
 }
 
 /**
+ * Renames every area to its group from a JSON table { area name: group name } (with
+ * `dissolve`, the areas of a group merge into one). Every area must be in the table.
+ */
+function groupBy(input, tableFile) {
+	const table = JSON.parse(readFileSync(tableFile, 'utf-8'));
+	const gj = JSON.parse(input);
+	for (const f of gj.features) {
+		const group = table[f.properties.shapeName];
+		if (!group) throw new Error(`${tableFile}: no group for "${f.properties.shapeName}"`);
+		f.properties.shapeName = group;
+	}
+	return JSON.stringify(gj);
+}
+
+/**
  * Appends " (Parent)" to area names that occur more than once, using the parent
  * level (e.g. voivodeship) that contains an inner point of the area.
  */
@@ -297,6 +325,7 @@ for (const m of MAPS) {
 	let input = await res.text();
 	if (m.disambiguateWith) input = await disambiguate(input, m.disambiguateWith);
 	if (m.nameAt) input = renameAt(input, m.nameAt);
+	if (m.groupBy) input = groupBy(input, m.groupBy);
 
 	const proj = `+proj=laea +lat_0=${m.center[1]} +lon_0=${m.center[0]} +datum=WGS84`;
 	// dissolve: one area per name (some datasets split a district into several features).

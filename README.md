@@ -116,7 +116,9 @@ git push --follow-tags        # pushes the commit and the tag → release workfl
   Greek regions © EuroGeographics, CC BY 4.0; Swiss cantons © swisstopo (open
   government data, attribution);
   Serbian municipalities © OpenStreetMap contributors, ODbL 1.0 (the generated
-  `src/lib/geo/maps/rs-municipalities.ts` is shared under the same licence); Kosovo
+  `src/lib/geo/maps/rs-municipalities.ts` is shared under the same licence); Slovenian
+  registration areas from municipalities © OpenStreetMap contributors, ODbL 1.0
+  (`si-areas.ts` likewise); Kosovo
   districts © OpenStreetMap contributors, CC BY-SA 2.0 (`xk-districts.ts` likewise). All via
   [geoBoundaries](https://www.geoboundaries.org/).
 - Country outlines: [Natural Earth](https://www.naturalearthdata.com/), public domain.

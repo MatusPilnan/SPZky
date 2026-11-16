@@ -6,7 +6,7 @@ describe('region maps', () => {
 	const mapped = collections.filter((c) => hasMap(c.id));
 
 	it('only historic collections have no map', () => {
-		expect(collections.filter((c) => !hasMap(c.id)).map((c) => c.id).sort()).toEqual(['pl-vintage', 'si']);
+		expect(collections.filter((c) => !hasMap(c.id)).map((c) => c.id).sort()).toEqual(['pl-vintage']);
 	});
 
 	it.each(mapped.map((c) => [c.id, c] as const))('%s: every area has codes and every code an area', async (_, c) => {
@@ -35,6 +35,10 @@ describe('region maps', () => {
 		expect((await loadMap('gr'))!.shapes).toHaveLength(14);
 		expect((await loadMap('xk'))!.shapes).toHaveLength(7);
 		expect((await loadMap('ch'))!.shapes).toHaveLength(26);
+		// 212 municipalities merged into the 11 registration areas.
+		expect((await loadMap('si'))!.shapes.map((s) => s.name).sort()).toEqual(
+			['Celje', 'Koper', 'Kranj', 'Krško', 'Ljubljana', 'Maribor', 'Murska Sobota', 'Nova Gorica', 'Novo mesto', 'Postojna', 'Slovenj Gradec']
+		);
 		expect(await loadMap('pl-vintage')).toBeNull();
 	});
 

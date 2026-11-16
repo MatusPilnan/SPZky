@@ -14,8 +14,10 @@ import type { Region } from './types';
 // with at least one digit after the code (medium confidence).
 // No bonus collection: the older Slovenian designs use the same 11 codes; the sources
 // don't say Yugoslav-era plates (before 1991) are still valid.
-// No map: the areas group the 58 administrative units, which aren't available as boundary
-// data (only 2 macro-regions or 212 municipalities with garbled names, share-alike).
+// Map: the 11 areas merged from the 212 municipalities of the OpenStreetMap data
+// (geoBoundaries, ODbL). The areas group the 58 administrative units (upravne enote);
+// scripts/import-si-areas.mjs assigns each municipality to its area (units → areas from
+// sl.wikipedia, municipalities → units from gov.si) into scripts/data/si-municipality-areas.json.
 // Left out: diplomatic, test (PR), dealer, temporary and export plates.
 // Plausibility: 11 areas, one code each.
 export const siRegions: Region[] = [

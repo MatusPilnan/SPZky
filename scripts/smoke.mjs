@@ -388,8 +388,8 @@ try {
 		cards.join(' || ')
 	);
 	check('home lists recent sightings', (await page.$$('main ul li')).length === 3);
-	// Every card has a map thumbnail, except collections without a map (Slovenia, Poland before 2000).
-	const MAPLESS = ['Poland (pre-2000)', 'Slovenia'];
+	// Every card has a map thumbnail, except collections without a map (Poland before 2000).
+	const MAPLESS = ['Poland (pre-2000)'];
 	const cardCount = (await page.$$('a.collection')).length;
 	await page
 		.waitForFunction((n) => document.querySelectorAll('a.collection svg.map').length === n, { timeout: 5000 }, cardCount - MAPLESS.length)
