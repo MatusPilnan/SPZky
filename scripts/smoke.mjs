@@ -237,7 +237,11 @@ try {
 	await typePlate('BN 12-34');
 	t = await text();
 	check('CZ vintage detected', t.includes('Benešov') && t.includes('before 2001'));
+	const vintageInput = await page.$eval('.plate:has(input)', (p) => ({ plain: p.dataset.plain, band: !!p.querySelector('.band') }));
+	check('pre-2001 plate: input without the EU band', vintageInput.plain === 'true' && !vintageInput.band, JSON.stringify(vintageInput));
 	await typePlate('1A2 3456');
+	const modernInput = await page.$eval('.plate:has(input)', (p) => !!p.querySelector('.band'));
+	check('current CZ plate: input with the EU band', modernInput);
 	check('CZ standard detected', (await text()).includes('Hlavní město Praha'));
 	await page.keyboard.press('Enter');
 	await sleep(300);
@@ -276,6 +280,7 @@ try {
 	await shot('04-quick');
 
 	// history + edit
+	let badgeEm = 0;
 	await page.goto(`${APP}/history`, { waitUntil: 'networkidle0' });
 	await page.waitForSelector('ul li');
 	const items = await page.$$eval('ul li', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ')));
@@ -292,11 +297,13 @@ try {
 				return {
 					label: text.innerText,
 					width: Math.round(e.getBoundingClientRect().width),
+					em: e.getBoundingClientRect().width / parseFloat(getComputedStyle(e).fontSize),
 					clipped: e.scrollWidth > e.clientWidth + 1 || text.scrollWidth > text.clientWidth + 1
 				};
 			})
 		);
 		const widths = new Set(badges.map((b) => b.width));
+		if (width === 400) badgeEm = badges[0]?.em;
 		check(`plate badges all have the same width (${width} px)`, widths.size === 1, badges.map((b) => `${b.label}=${b.width}`).join(', '));
 		check(
 			`plate badges are not clipped (${width} px)`,
@@ -528,6 +535,26 @@ try {
 	}
 	await shot('08b-country-sk');
 	await page.setViewport({ width: 400, height: 860, deviceScaleFactor: 1 });
+
+	// Bonus collection (CZ pre-2001): explanation with a band-less plate as wide as the others.
+	await page.goto(`${APP}/country?id=cz-vintage`, { waitUntil: 'networkidle0' });
+	await page.waitForSelector('[data-testid=about] .plate');
+	const about = await page.$eval('[data-testid=about]', (s) => ({
+		text: s.innerText,
+		band: !!s.querySelector('.plate .band'),
+		em: s.querySelector('.plate').getBoundingClientRect().width / parseFloat(getComputedStyle(s.querySelector('.plate')).fontSize)
+	}));
+	check(
+		'pre-2001 collection explains the plates, plate shown without the EU band',
+		about.text.includes('1960') && about.text.includes('Gottwaldov') && !about.band,
+		about.text.slice(0, 80)
+	);
+	check(
+		'band-less plate is as wide as the others (relative to font size)',
+		Math.abs(about.em - badgeEm) < 0.05,
+		`${about.em.toFixed(2)} vs ${badgeEm.toFixed(2)} em`
+	);
+	await shot('11c-vintage-about');
 
 	// Back stack: Home at the bottom, bottom-bar screens replace each other, detail screens
 	// on top of where they were opened, Home tab jumps back. (System back = history.back().)

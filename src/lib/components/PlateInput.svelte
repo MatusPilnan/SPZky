@@ -5,21 +5,25 @@
 		value: string;
 		/** Text in the blue EU band (detected country), empty when unknown. */
 		country?: string;
+		/** Plate from before the EU-style design (e.g. CZ before 2001): no blue band. */
+		plain?: boolean;
 		ref?: HTMLInputElement | null;
 	}
 
-	let { value = $bindable(), country = '', ref = $bindable(null), ...rest }: Props = $props();
+	let { value = $bindable(), country = '', plain = false, ref = $bindable(null), ...rest }: Props = $props();
 </script>
 
-<div class="plate">
-	<span class="band" aria-hidden="true">
-		<svg viewBox="0 0 20 20" class="stars">
-			{#each Array.from({ length: 12 }, (_, i) => i) as i (i)}
-				<circle cx={10 + 6.5 * Math.cos((i * Math.PI) / 6)} cy={10 + 6.5 * Math.sin((i * Math.PI) / 6)} r="1.1" />
-			{/each}
-		</svg>
-		<span class="cc">{country}</span>
-	</span>
+<div class="plate" class:plain data-plain={plain}>
+	{#if !plain}
+		<span class="band" aria-hidden="true">
+			<svg viewBox="0 0 20 20" class="stars">
+				{#each Array.from({ length: 12 }, (_, i) => i) as i (i)}
+					<circle cx={10 + 6.5 * Math.cos((i * Math.PI) / 6)} cy={10 + 6.5 * Math.sin((i * Math.PI) / 6)} r="1.1" />
+				{/each}
+			</svg>
+			<span class="cc">{country}</span>
+		</span>
+	{/if}
 	<input
 		bind:this={ref}
 		bind:value
@@ -41,6 +45,15 @@
 		background: #fff;
 		overflow: hidden;
 		box-shadow: 0 2px 6px rgb(0 0 0 / 0.15);
+	}
+	.plain {
+		box-shadow:
+			inset 0 0 0 3px #fff,
+			inset 0 0 0 4px #111,
+			0 2px 6px rgb(0 0 0 / 0.15);
+	}
+	.plain input {
+		text-align: center;
 	}
 	.plate:focus-within {
 		outline: 3px solid var(--accent);

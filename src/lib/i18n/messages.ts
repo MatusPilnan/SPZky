@@ -34,6 +34,15 @@ export const en = {
 	'country.allFound': 'All found! 🎉',
 	'country.history': 'History',
 
+	'about.cz-vintage.title': 'About these plates',
+	'about.cz-vintage.what':
+		'Czech plates of the system used from 1960 to 2001: two letters for the district (sometimes followed by a series letter) and four digits, e.g. BN 12-34 for Benešov. Black on white, without the blue EU band.',
+	'about.cz-vintage.valid':
+		'They were never withdrawn, so you can still spot them on older cars – fewer every year.',
+	'about.cz-vintage.rare':
+		'Rarest: GT and GV (Gottwaldov, renamed Zlín in 1990) and BI (Brno-venkov, trucks only). Prague used AB to AZ; they count as one code, A.',
+	'about.cz-vintage.map': 'The map shows today’s districts, which are very close to the districts of that time.',
+
 	'map.label': 'Map of {name}: found regions are green',
 	'map.area': '{name}: {found} of {total} found',
 	'map.credit': 'Map: {source}',
@@ -284,6 +293,15 @@ export const sk: Messages = {
 	'country.noneFound': 'Zatiaľ nič nenájdené.',
 	'country.allFound': 'Všetko nájdené! 🎉',
 	'country.history': 'História',
+
+	'about.cz-vintage.title': 'O týchto ŠPZ',
+	'about.cz-vintage.what':
+		'České ŠPZ systému z rokov 1960 až 2001: dve písmená okresu (niekedy s ďalším písmenom série) a štyri číslice, napr. BN 12-34 pre Benešov. Čierne písmo na bielom, bez modrého pruhu EÚ.',
+	'about.cz-vintage.valid':
+		'Nikdy neboli zrušené, takže ich ešte stále zbadáš na starších autách – každým rokom menej.',
+	'about.cz-vintage.rare':
+		'Najvzácnejšie: GT a GV (Gottwaldov, od roku 1990 Zlín) a BI (Brno-venkov, len nákladné autá). Praha mala AB až AZ; rátajú sa ako jeden kód, A.',
+	'about.cz-vintage.map': 'Mapa zobrazuje dnešné okresy, ktoré sa s vtedajšími takmer zhodujú.',
 
 	'map.label': 'Mapa – {name}: nájdené oblasti sú zelené',
 	'map.area': '{name}: nájdené {found} z {total}',

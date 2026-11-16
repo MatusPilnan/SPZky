@@ -152,6 +152,7 @@
 			<PlateInput
 				bind:value={plate}
 				country={getCollection(collectionId)?.country ?? ''}
+				plain={getCollection(collectionId)?.plateStyle === 'plain'}
 				oninput={onPlateInput}
 				aria-label={t('add.plate')}
 			/>

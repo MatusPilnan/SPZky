@@ -1,4 +1,4 @@
-# ŠPZ-ky: plan and decisions
+﻿# Å PZ-ky: plan and decisions
 
 Offline-first PWA for logging license plates spotted "in the wild". Progress is tracked
 per country by how many regional codes have been found.
@@ -10,7 +10,7 @@ per country by how many regional codes have been found.
 | Countries at launch    | Slovakia + Czechia; more later                                                                          |
 | Bonus collection       | Czech pre-2001 district codes ("vintage")                                                               |
 | Entry                  | Both: full plate with auto-detection (default) **and** quick "tap a region code"                        |
-| Progress unit          | Each plate code counts (SK: every district code incl. BA/BL/BT…; CZ: 14 region letters)                 |
+| Progress unit          | Each plate code counts (SK: every district code incl. BA/BL/BTâ€¦; CZ: 14 region letters)                 |
 | Extras                 | Region maps, date + GPS per sighting, cloud sync with accounts. Export/import was **not** requested     |
 | Stack                  | SvelteKit (static, prerendered client-only shells) + `@vite-pwa/sveltekit`, Dexie (IndexedDB)           |
 | Sync backend           | Supabase (auth + Postgres + row-level security); local DB stays the source of truth (offline-first)     |
@@ -18,7 +18,7 @@ per country by how many regional codes have been found.
 | Sign-in                | 6-digit **email code** typed in the app (works in installed PWAs on iPhone and Android); sent through a dedicated Gmail mailbox via SMTP with an app password, as there is no own domain (decided 2026-11-15) |
 | UI language            | Slovak + English with a switch (own lightweight typed i18n instead of Paraglide)                        |
 | Hosting & CI           | GitHub Pages at the repo-name URL `matuspilnan.github.io/SPZky/`. Tests on every push to `main`, deploy only on release tags (decided 2026-11-13) |
-| Plates without region  | Saved into a per-country **nationwide** subcollection that does **not** count toward country progress. Special plates (EV, personalised, …) are highlighted (decided 2026-11-13, replaces the earlier "not saved") |
+| Plates without region  | Saved into a per-country **nationwide** subcollection that does **not** count toward country progress. Special plates (EV, personalised, â€¦) are highlighted (decided 2026-11-13, replaces the earlier "not saved") |
 
 ## Facts about the plate systems
 
@@ -26,8 +26,8 @@ Rule (2026-11-14): a collection contains only codes that were **actually issued 
 seen on cars today**. Codes that were only reserved or never used are left out. Follow the
 checklist "Region data" in `CLAUDE.md` for every country added later.
 
-- **Slovakia:** **74** district codes that were actually issued (1997–2022; those plates stay
-  valid). Only Bratislava used more than one code (BA → BL from 2010 → BT from 2019). The
+- **Slovakia:** **74** district codes that were actually issued (1997â€“2022; those plates stay
+  valid). Only Bratislava used more than one code (BA â†’ BL from 2010 â†’ BT from 2019). The
   decree's other secondary codes (BD, BE, BI, BC, BK, KC, KI, LL, NI, NT, NC, PV, PS, TC, TE,
   TA, TB, ZI, ZL) were only reserved, never issued, and never will be (district codes ended in
   2023), so they were removed in v0.3.x; the DB v3 upgrade re-detects sightings saved under
@@ -37,48 +37,48 @@ checklist "Region data" in `CLAUDE.md` for every country added later.
   EV plates use `EL`/`EV` prefixes. Plates without a region go to the nationwide
   subcollection (see below).
 - **Czechia:** region letter at position 2 (`1A2 3456`), 14 regions, all current. Historic
-  plates `NNV XXXX` carry the numeric region code (01–14). Personalised plates (8 characters)
+  plates `NNV XXXX` carry the numeric region code (01â€“14). Personalised plates (8 characters)
   have no region.
 - **Czech pre-2001:** `XX NN-NN` / `XXX NN-NN`, first two letters = district; 96 codes. These
   plates are still valid but getting rare; GT/GV (Gottwaldov, until 1990) and BI (trucks only)
   are the rarest. FI and US were allocated but never used and are left out. Prague's codes
-  AB–AZ count as one region `A` (`AA` = government).
+  ABâ€“AZ count as one region `A` (`AA` = government).
 - Sources, with details in the header of each file in `src/lib/data/`: en.wikipedia (plates
   of Slovakia / Czech Republic), sk.wikipedia "Zoznam skratiek okresov Slovenska" (reserved
-  codes) and "Evidenčné číslo vozidiel na Slovensku", cs.wikipedia "Státní poznávací značky v
-  Československu" (pre-2001 table, validity).
+  codes) and "EvidenÄnÃ© ÄÃ­slo vozidiel na Slovensku", cs.wikipedia "StÃ¡tnÃ­ poznÃ¡vacÃ­ znaÄky v
+  ÄŒeskoslovensku" (pre-2001 table, validity).
 
-## Nationwide plates (plates without a region) — phase 4
+## Nationwide plates (plates without a region) â€” phase 4
 
 Plates whose format carries no region are saved into a per-country subcollection labelled
-**Nationwide** (*Celoštátne* in the Slovak UI). Pre-2001 CZ plates have no nationwide part.
+**Nationwide** (*CeloÅ¡tÃ¡tne* in the Slovak UI). Pre-2001 CZ plates have no nationwide part.
 
 - **Not part of progress:** the region count (e.g. "47 / 74") ignores them. The nationwide
   section shows its own counter (total and per type) below the region grid.
 - **Plates with a region keep their region,** e.g. a pre-2023 SK personalised plate `ZA-HELLO`
-  stays in Žilina (highlighted as special). Only plates without a region are nationwide.
+  stays in Å½ilina (highlighted as special). Only plates without a region are nationwide.
 - **Duplicates:** the same plate still counts only once.
 - **Quick mode / manual pick / edit:** a nationwide picker per country with its plate types.
 - **Plate types and highlights** (`highlightOf()` in `src/lib/collections.ts`):
 
   | Country | Type (`plateType`)            | Format                                                      | Highlight          |
   | ------- | ----------------------------- | ----------------------------------------------------------- | ------------------ |
-  | SK      | `sk-2023` standard since 2023 | `XX-NNNLL` with a non-district prefix (`AA…`)               | plain              |
-  | SK      | `sk-personalized` since 2023  | `LL-XXXXX` with a non-district prefix                       | ★ special          |
-  | SK      | `ev` electric (since 2023)    | `EL`/`EV` + `NNN` + `LL`, **green** letters on white        | ⚡ green           |
-  | CZ      | `ev` electric                 | `EL` + `NNN` + `LL` (EL-000-AA … EL-999-ZZ), **black** letters | ⚡ green        |
-  | CZ      | `cz-personalized`             | 8 characters, ≥ 1 digit, no G/O/Q/W                         | ★ special          |
-  | SK / CZ | regional `sk-district-special`, `cz-historic` | (keep their region)                         | ★ special          |
+  | SK      | `sk-2023` standard since 2023 | `XX-NNNLL` with a non-district prefix (`AAâ€¦`)               | plain              |
+  | SK      | `sk-personalized` since 2023  | `LL-XXXXX` with a non-district prefix                       | â˜… special          |
+  | SK      | `ev` electric (since 2023)    | `EL`/`EV` + `NNN` + `LL`, **green** letters on white        | âš¡ green           |
+  | CZ      | `ev` electric                 | `EL` + `NNN` + `LL` (EL-000-AA â€¦ EL-999-ZZ), **black** letters | âš¡ green        |
+  | CZ      | `cz-personalized`             | 8 characters, â‰¥ 1 digit, no G/O/Q/W                         | â˜… special          |
+  | SK / CZ | regional `sk-district-special`, `cz-historic` | (keep their region)                         | â˜… special          |
 
-  So `EV…` is always Slovak, while `EL-NNN-LL` fits both countries (see country choice below);
+  So `EVâ€¦` is always Slovak, while `EL-NNN-LL` fits both countries (see country choice below);
   the app shows a tip that SK EV plates have green and CZ ones black letters.
   Sources: [Wikipedia SK](https://en.wikipedia.org/wiki/Vehicle_registration_plates_of_Slovakia),
   [Slov-Lex 480/2022](https://static.slov-lex.sk/static/SK/ZZ/2022/480/20230101.html),
-  [cs.wikipedia CZ](https://cs.wikipedia.org/wiki/Registrační_značky_v_Česku).
+  [cs.wikipedia CZ](https://cs.wikipedia.org/wiki/RegistraÄnÃ­_znaÄky_v_ÄŒesku).
   Candidates to add later: diplomatic (SK `CD-NNNNN`; CZ `NNN CD/XX/XS/HC NN`), military
   (numeric), export/trade/test plates.
 
-## Choosing the country when detection is ambiguous — phase 4
+## Choosing the country when detection is ambiguous â€” phase 4
 
 When the plate format leaves more than one possible country (EV plates today, and any overlap
 once more countries are added), the entry screen shows the countries as choices, ordered and
@@ -104,7 +104,7 @@ removed (e.g. when GPS and last used are the same country).
   candidates stay ordered by detection confidence. Implemented in `orderByCountry()`
   (`src/lib/plates/detect.ts`).
 
-## Progress screens — phase 5
+## Progress screens â€” phase 5
 
 - **Home:** per-collection cards (flag, % and progress bar, "found of total", "+ N nationwide
   plates"); the pre-2001 CZ collection is listed separately as the bonus collection; the three
@@ -118,15 +118,15 @@ removed (e.g. when GPS and last used are the same country).
   show on the bonus collection's screen, not under Czechia.
 - Helpers in `src/lib/progress.ts`: `collectionProgress()`, `regionStats()`.
 
-## Region maps — phase 6
+## Region maps â€” phase 6
 
 SVG maps generated by `scripts/build-maps.mjs` into `src/lib/geo/maps/` (GENERATED; ~60 kB
 raw, loaded on demand and precached for offline use):
 
 | Collection | Areas | Source (geoBoundaries, release commit 9469f09) | Licence |
 | --- | --- | --- | --- |
-| SK | 79 districts (okresy) | gbHumanitarian SVK ADM2: Geoportal.SK (ÚGKK SR) via HDX, 2022 | CC BY 3.0 IGO |
-| CZ | 14 regions (kraje) | gbOpen CZE ADM1: ČÚZK, 2021 | CC BY 4.0 |
+| SK | 79 districts (okresy) | gbHumanitarian SVK ADM2: Geoportal.SK (ÃšGKK SR) via HDX, 2022 | CC BY 3.0 IGO |
+| CZ | 14 regions (kraje) | gbOpen CZE ADM1: ÄŒÃšZK, 2021 | CC BY 4.0 |
 | CZ pre-2001 | 77 districts (okresy) | gbOpen CZE ADM2: Wikimedia Commons, 2010 | Public domain |
 
 - The gbOpen SVK ADM2 data (OSM, ODbL with share-alike) has garbled names, so the
@@ -134,14 +134,14 @@ raw, loaded on demand and precached for offline use):
 - Simplified with **mapshaper** (dev dependency, topology-aware so neighbours keep shared
   borders) and projected with Lambert azimuthal equal-area.
 - Areas are matched to codes by name (`codesOfArea()` in `src/lib/geo/maps/index.ts`):
-  Bratislava I–V share BA/BL/BT, Košice I–IV share KE, Zlín also covers Gottwaldov
+  Bratislava Iâ€“V share BA/BL/BT, KoÅ¡ice Iâ€“IV share KE, ZlÃ­n also covers Gottwaldov
   (GT/GV). A unit test ensures every area has codes and every code has an area.
 - Colours: all codes of an area found = dark green, some = light green, none = grey.
   Tapping an area opens its code (or, for shared codes, a sheet with all codes of the area);
   the selected area is outlined. Home cards show non-interactive thumbnails.
-- Attribution (required by CC BY): under each map and in Settings → Map data.
+- Attribution (required by CC BY): under each map and in Settings â†’ Map data.
 - Old CZ districts are drawn with today's district borders (very close to the pre-2001
-  ones; Jeseník exists since 1996 and has its own old code JE).
+  ones; JesenÃ­k exists since 1996 and has its own old code JE).
 
 ## Data model
 
@@ -156,9 +156,9 @@ Dexie schema v2 (phase 4) fills `plateType` for existing rows from their plate. 
 repository rejects a nationwide sighting without a valid nationwide type of its collection.
 Sync (phase 7) must include `plateType` and a nullable `region_code`.
 
-Sync: see "Sync — phase 7" below.
+Sync: see "Sync â€” phase 7" below.
 
-## Sync — phase 7 (planned 2026-11-15, built 2026-11-16)
+## Sync â€” phase 7 (planned 2026-11-15, built 2026-11-16)
 
 Goal: the same collection on every device of a user, while the app stays fully usable
 offline and without an account. The local IndexedDB stays the source of truth; Supabase is
@@ -241,7 +241,7 @@ triggers, auth), `fake-remote.ts` (in-memory server for the unit tests).
 1. **Push:** send local rows with `dirty = 1` (batches of 200) via `push_sightings`; mark
    them clean only if they weren't edited again while the request ran; adopt the rejected
    rows the server returns.
-2. **Pull:** fetch rows with `server_updated_at >= cursor − 60 s` (pages of 500, keyed by
+2. **Pull:** fetch rows with `server_updated_at >= cursor âˆ’ 60 s` (pages of 500, keyed by
    the timestamp), apply each one locally if it is new or its `updated_at` is newer than
    the local row (equal: only if the local row has no pending change); store the cursor in
    the local `meta` table (Dexie schema v4). The 60-second overlap covers transactions that
@@ -299,7 +299,7 @@ triggers, auth), `fake-remote.ts` (in-memory server for the unit tests).
   never downloaded (dynamic import) and the app works as before.
 - The sign-in conflict dialog (`SignInConflict.svelte`) lives in the layout, so it appears
   wherever the user is when the check finishes.
-- Settings → **Account & sync:** email → "Send code" → 6-digit code → signed in; then the
+- Settings â†’ **Account & sync:** email â†’ "Send code" â†’ 6-digit code â†’ signed in; then the
   email, sync status, last sync, "Sync now", "Sign out", "Delete my cloud data".
 - Session stored by supabase-js in localStorage under an `spz-ky.*` key (shared origin on
   GitHub Pages).
@@ -323,7 +323,7 @@ triggers, auth), `fake-remote.ts` (in-memory server for the unit tests).
 
 | Name | Kind | Value |
 | --- | --- | --- |
-| `SUPABASE_ACCESS_TOKEN` | secret | personal access token (Supabase account → Access Tokens) |
+| `SUPABASE_ACCESS_TOKEN` | secret | personal access token (Supabase account â†’ Access Tokens) |
 | `SUPABASE_DB_PASSWORD` | secret | database password chosen when creating the project |
 | `SUPABASE_PROJECT_ID` | secret | project reference (from the project URL) |
 | `SUPABASE_SMTP_PASSWORD` | secret | Gmail app password |
@@ -337,8 +337,8 @@ triggers, auth), `fake-remote.ts` (in-memory server for the unit tests).
    Verification, create an **app password** ("Supabase").
 2. Create a free **Supabase** account and project; region **Frankfurt (eu-central-1)**;
    keep the database password.
-3. Create a Supabase **access token** (account settings → Access Tokens).
-4. In GitHub: Settings → Secrets and variables → Actions, add the secrets and variables
+3. Create a Supabase **access token** (account settings â†’ Access Tokens).
+4. In GitHub: Settings â†’ Secrets and variables â†’ Actions, add the secrets and variables
    above. Never paste secrets into a chat or commit them.
 
 ### Open points (decide before or during building)
@@ -357,7 +357,7 @@ triggers, auth), `fake-remote.ts` (in-memory server for the unit tests).
 
 ## Export / import (added 2026-11-16, with phase 7)
 
-Settings → **Your data**, and "Export this device's plates first" in the sign-in conflict
+Settings â†’ **Your data**, and "Export this device's plates first" in the sign-in conflict
 dialog (owner's request: a backup before choosing). Code: `src/lib/backup.ts`,
 `src/lib/files.ts`, `DataSection.svelte`, `ExportButton.svelte`.
 
@@ -378,6 +378,75 @@ dialog (owner's request: a backup before choosing). Code: `src/lib/backup.ts`,
   there and on other devices too).
 - Imported plates get **new ids**, `updatedAt` = now and count as local changes, so they
   sync like new entries and can't clash with rows of another account.
+
+## Vintage CZ polish â€” phase 8 (2026-11-16)
+
+Scope chosen by the owner: **plate look** and **context**. (Grouping the 96 codes by old
+regions was offered and not chosen.)
+
+- **Look:** pre-2001 CZ plates were black on white **without the EU band** (the band came
+  with the 2001 system; reflective plates from 1994). `CollectionDef.plateStyle`
+  (`'eu' | 'plain'`) drives `PlateBadge`/`PlateInput`; `plain` hides the band and draws a
+  thin inner rim. Badges keep one fixed outer width either way. Source:
+  [cs.wikipedia: SPZ v ÄŒeskoslovensku](https://cs.wikipedia.org/wiki/StÃ¡tnÃ­_poznÃ¡vacÃ­_znaÄky_v_ÄŒeskoslovensku)
+  (checked 2026-11-16: "vzhledovÄ› se novÃ© znaÄky shodovaly se starÅ¡Ã­m systÃ©mem", reflective
+  from 1994, older plates "stÃ¡le platnÃ©").
+- **Context:** an "About these plates" card on the bonus collection's screen: system
+  1960â€“2001, format with example `BN 12-34`, still valid, rarest codes (GT/GV, BI, Prague
+  ABâ€“AZ as A), map drawn with today's districts. Facts as in `src/lib/data/cz-vintage.ts`.
+
+## More countries â€” phase 9 (planned 2026-11-16, not started)
+
+Goal: more collections beyond SK + CZ, one country per release, each through the
+**"Region data" checklist in CLAUDE.md** (issued codes only, still on the road, two sources
+incl. one in the country's language, plausibility count, tests, Dexie migration if codes
+change, facts here, map from geoBoundaries with a usable licence).
+
+Per country, the work is:
+1. Region data file with sources (`src/lib/data/<cc>.ts`) and nationwide types if any.
+2. Plate detection for the country's formats in `src/lib/plates/detect.ts`, plus the
+   **overlaps with existing countries** (e.g. two-letter codes shared with SK/CZ): the
+   country choice (GPS first, then last used) already handles ambiguous plates, but each
+   new country needs test cases for its overlaps.
+3. Map (`scripts/build-maps.mjs`) and the offline country outline for GPS (`countryAt`,
+   `scripts/build-borders.mjs`).
+4. i18n names, collection registry, plate look (`plateStyle`, band country code).
+
+Candidates (to verify with the checklist before deciding; ordered by how often they're
+seen in SK/CZ):
+- **Austria:** district codes of one or two letters (e.g. `W`, `G`, `BN`); fits the
+  "every code counts" model well.
+- **Poland:** county codes of two or three letters; several hundred codes, so the grid and
+  map need to work at that size.
+- **Hungary:** current plates have **no regional code** (since 1990), so it would only have a
+  nationwide collection; probably not worth a collection unless there's another goal.
+- **Germany:** several hundred district codes ("Unterscheidungszeichen"), many
+  re-introduced old codes; the largest data task.
+- **Ukraine:** two-letter region codes (oblasts), plus older systems still on the road.
+
+Open: which countries, in which order (owner to decide), and whether very large lists
+(PL, DE) need search/filter in the grid first.
+
+## Special series â€” phase 10 (planned 2026-11-16, not started)
+
+Goal: collect plates of special series that are not regional and not covered by the
+nationwide types (see "Candidates to add later" above).
+
+Candidates, per country, each to be verified like region data (format, still issued,
+sources):
+- **Diplomatic** (SK `CD-NNNNN`; CZ `NNN CD/XX/XS/HC NN`; older series to be checked).
+- **Military** (SK and CZ military plates are numeric series).
+- **Trade / test / export / temporary** plates (dealer and short-term plates).
+- **Historic vehicle** plates beyond what's already handled (`cz-historic` keeps its region).
+
+Questions to decide before building:
+- **Where do they live?** As extra types in the existing nationwide subcollection (simplest:
+  same picker, same counters, not part of progress) or as a separate "special" section per
+  country.
+- **What counts?** Collect each series type once (like nationwide types), or count
+  individual codes inside a series (e.g. diplomatic codes per embassy, if that's public).
+- **Privacy/sensitivity:** diplomatic and military plates are public on the road, but the
+  app shouldn't present who a plate belongs to beyond the series type.
 
 ## Fixes after v0.7.0 (planned and done 2026-11-16)
 
@@ -407,9 +476,9 @@ All seven done; how they were solved is noted per item.
 4. Red flash after saving a plate: the live query sees the just-saved plate as a duplicate
    before the input is cleared. Clear first; never count the just-saved plate.
 5. Back stack: Home always at the bottom; bottom-bar screens replace each other (never
-   deeper than Home → screen); detail screens (country, edit) sit on top of the screen
+   deeper than Home â†’ screen); detail screens (country, edit) sit on top of the screen
    they came from; the Home tab goes straight back; save/delete on the edit page go back.
-6. Location always ±2000 m (owner's phone: Android): that's Android's "approximate
+6. Location always Â±2000 m (owner's phone: Android): that's Android's "approximate
    location" permission for the browser. Detect a coarse fix and say how to allow precise
    location.
 7. Edit page: address (town, street) via OpenStreetMap Nominatim, looked up once when
@@ -421,14 +490,16 @@ All seven done; how they were solved is noted per item.
 
 | #   | Phase                                                                                     | Status                    |
 | --- | ----------------------------------------------------------------------------------------- | ------------------------- |
-| 1   | Scaffold: SvelteKit, PWA, Dexie, i18n, app shell, icons                                    | ✅ done (v0.1.0)          |
-| 2   | SK + CZ data, plate detection, plate + quick entry, history/edit, date + GPS              | ✅ done (v0.2.0)          |
-| 3   | Deploy: GitHub Pages under `/SPZky/`, CI on `main`, release-tag publishing (see below)     | ✅ done (v0.2.0, live at https://matuspilnan.github.io/SPZky/) |
-| 4   | Nationwide plates: save plates without region per country, plate types + highlighting; country choice ordered by GPS, then last used (see above) | ✅ done (v0.3.0) |
-| 5   | Progress: per-country screens incl. nationwide subcollection, code grids, home overview    | ✅ done (v0.3.0) |
-| 6   | Maps: boundary data → SVG, colored map views                                               | ✅ done (v0.5.0)          |
-| 7   | Sync: Supabase project, schema + RLS, email-code sign-in, sync engine, first-login merge  | built 2026-11-16, not released yet (see "Sync — phase 7") |
-| 8   | Vintage CZ polish                                                                          |                           |
+| 1   | Scaffold: SvelteKit, PWA, Dexie, i18n, app shell, icons                                    | âœ… done (v0.1.0)          |
+| 2   | SK + CZ data, plate detection, plate + quick entry, history/edit, date + GPS              | âœ… done (v0.2.0)          |
+| 3   | Deploy: GitHub Pages under `/SPZky/`, CI on `main`, release-tag publishing (see below)     | âœ… done (v0.2.0, live at https://matuspilnan.github.io/SPZky/) |
+| 4   | Nationwide plates: save plates without region per country, plate types + highlighting; country choice ordered by GPS, then last used (see above) | âœ… done (v0.3.0) |
+| 5   | Progress: per-country screens incl. nationwide subcollection, code grids, home overview    | âœ… done (v0.3.0) |
+| 6   | Maps: boundary data â†’ SVG, colored map views                                               | âœ… done (v0.5.0)          |
+| 7   | Sync: Supabase project, schema + RLS, email-code sign-in, sync engine, first-login merge  | âœ… done (v0.6.0; export/import v0.6.0, Home sync button v0.7.0, fixes + address/map v0.8.0) |
+| 8   | Vintage CZ polish: plate look without the EU band, "About these plates" (see above)      | ✅ done (v0.9.0)          |
+| 9   | More countries, one per release, via the region-data checklist (see "More countries")    | planned                   |
+| 10  | Special series: diplomatic, military, trade/testâ€¦ (see "Special series")                 | planned                   |
 
 Deploy comes before the remaining features so the app can be installed and tested on a phone
 over HTTPS (needed for the service worker, install prompt and GPS) from then on.
@@ -454,10 +525,10 @@ Only release tags publish. Pushes to `main` are tested but not deployed.
 
 ### One-time repository settings
 
-- Settings → Pages → Source: **GitHub Actions**.
-- Settings → Environments → `github-pages` → deployment branches and tags: add a tag rule
+- Settings â†’ Pages â†’ Source: **GitHub Actions**.
+- Settings â†’ Environments â†’ `github-pages` â†’ deployment branches and tags: add a tag rule
   `v*`. By default the environment often only allows the default branch, and a deploy started
-  by a tag then fails with "Tag … is not allowed to deploy to github-pages due to environment
+  by a tag then fails with "Tag â€¦ is not allowed to deploy to github-pages due to environment
   protection rules".
 - **Visibility:** the repo is **public** (since 2026-11-13; verified via the GitHub API:
   name `SPZky`, default branch `main`). That is required for Pages on a free plan, and Actions
@@ -469,7 +540,7 @@ Only release tags publish. Pushes to `main` are tested but not deployed.
 2. Tag `vX.Y.Z` and push the commit and the tag.
 3. `release.yml` tests, deploys and creates the GitHub Release. A failing check blocks the deploy.
 
-Steps 1–2 are `npm run release -- <patch|minor|major>` (runs check + tests first, adds the
+Steps 1â€“2 are `npm run release -- <patch|minor|major>` (runs check + tests first, adds the
 `CHANGELOG.md` entry to the release commit) followed by `git push --follow-tags`. Release
 notes are kept in `CHANGELOG.md` (decided 2026-11-13), and the GitHub Release reuses the
 version's section.

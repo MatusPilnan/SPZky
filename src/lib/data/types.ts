@@ -19,6 +19,11 @@ export interface CollectionDef {
 	flag: string;
 	/** Bonus collections (e.g. pre-2001 plates) are shown separately. */
 	bonus: boolean;
+	/**
+	 * How the plates look: "eu" = blue EU band with the country code; "plain" = no band
+	 * (plates from before the EU-style design, e.g. CZ before 2001: black on white).
+	 */
+	plateStyle: 'eu' | 'plain';
 	regions: Region[];
 	/**
 	 * Plate types collected in the nationwide subcollection (not counted toward

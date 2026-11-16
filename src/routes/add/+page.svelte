@@ -260,6 +260,7 @@
 				bind:value={plate}
 				bind:ref={plateInput}
 				country={bandCountry}
+				plain={selection ? getCollection(selection.collectionId)?.plateStyle === 'plain' : false}
 				oninput={onPlateInput}
 				placeholder={t('add.platePlaceholder')}
 				aria-label={t('add.plate')}

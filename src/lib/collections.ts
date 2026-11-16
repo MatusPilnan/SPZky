@@ -12,11 +12,12 @@ export const collections: CollectionDef[] = [
 		country: 'SK',
 		flag: '🇸🇰',
 		bonus: false,
+		plateStyle: 'eu',
 		regions: skRegions,
 		nationwideTypes: ['sk-2023', 'ev', 'sk-personalized']
 	},
-	{ id: 'cz', country: 'CZ', flag: '🇨🇿', bonus: false, regions: czRegions, nationwideTypes: ['ev', 'cz-personalized'] },
-	{ id: 'cz-vintage', country: 'CZ', flag: '🇨🇿', bonus: true, regions: czVintageRegions, nationwideTypes: [] }
+	{ id: 'cz', country: 'CZ', flag: '🇨🇿', bonus: false, plateStyle: 'eu', regions: czRegions, nationwideTypes: ['ev', 'cz-personalized'] },
+	{ id: 'cz-vintage', country: 'CZ', flag: '🇨🇿', bonus: true, plateStyle: 'plain', regions: czVintageRegions, nationwideTypes: [] }
 ];
 
 const byId = new Map(collections.map((c) => [c.id as string, c]));

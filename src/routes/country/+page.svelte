@@ -12,6 +12,7 @@
 	import RegionGrid from '#lib/components/RegionGrid.svelte';
 	import NationwidePicker from '#lib/components/NationwidePicker.svelte';
 	import SightingList from '#lib/components/SightingList.svelte';
+	import PlateBadge from '#lib/components/PlateBadge.svelte';
 	import TypeChip from '#lib/components/TypeChip.svelte';
 	import RegionMap from '#lib/components/RegionMap.svelte';
 	import { loadMap } from '#lib/geo/maps/index.js';
@@ -102,6 +103,20 @@
 				<span class="pct">{Math.round(progress.ratio * 100)} %</span>
 			</div>
 		</header>
+
+		{#if collection.id === 'cz-vintage'}
+			<!-- What these plates are and why they still count (facts: src/lib/data/cz-vintage.ts). -->
+			<section class="card about" data-testid="about">
+				<div class="about-head">
+					<PlateBadge text="BN 12-34" country="CZ" plain />
+					<h2>{t('about.cz-vintage.title')}</h2>
+				</div>
+				<p>{t('about.cz-vintage.what')}</p>
+				<p>{t('about.cz-vintage.valid')}</p>
+				<p class="muted">{t('about.cz-vintage.rare')}</p>
+				<p class="muted">{t('about.cz-vintage.map')}</p>
+			</section>
+		{/if}
 
 		<section class="card map-card">
 			<RegionMap
@@ -218,6 +233,22 @@
 </dialog>
 
 <style>
+	.about p {
+		margin: 0.5rem 0 0;
+	}
+	.about .muted {
+		font-size: 0.9rem;
+	}
+	.about-head {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+	.about-head h2 {
+		margin: 0;
+		font-size: 1.05rem;
+	}
 	.back {
 		align-self: flex-start;
 		text-decoration: none;

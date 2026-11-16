@@ -32,6 +32,7 @@
 					country={collection?.country ?? '?'}
 					muted={s.plate === null}
 					ev={s.plateType === 'ev'}
+					plain={collection?.plateStyle === 'plain'}
 				/>
 				<div class="meta">
 					{#if !compact}
