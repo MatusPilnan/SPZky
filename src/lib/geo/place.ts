@@ -47,7 +47,7 @@ export function formatPlace(a: NominatimAddress, coarse: boolean): string {
 }
 
 /** Main language per supported country, so place names come in their local form. */
-const LOCAL_LANGUAGE: Record<CountryCode, string> = { SK: 'sk', CZ: 'cs', AT: 'de', PL: 'pl', DE: 'de', UA: 'uk', FR: 'fr', BG: 'bg' };
+const LOCAL_LANGUAGE: Record<CountryCode, string> = { SK: 'sk', CZ: 'cs', AT: 'de', PL: 'pl', DE: 'de', UA: 'uk', FR: 'fr', BG: 'bg', RO: 'ro' };
 
 /** Names in the language of the place (Slovak towns in Slovak, Czech in Czech…). */
 function languageFor(p: GeoPoint): string {

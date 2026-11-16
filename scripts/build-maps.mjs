@@ -136,6 +136,15 @@ const MAPS = [
 		license: 'Public domain'
 	},
 	{
+		// 41 counties and Bucharest.
+		file: 'ro-counties',
+		url: `${RELEASE}/gbOpen/ROU/ADM1/geoBoundaries-ROU-ADM1_simplified.geojson`,
+		simplify: '8%',
+		center: [25.0, 45.9],
+		attribution: 'World Bank via geoBoundaries',
+		license: 'CC BY 4.0'
+	},
+	{
 		// 24 oblasts, Crimea, Kyiv and Sevastopol (official boundaries, 2022). Used by both
 		// Ukrainian collections (the 1995 system used the same regions).
 		file: 'ua-regions',

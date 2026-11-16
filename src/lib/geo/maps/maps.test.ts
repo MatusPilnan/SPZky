@@ -30,6 +30,7 @@ describe('region maps', () => {
 		expect((await loadMap('de'))!.shapes).toHaveLength(401);
 		expect((await loadMap('fr'))!.shapes).toHaveLength(96);
 		expect((await loadMap('bg'))!.shapes).toHaveLength(28);
+		expect((await loadMap('ro'))!.shapes).toHaveLength(42);
 		expect(await loadMap('pl-vintage')).toBeNull();
 	});
 

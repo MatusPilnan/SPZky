@@ -102,6 +102,11 @@ checklist "Region data" in `CLAUDE.md` for every country added later.
   protection, temporary, foreigners', diplomatic. Sources: bg.wikipedia "Регистрационен
   номер на МПС (България)", en.wikipedia "Vehicle registration plates of Bulgaria"
   (checked 2026-11-16).
+- **Romania** (phase 9, 2026-11-16): **42** codes (41 counties + B Bucharest), `CJ 12 ABC`,
+  Bucharest `B 123 ABC`; letter groups never start with I/O, never use Q. No bonus
+  collection: the 1966–1992 plates were valid only until 2000. Left out: army (A), MAI,
+  diplomatic (CD, TC, CO), temporary. Sources: ro.wikipedia "Numerele de înmatriculare auto
+  în România", en.wikipedia "Vehicle registration plates of Romania" (checked 2026-11-16).
 - **Ukraine** (phase 9, 2026-11-16): **107** region codes of the system since 2004
   (`AA 1234 BB`): four per region (2004, 2013, 2021×2), only the 12 Cyrillic letters that
   look Latin; typed Cyrillic is mapped to Latin by `normalizePlate` (also Greek for later).
@@ -205,6 +210,7 @@ raw, loaded on demand and precached for offline use):
 | PL pre-2000 | — (no map) | — | — |
 | FR | 96 metropolitan departments (overseas 971–976 without area) | gbOpen FRA ADM2: IGN, 2022 | Etalab Open Licence 2.0 (attribution) |
 | BG | 28 provinces (oblasti) | gbOpen BGR ADM1: Wikimedia Commons, 2019 | Public domain |
+| RO | 41 counties + Bucharest | gbOpen ROU ADM1: World Bank, 2017 | CC BY 4.0 |
 | UA, UA 1995–2004 | 27 regions (oblasts, Crimea, Kyiv, Sevastopol) | gbHumanitarian UKR ADM1: State Enterprise "Kartographia" via HDX, 2022 (Kyiv city renamed by location: both are "Kyivska") | CC BY 3.0 IGO |
 | DE | 401 districts and district-free cities (Kreise) | gbOpen DEU ADM3: BKG, 2021 (dissolved by name: coastal districts come in several parts) | dl-de/by-2-0 (attribution) |
 

@@ -21,6 +21,7 @@ const loaders: Partial<Record<CollectionId, () => Promise<{ map: RegionMapData }
 	de: () => import('./de-districts'),
 	fr: () => import('./fr-departments'),
 	bg: () => import('./bg-provinces'),
+	ro: () => import('./ro-counties'),
 	ua: () => import('./ua-regions'),
 	'ua-vintage': () => import('./ua-regions')
 };

@@ -22,6 +22,7 @@ describe('countryAt', () => {
 		['Lviv', 49.8397, 24.0297, 'UA'],
 		['Paris', 48.8566, 2.3522, 'FR'],
 		['Sofia', 42.6977, 23.3219, 'BG'],
+		['Cluj-Napoca', 46.7712, 23.6236, 'RO'],
 		['Corte (Corsica)', 42.3061, 9.1497, 'FR'],
 		['Kyiv', 50.45, 30.523, 'UA'],
 		['Budapest (not supported)', 47.4979, 19.0402, null],

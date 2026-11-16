@@ -26,10 +26,11 @@ export type CollectionId =
 	| 'ua'
 	| 'ua-vintage'
 	| 'fr'
-	| 'bg';
+	| 'bg'
+	| 'ro';
 
 /** ISO 3166-1 alpha-2 codes of the supported countries. */
-export type CountryCode = 'SK' | 'CZ' | 'AT' | 'PL' | 'DE' | 'UA' | 'FR' | 'BG';
+export type CountryCode = 'SK' | 'CZ' | 'AT' | 'PL' | 'DE' | 'UA' | 'FR' | 'BG' | 'RO';
 
 /** Collections that have a nationwide subcollection (plates without a region). */
 export type NationwideCollectionId = 'sk' | 'cz' | 'bg';

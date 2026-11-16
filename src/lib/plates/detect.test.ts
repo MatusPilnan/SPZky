@@ -166,6 +166,25 @@ describe('detectPlate: Bulgaria', () => {
 	});
 });
 
+describe('detectPlate: Romania', () => {
+	const ro = (raw: string) =>
+		detectPlate(raw)
+			.filter((d) => d.collectionId === 'ro')
+			.map((d) => (d as { regionCode: string }).regionCode);
+
+	it('county + 2 digits + 3 letters; Bucharest with up to 3 digits', () => {
+		expect(ro('CJ 12 ABC')).toEqual(['CJ']);
+		expect(ro('B 123 XYZ')).toEqual(['B']);
+		expect(ro('B 12 XYZ')).toEqual(['B']);
+		expect(ro('CJ 123 ABC')).toEqual([]); // 3 digits only in Bucharest
+	});
+
+	it('letter groups never start with I or O and never use Q', () => {
+		expect(ro('CJ 12 IAB')).toEqual([]);
+		expect(ro('CJ 12 AQB')).toEqual([]);
+	});
+});
+
 describe('detectPlate: Poland', () => {
 	const pl = (raw: string) =>
 		detectPlate(raw)
