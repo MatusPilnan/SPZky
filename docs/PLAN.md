@@ -107,6 +107,15 @@ checklist "Region data" in `CLAUDE.md` for every country added later.
   collection: the 1966–1992 plates were valid only until 2000. Left out: army (A), MAI,
   diplomatic (CD, TC, CO), temporary. Sources: ro.wikipedia "Numerele de înmatriculare auto
   în România", en.wikipedia "Vehicle registration plates of Romania" (checked 2026-11-16).
+- **Slovenia** (phase 9, 2026-11-16): **11** registration areas (CE, GO, KK, KP, KR, LJ, MB,
+  MS, NM, PO, SG). The sources don't give the serial formats, so detection is loose (code +
+  3–6 letters/digits with a digit, medium confidence); KK/PO also exist in Slovakia, GPS
+  decides. Older Slovenian designs use the same codes (no bonus); the sources don't say
+  Yugoslav-era plates are valid. **No map**: the areas group 58 administrative units, not
+  available as boundary data (only 2 macro-regions, or 212 municipalities with garbled
+  names under ODbL); revisit if a usable dataset turns up. Sources: sl.wikipedia
+  "Registrske tablice Slovenije", en.wikipedia "Vehicle registration plates of Slovenia"
+  (checked 2026-11-16).
 - **Ukraine** (phase 9, 2026-11-16): **107** region codes of the system since 2004
   (`AA 1234 BB`): four per region (2004, 2013, 2021×2), only the 12 Cyrillic letters that
   look Latin; typed Cyrillic is mapped to Latin by `normalizePlate` (also Greek for later).
@@ -208,6 +217,7 @@ raw, loaded on demand and precached for offline use):
 
 | PL | 380 counties and city counties (powiaty) | gbHumanitarian POL ADM2: Państwowy Rejestr Granic via HDX, 2022 | CC BY 3.0 IGO |
 | PL pre-2000 | — (no map) | — | — |
+| SI | — (no map: registration areas aren't boundary data) | — | — |
 | FR | 96 metropolitan departments (overseas 971–976 without area) | gbOpen FRA ADM2: IGN, 2022 | Etalab Open Licence 2.0 (attribution) |
 | BG | 28 provinces (oblasti) | gbOpen BGR ADM1: Wikimedia Commons, 2019 | Public domain |
 | RO | 41 counties + Bucharest | gbOpen ROU ADM1: World Bank, 2017 | CC BY 4.0 |

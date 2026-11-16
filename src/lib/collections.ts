@@ -7,6 +7,7 @@ import { frRegions } from './data/fr';
 import { plRegions } from './data/pl';
 import { plVintageRegions } from './data/pl-vintage';
 import { roRegions } from './data/ro';
+import { siRegions } from './data/si';
 import { uaRegions, uaVintageRegions } from './data/ua';
 import { skRegions } from './data/sk';
 import type { CollectionDef, CollectionId, CountryCode, NationwideCollectionId, Region } from './data/types';
@@ -60,6 +61,7 @@ export const collections: CollectionDef[] = [
 	{ id: 'fr', country: 'FR', bandCode: 'F', flag: '🇫🇷', bonus: false, plateStyle: 'eu', regions: frRegions, nationwideTypes: [] },
 	{ id: 'bg', country: 'BG', bandCode: 'BG', flag: '🇧🇬', bonus: false, plateStyle: 'eu', regions: bgRegions, nationwideTypes: ['ev'] },
 	{ id: 'ro', country: 'RO', bandCode: 'RO', flag: '🇷🇴', bonus: false, plateStyle: 'eu', regions: roRegions, nationwideTypes: [] },
+	{ id: 'si', country: 'SI', bandCode: 'SLO', flag: '🇸🇮', bonus: false, plateStyle: 'eu', regions: siRegions, nationwideTypes: [] },
 	{ id: 'ua', country: 'UA', bandCode: 'UA', flag: '🇺🇦', bonus: false, plateStyle: 'eu', regions: uaRegions, nationwideTypes: [] },
 	{
 		id: 'ua-vintage',

@@ -43,7 +43,9 @@ export type RegionFormat =
 	/** BG: province code + 4 digits + series (CA 1234 AB). */
 	| 'bg-standard'
 	/** RO since 1992: county + 2 digits + 3 letters (CJ 12 ABC; Bucharest B 123 ABC). */
-	| 'ro-standard';
+	| 'ro-standard'
+	/** SI: area code + 3–6 letters/digits (exact serial formats not in the sources). */
+	| 'si-standard';
 
 /** Recognised plate formats without a region; they go to the country's nationwide subcollection. */
 export type NationwideFormat =
@@ -282,6 +284,17 @@ function detectRomanian(n: string): Detection[] {
 	return d ? [d] : [];
 }
 
+/**
+ * Slovenia: area code + 3–6 letters/digits with at least one digit. Deliberately loose
+ * (the sources don't give the serial formats), hence medium confidence.
+ */
+function detectSlovenian(n: string): Detection[] {
+	const m = /^([A-Z]{2})(?=[A-Z0-9]*\d)([A-Z0-9]{3,6})$/.exec(n);
+	if (!m) return [];
+	const d = region('si', m[1], 'si-standard', 'medium');
+	return d ? [d] : [];
+}
+
 export function detectionKey(d: Detection): string {
 	return d.type === 'region' ? `${d.collectionId}:${d.regionCode}` : `${d.collectionId}:*${d.format}`;
 }
@@ -297,7 +310,7 @@ export function detectPlate(raw: string): Detection[] {
 	if (n.length < 5) return [];
 
 	const seen = new Set<string>();
-	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw), ...detectUkrainian(n), ...detectFrench(n), ...detectBulgarian(n), ...detectRomanian(n)]
+	return [...detectSlovak(n), ...detectCzech(n), ...detectAustrian(n, raw), ...detectPolish(n), ...detectGerman(n, raw), ...detectUkrainian(n), ...detectFrench(n), ...detectBulgarian(n), ...detectRomanian(n), ...detectSlovenian(n)]
 		.filter((d) => {
 			const key = detectionKey(d);
 			if (seen.has(key)) return false;

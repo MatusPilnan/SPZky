@@ -6,7 +6,7 @@ describe('region maps', () => {
 	const mapped = collections.filter((c) => hasMap(c.id));
 
 	it('only historic collections have no map', () => {
-		expect(collections.filter((c) => !hasMap(c.id)).map((c) => c.id)).toEqual(['pl-vintage']);
+		expect(collections.filter((c) => !hasMap(c.id)).map((c) => c.id).sort()).toEqual(['pl-vintage', 'si']);
 	});
 
 	it.each(mapped.map((c) => [c.id, c] as const))('%s: every area has codes and every code an area', async (_, c) => {

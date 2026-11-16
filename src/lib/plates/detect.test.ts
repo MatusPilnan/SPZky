@@ -185,6 +185,20 @@ describe('detectPlate: Romania', () => {
 	});
 });
 
+describe('detectPlate: Slovenia', () => {
+	const si = (raw: string) =>
+		detectPlate(raw)
+			.filter((d) => d.collectionId === 'si')
+			.map((d) => (d as { regionCode: string }).regionCode);
+
+	it('area code + letters/digits with at least one digit', () => {
+		expect(si('LJ 12-34A')).toEqual(['LJ']);
+		expect(si('MB A1-234')).toEqual(['MB']);
+		expect(si('LJ ABCD')).toEqual([]); // no digit
+		expect(si('XX 12-34A')).toEqual([]); // not an area
+	});
+});
+
 describe('detectPlate: Poland', () => {
 	const pl = (raw: string) =>
 		detectPlate(raw)
