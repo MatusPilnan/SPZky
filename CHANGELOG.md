@@ -3,6 +3,12 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.8.0](https://github.com/MatusPilnan/SPZky/compare/v0.7.0...v0.8.0) - 2026-11-16
+
+### Features
+
+- address and map on the edit page, simpler back stack, update dialog ([aac93df](https://github.com/MatusPilnan/SPZky/commit/aac93dfa0d4dd061f33a249fa797e4d338ec11f9))
+
 ## [0.7.0](https://github.com/MatusPilnan/SPZky/compare/v0.6.0...v0.7.0) - 2026-11-16
 
 ### Features
