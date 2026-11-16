@@ -3,6 +3,12 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.7.0](https://github.com/MatusPilnan/SPZky/compare/v0.6.0...v0.7.0) - 2026-11-16
+
+### Features
+
+- **sync:** sync button on Home and fetch changes when opening History ([89452e1](https://github.com/MatusPilnan/SPZky/commit/89452e1a9085b12823796c79e79fbaa991845961))
+
 ## [0.6.0](https://github.com/MatusPilnan/SPZky/compare/v0.5.0...v0.6.0) - 2026-11-16
 
 ### Features
