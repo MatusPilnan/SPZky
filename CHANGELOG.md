@@ -3,6 +3,19 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.6.0](https://github.com/MatusPilnan/SPZky/compare/v0.5.0...v0.6.0) - 2026-11-16
+
+### Features
+
+- **data:** export and import plates as a JSON file ([0655897](https://github.com/MatusPilnan/SPZky/commit/0655897a6f71076e3fe09e9e4bd5465f1e7dc88f))
+- **sync:** sign in with an email code and sync plates between devices ([dbeaa19](https://github.com/MatusPilnan/SPZky/commit/dbeaa1930b13dbf5a56f7efecaaa8922d1e62ba5))
+
+### Other changes
+
+- **plan:** sign-out choice and sign-in conflict check for sync ([09bd942](https://github.com/MatusPilnan/SPZky/commit/09bd942fe3ccea66630bcdb322b7b99863afc0b1))
+- **plan:** plan phase 7 sync with Supabase and email-code sign-in ([e7d8169](https://github.com/MatusPilnan/SPZky/commit/e7d8169c10380013cb4c4cb25b7cce905552fe92))
+- **plan:** mark phase 6 as released in v0.5.0 ([aea7a3e](https://github.com/MatusPilnan/SPZky/commit/aea7a3ea7c8d7dda2ec4e71237b4c5bbb768b702))
+
 ## [0.5.0](https://github.com/MatusPilnan/SPZky/compare/v0.4.0...v0.5.0) - 2026-11-14
 
 ### Features
