@@ -57,6 +57,7 @@ let server = startServer();
 const results = [];
 const check = (name, ok, detail = '') => results.push({ ok, line: `${ok ? 'PASS' : 'FAIL'} ${name}${detail ? ' — ' + detail : ''}` });
 const errors = [];
+const failedRequests = [];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function waitForServer() {
@@ -122,10 +123,15 @@ try {
 	await page.setViewport({ width: 400, height: 860, deviceScaleFactor: 1 });
 	await page.setGeolocation({ latitude: 48.1486, longitude: 17.1077, accuracy: 12 });
 	page.on('pageerror', (e) => errors.push('pageerror: ' + (e.stack || e.message || String(e))));
+	// Failed requests with the last check before them, printed with any errors (diagnosis).
+	page.on('requestfailed', (r) =>
+		failedRequests.push(`${r.failure()?.errorText} ${r.method()} ${r.url()} (after: ${results.at(-1)?.line.slice(0, 60) ?? 'start'})`)
+	);
 	page.on('console', (m) => {
 		// Map tiles failing while offline are expected (the app then shows the offline pin).
 		if (m.location()?.url?.startsWith('https://tile.openstreetmap.org/')) return;
-		if (m.type() === 'error') errors.push('console: ' + m.text());
+		// With the URL, so a failed request in CI shows what was requested.
+		if (m.type() === 'error') errors.push(`console: ${m.text()}${m.location()?.url ? ` (${m.location().url})` : ''}`);
 	});
 	// Start in English with location saving on; later steps may change these.
 	await page.evaluateOnNewDocument(() => {
@@ -911,4 +917,5 @@ try {
 
 for (const r of results) console.log(r.line);
 console.log(errors.length ? 'ERRORS:\n' + errors.join('\n') : 'No page/console errors');
+if (errors.length && failedRequests.length) console.log('FAILED REQUESTS:\n' + failedRequests.join('\n'));
 process.exit(results.every((r) => r.ok) && errors.length === 0 ? 0 : 1);
