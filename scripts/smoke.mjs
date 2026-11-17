@@ -128,8 +128,12 @@ try {
 		failedRequests.push(`${r.failure()?.errorText} ${r.method()} ${r.url()} (after: ${results.at(-1)?.line.slice(0, 60) ?? 'start'})`)
 	);
 	page.on('console', (m) => {
-		// Map tiles failing while offline are expected (the app then shows the offline pin).
-		if (m.location()?.url?.startsWith('https://tile.openstreetmap.org/')) return;
+		// OpenStreetMap is answered by this test, which fails its requests on purpose while
+		// offline: map tiles (the app then shows the offline pin) and address lookups (a
+		// background lookup can be under way when the test switches offline; the app retries
+		// later). Those failures are expected.
+		const url = m.location()?.url ?? '';
+		if (url.startsWith('https://tile.openstreetmap.org/') || url.startsWith('https://nominatim.openstreetmap.org/')) return;
 		// With the URL, so a failed request in CI shows what was requested.
 		if (m.type() === 'error') errors.push(`console: ${m.text()}${m.location()?.url ? ` (${m.location().url})` : ''}`);
 	});
