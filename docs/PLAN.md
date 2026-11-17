@@ -113,7 +113,9 @@ checklist "Region data" in `CLAUDE.md` for every country added later.
   Codes contain Č Ć Š Ž Đ (BČ Bečej ≠ BĆ Bogatić), so `normalizePlate` keeps them;
   `foldPlate` lets a code typed without diacritics match at medium confidence. Decided
   2026-11-16: the 7 Kosovo codes (ĐA, GL, KM, PE, PR, PZ, UR) are included and **marked
-  rare** (`Region.rare`, ✦ in the grid; since 2024 cars in Kosovo need RKS plates); Kosovo
+  rare** (`Region.rare`, ✦ in the grid; since 2024 cars in Kosovo need RKS plates. Since
+  2026-11-17 `rare` is a reason key, explained in the code's detail sheet by the message
+  `rare.<reason>`; a test requires a text in both languages for every rare code); Kosovo
   gets its own collection. KU (Kula, since 2025) and SO both count. No bonus collection:
   pre-2011 plates were valid only until the end of 2011. Left out: diplomatic, police,
   army, temporary. Sources: sr.wikipedia "Регистарске ознаке у Србији", en.wikipedia

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { collections } from '../collections';
 import { czNumericToLetter } from './cz';
+import { en, sk } from '../i18n/messages';
 
 describe('collection data', () => {
 	it.each(collections.map((c) => [c.id, c] as const))('%s has unique, well-formed codes', (_, c) => {
@@ -10,6 +11,24 @@ describe('collection data', () => {
 			// Letters (incl. German umlauts, Serbian Č Ć Š Ž Đ) or French department numbers ("75", "2A", "974").
 			expect(r.code).toMatch(/^([A-ZÄÖÜČĆŠŽĐ]{1,3}|\d{2}|2[AB]|97\d)$/); // \d{2} also Kosovo
 			expect(r.name.trim()).not.toBe('');
+		}
+	});
+
+	it('explains every rare code in both languages', () => {
+		const rare = collections.flatMap((c) => c.regions.filter((r) => r.rare).map((r) => `${c.id}:${r.code}:${r.rare}`));
+		expect(rare.sort()).toEqual(
+			[
+				'cz-vintage:BI:trucks-only',
+				'cz-vintage:GT:gottwaldov',
+				'cz-vintage:GV:gottwaldov',
+				'pl:NOG:olecko-goldap',
+				...['ĐA', 'GL', 'KM', 'PE', 'PR', 'PZ', 'UR'].map((c) => `rs:${c}:kosovo`)
+			].sort()
+		);
+		for (const entry of rare) {
+			const reason = entry.split(':')[2] as `rare.${string}`;
+			expect((en as Record<string, unknown>)[`rare.${reason}`]).toBeTruthy();
+			expect((sk as Record<string, unknown>)[`rare.${reason}`]).toBeTruthy();
 		}
 	});
 

@@ -709,6 +709,14 @@ try {
 		`${about.em.toFixed(2)} vs ${badgeEm.toFixed(2)} em`
 	);
 	await shot('11c-vintage-about');
+	// A rare code (✦) explains why in its detail sheet.
+	await page.evaluate(() => [...document.querySelectorAll('.grid button')].find((b) => b.querySelector('.code')?.textContent === 'GT').click());
+	const rareNote = await page
+		.waitForSelector('dialog[open] [data-testid=rare-note]', { timeout: 3000 })
+		.then((e) => e.evaluate((n) => n.innerText.replace(/\s+/g, ' ')), () => '');
+	check('rare code explains why in its detail sheet', rareNote.includes('Zlín') && rareNote.includes('ZL'), rareNote);
+	await shot('11d-rare-note');
+	await page.keyboard.press('Escape');
 
 	// Back stack: Home at the bottom, bottom-bar screens replace each other, detail screens
 	// on top of where they were opened, Home tab jumps back. (System back = history.back().)

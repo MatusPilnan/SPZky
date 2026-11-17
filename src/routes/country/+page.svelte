@@ -233,6 +233,13 @@
 			</div>
 
 			{#if detail.kind === 'region'}
+				{@const rare = getRegion(collection.id, detail.code)?.rare}
+				{#if rare}
+					<p class="rare-note" data-testid="rare-note">
+						<span aria-hidden="true">✦</span>
+						<span><strong>{t('region.rareNote')}</strong> {t(`rare.${rare}`)}</span>
+					</p>
+				{/if}
 				{#if detailStats}
 					<p class="muted">
 						{t('region.seen', { count: detailStats.count })} ·
@@ -434,6 +441,19 @@
 	}
 	.sheet {
 		padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+	}
+	/* Why a code is rare: the grid's ✦ marker, explained. */
+	.rare-note {
+		display: flex;
+		gap: 0.5rem;
+		margin: 0;
+		padding: 0.5rem 0.75rem;
+		border-radius: calc(var(--radius) / 2);
+		background: color-mix(in srgb, var(--special) 12%, transparent);
+		font-size: 0.9rem;
+	}
+	.rare-note > span:first-child {
+		color: var(--special);
 	}
 	.sheet-head {
 		display: flex;

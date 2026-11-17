@@ -12,9 +12,15 @@ export interface Region {
 	area?: string;
 	/** Several map areas, when a code belongs to more than one (e.g. German city + district). */
 	areas?: string[];
-	/** Valid but hardly seen any more (shown with a marker in the grid). */
-	rare?: boolean;
+	/**
+	 * Valid but hardly seen any more: why (shown with a marker in the grid, explained in the
+	 * code's detail sheet by the message `rare.<reason>`).
+	 */
+	rare?: RareReason;
 }
+
+/** Why a code is rare; each has a `rare.<reason>` message (sk + en). */
+export type RareReason = 'gottwaldov' | 'trucks-only' | 'olecko-goldap' | 'kosovo';
 
 export type CollectionId =
 	| 'sk'

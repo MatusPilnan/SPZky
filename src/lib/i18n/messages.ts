@@ -69,6 +69,13 @@ export const en = {
 
 	'region.notSeen': 'Not spotted yet.',
 	'region.rare': 'rare',
+	'region.rareNote': 'Rare.',
+	'rare.gottwaldov': 'Gottwaldov was renamed Zlín in 1990, and new plates there got ZL. Plates this old are very rarely seen.',
+	'rare.trucks-only': 'This code was used only on trucks, so it is very rarely seen.',
+	'rare.olecko-goldap':
+		'The Olecko-Gołdap county was split in 2002 into Olecko (NOE) and Gołdap (NGO). Its plates are still valid but hardly seen.',
+	'rare.kosovo':
+		'A Serbian code of a town in Kosovo. Since 2024, Kosovo accepts only its own RKS plates for cars registered there, so these are rarely seen.',
 	'region.seen': { one: 'Seen once', other: 'Seen {count} times' },
 	'region.firstSeen': 'First: {date}',
 	'region.lastSeen': 'Last: {date}',
@@ -394,6 +401,13 @@ export const sk: Messages = {
 
 	'region.notSeen': 'Zatiaľ nevidené.',
 	'region.rare': 'vzácna',
+	'region.rareNote': 'Vzácna.',
+	'rare.gottwaldov': 'Gottwaldov bol v roku 1990 premenovaný na Zlín a nové ŠPZ tam dostávali ZL. Takto staré ŠPZ sa vidia veľmi zriedka.',
+	'rare.trucks-only': 'Tento kód sa používal len na nákladných autách, preto sa vidí veľmi zriedka.',
+	'rare.olecko-goldap':
+		'Okres Olecko-Gołdap sa v roku 2002 rozdelil na Olecko (NOE) a Gołdap (NGO). Jeho ŠPZ stále platia, ale takmer sa nevidia.',
+	'rare.kosovo':
+		'Srbský kód mesta v Kosove. Od roku 2024 Kosovo pre autá registrované u seba uznáva len vlastné ŠPZ RKS, preto sa tieto vidia zriedka.',
 	'region.seen': { one: 'Videné raz', few: 'Videné {count}-krát', other: 'Videné {count}-krát' },
 	'region.firstSeen': 'Prvýkrát: {date}',
 	'region.lastSeen': 'Naposledy: {date}',

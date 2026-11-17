@@ -25,7 +25,7 @@ import type { Region } from './types';
 // Kosovo codes have no map area (not in the data).
 // Plausibility: 81 areas (74 + 7 Kosovo).
 export const rsRegions: Region[] = rsTable.map(({ code, name, areas, rare }) =>
-	rare ? { code, name, areas, rare } : { code, name, areas }
+	rare ? { code, name, areas, rare: 'kosovo' } : { code, name, areas }
 );
 
 /** Kosovo codes: no area on the map. */
