@@ -3,6 +3,12 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.13.1](https://github.com/MatusPilnan/SPZky/compare/v0.13.0...v0.13.1) - 2026-11-17
+
+### Bug fixes
+
+- shrink tile names to fit narrow screens and wide fonts ([ec882c5](https://github.com/MatusPilnan/SPZky/commit/ec882c552d9894cd85c975e41f460131302dcc62))
+
 ## [0.13.0](https://github.com/MatusPilnan/SPZky/compare/v0.12.0...v0.13.0) - 2026-11-16
 
 ### Features
