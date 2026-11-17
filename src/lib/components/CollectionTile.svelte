@@ -57,6 +57,7 @@
 		padding: 0.35rem 0.35rem 0.4rem;
 		box-sizing: border-box;
 		overflow: hidden;
+		container-type: inline-size;
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
 		background: var(--surface);
@@ -67,9 +68,13 @@
 	.tile:focus-visible {
 		border-color: var(--accent);
 	}
+	/*
+	 * Shrinks with the tile so the longest names ("Switzerland", "Švajčiarsko") fit on
+	 * narrow phones and with wide fonts (Linux's DejaVu Sans); "…" only as a last resort.
+	 */
 	.name {
 		overflow: hidden;
-		font-size: 0.72rem;
+		font-size: min(0.72rem, 14cqi);
 		font-weight: 600;
 		line-height: 1.2;
 		text-align: center;
