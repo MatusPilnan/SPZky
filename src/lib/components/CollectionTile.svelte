@@ -69,12 +69,12 @@
 		border-color: var(--accent);
 	}
 	/*
-	 * Shrinks with the tile so the longest names ("Switzerland", "Švajčiarsko") fit on
+	 * Shrinks with the tile so the longest names ("Griechenland", "Švajčiarsko") fit on
 	 * narrow phones and with wide fonts (Linux's DejaVu Sans); "…" only as a last resort.
 	 */
 	.name {
 		overflow: hidden;
-		font-size: min(0.72rem, 14cqi);
+		font-size: min(0.72rem, 13cqi);
 		font-weight: 600;
 		line-height: 1.2;
 		text-align: center;
