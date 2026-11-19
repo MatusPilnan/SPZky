@@ -131,7 +131,7 @@ like normal codes. For every country added or changed in `src/lib/data/`:
     `src/lib/collections.ts` (`bandCode` = international code in the EU band, e.g. "A",
     `plateStyle`, flag); detection in `src/lib/plates/detect.ts` with tests for its formats
     **and its overlaps with other countries**; `collection.<id>` and `format.<format>` texts
-    (sk + en); the country in `scripts/countries.mjs` (ISO numeric code), then run
+    (sk + en + de); the country in `scripts/countries.mjs` (ISO numeric code), then run
     `build-borders.mjs` (+ a `countryAt` test) and `build-continents.mjs` (Home map);
     `LOCAL_LANGUAGE` in `src/lib/geo/place.ts`; facts and map licence in docs/PLAN.md and
     README.md. One commit per country.
@@ -194,7 +194,8 @@ src/lib/backup.ts     JSON export/import (format 1: parse + validate, preview, a
 src/lib/files.ts      saveTextFile: share sheet in installed apps, download otherwise
 src/lib/changelog.ts  CHANGELOG.md → changelog.json (built by vite.config.ts, not precached),
                       "What's new" in the update dialog
-src/lib/i18n/         typed sk/en messages, plural-aware formatter, reactive locale
+src/lib/i18n/         typed sk/en messages (messages.ts) + de (messages.de.ts, same keys), plural-aware
+                      formatter, reactive locale with "System default" (locale.ts: systemLocale)
 src/lib/*.svelte.ts   prefs (localStorage), location tracker, toasts
 src/lib/components/   PlateInput, PlateBadge, RegionGrid (filterable), CollectionTile (Home donut tile),
                       ContinentMaps (Home carousel of continent maps), NationwidePicker, TypeChip,

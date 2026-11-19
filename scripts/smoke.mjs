@@ -374,17 +374,19 @@ try {
 	await page.select('[data-testid=language]', 'system');
 	const systemLang = await page.evaluate(() => {
 		const tags = navigator.languages.length ? navigator.languages : [navigator.language];
-		const first = tags.map((t) => t.toLowerCase().split(/[-_]/)[0]).find((l) => ['sk', 'cs', 'en'].includes(l));
+		const first = tags.map((t) => t.toLowerCase().split(/[-_]/)[0]).find((l) => ['sk', 'cs', 'en', 'de'].includes(l));
 		return {
 			saved: localStorage.getItem('spz-ky.locale'),
 			lang: document.documentElement.lang,
-			expected: first === 'sk' || first === 'cs' ? 'sk' : 'en',
+			expected: first === 'cs' ? 'sk' : (first ?? 'en'),
 			label: document.querySelector('[data-testid=language] option[value=system]')?.textContent
 		};
 	});
 	check(
 		'language: system default follows the browser, nothing saved',
-		systemLang.saved === null && systemLang.lang === systemLang.expected && !!systemLang.label?.includes(systemLang.expected === 'sk' ? 'Slovenčina' : 'English'),
+		systemLang.saved === null &&
+			systemLang.lang === systemLang.expected &&
+			!!systemLang.label?.includes({ sk: 'Slovenčina', en: 'English', de: 'Deutsch' }[systemLang.expected]),
 		JSON.stringify(systemLang)
 	);
 	await page.select('[data-testid=language]', 'en');
@@ -637,6 +639,29 @@ try {
 		.then(() => true, () => false);
 	check('a tap outside the details closes them', closedOutside);
 	await shot('11-country');
+
+	// German UI: texts, plural, and the long German words must fit tiles and buttons.
+	await page.evaluate(() => localStorage.setItem('spz-ky.locale', 'de'));
+	await page.goto(`${APP}/`, { waitUntil: 'networkidle0' });
+	t = await page.evaluate(() => document.body.innerText);
+	const deTiles = await page.$$eval('[data-testid=collection-tile] .name', (els) =>
+		els.filter((e) => e.scrollWidth > e.clientWidth).map((e) => e.textContent)
+	);
+	check(
+		'home in German, tile names fit',
+		t.includes('8 Kennzeichen gesichtet') && t.includes('Länder') && t.includes('Österreich') && deTiles.length === 0,
+		deTiles.join(', ') || t.split('\n').slice(0, 6).join(' | ')
+	);
+	await shot('08-home-de');
+	await page.goto(`${APP}/country?id=sk`, { waitUntil: 'networkidle0' });
+	await page.waitForSelector('.nationwide .type');
+	await page.setViewport({ width: 360, height: 860, deviceScaleFactor: 1 });
+	await sleep(150);
+	const deOverflow = await page.$$eval('.nationwide .type', (els) =>
+		els.filter((b) => b.scrollWidth > b.clientWidth + 1).map((b) => b.innerText.replace(/\s+/g, ' '))
+	);
+	check('German nationwide tiles fit at 360 px ("Wunschkennzeichen")', deOverflow.length === 0, deOverflow.join(', '));
+	await page.setViewport({ width: 400, height: 860, deviceScaleFactor: 1 });
 
 	// Slovak UI
 	await page.evaluate(() => localStorage.setItem('spz-ky.locale', 'sk'));

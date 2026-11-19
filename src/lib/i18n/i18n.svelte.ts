@@ -1,12 +1,13 @@
 import { formatMessage, type Params } from './format';
 import { isLocale, locales, systemLocale, type Locale, type LocalePreference } from './locale';
 import { en, sk, type MessageKey, type Messages } from './messages';
+import { de } from './messages.de';
 
 export { locales, type Locale, type LocalePreference };
 
-export const localeNames: Record<Locale, string> = { sk: 'Slovenčina', en: 'English' };
+export const localeNames: Record<Locale, string> = { sk: 'Slovenčina', en: 'English', de: 'Deutsch' };
 
-const dictionaries: Record<Locale, Messages> = { sk, en };
+const dictionaries: Record<Locale, Messages> = { sk, en, de };
 /** The saved choice: "sk" / "en", or nothing (= follow the device). */
 const STORAGE_KEY = 'spz-ky.locale';
 
