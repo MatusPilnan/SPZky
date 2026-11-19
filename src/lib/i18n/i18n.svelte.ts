@@ -1,52 +1,72 @@
 import { formatMessage, type Params } from './format';
+import { isLocale, locales, systemLocale, type Locale, type LocalePreference } from './locale';
 import { en, sk, type MessageKey, type Messages } from './messages';
 
-export const locales = ['sk', 'en'] as const;
-export type Locale = (typeof locales)[number];
+export { locales, type Locale, type LocalePreference };
 
 export const localeNames: Record<Locale, string> = { sk: 'Slovenčina', en: 'English' };
 
 const dictionaries: Record<Locale, Messages> = { sk, en };
+/** The saved choice: "sk" / "en", or nothing (= follow the device). */
 const STORAGE_KEY = 'spz-ky.locale';
 
-function isLocale(value: unknown): value is Locale {
-	return locales.includes(value as Locale);
+function deviceLocale(): Locale {
+	return systemLocale(navigator.languages?.length ? navigator.languages : [navigator.language]);
 }
 
-function detectLocale(): Locale {
+function savedPreference(): LocalePreference {
 	try {
 		const saved = localStorage.getItem(STORAGE_KEY);
 		if (isLocale(saved)) return saved;
 	} catch {
 		// storage unavailable (private mode etc.)
 	}
-	for (const tag of navigator.languages ?? [navigator.language]) {
-		const lang = tag.toLowerCase().slice(0, 2);
-		if (lang === 'sk' || lang === 'cs') return 'sk';
-		if (lang === 'en') return 'en';
-	}
-	return 'sk';
+	return 'system';
 }
 
+let preference = $state<LocalePreference>('system');
+/** What "system" means here; updated when the device's language changes. */
+let device = $state<Locale>('sk');
 let current = $state<Locale>('sk');
 
+function apply(locale: Locale) {
+	current = locale;
+	document.documentElement.lang = locale;
+}
+
 export const i18n = {
+	/** The language in use. */
 	get locale(): Locale {
 		return current;
 	},
-	set locale(value: Locale) {
-		current = value;
-		document.documentElement.lang = value;
+	/** The choice in Settings: a language, or "system" (follow the device's languages). */
+	get preference(): LocalePreference {
+		return preference;
+	},
+	set preference(value: LocalePreference) {
+		preference = value;
+		apply(value === 'system' ? device : value);
 		try {
-			localStorage.setItem(STORAGE_KEY, value);
+			if (value === 'system') localStorage.removeItem(STORAGE_KEY);
+			else localStorage.setItem(STORAGE_KEY, value);
 		} catch {
 			// ignore
 		}
 	},
+	/** The language "system" stands for on this device. */
+	get deviceLocale(): Locale {
+		return device;
+	},
 	/** Call once on app start (client only). */
 	init() {
-		current = detectLocale();
-		document.documentElement.lang = current;
+		device = deviceLocale();
+		preference = savedPreference();
+		apply(preference === 'system' ? device : preference);
+		// Following the device: switch when its language changes.
+		addEventListener('languagechange', () => {
+			device = deviceLocale();
+			if (preference === 'system') apply(device);
+		});
 	}
 };
 

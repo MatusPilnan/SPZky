@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { formatBytes, i18n, localeNames, locales, t, type Locale } from '#lib/i18n/i18n.svelte.js';
+	import { formatBytes, i18n, localeNames, locales, t, type LocalePreference } from '#lib/i18n/i18n.svelte.js';
 	import { isStoragePersisted, requestPersistentStorage, storageEstimate } from '#lib/storage.js';
 	import { prefs } from '#lib/prefs.svelte.js';
 	import Switch from '#lib/components/Switch.svelte';
@@ -71,7 +71,12 @@
 	<section class="card stack">
 		<label class="field">
 			{t('settings.language')}
-			<select value={i18n.locale} onchange={(e) => (i18n.locale = e.currentTarget.value as Locale)}>
+			<select
+				value={i18n.preference}
+				onchange={(e) => (i18n.preference = e.currentTarget.value as LocalePreference)}
+				data-testid="language"
+			>
+				<option value="system">{t('settings.languageSystem', { language: localeNames[i18n.deviceLocale] })}</option>
 				{#each locales as l (l)}
 					<option value={l}>{localeNames[l]}</option>
 				{/each}

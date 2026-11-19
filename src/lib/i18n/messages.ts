@@ -186,6 +186,7 @@ export const en = {
 
 	'settings.title': 'Settings',
 	'settings.language': 'Language',
+	'settings.languageSystem': 'System default ({language})',
 	'settings.home': 'Home screen',
 	'settings.homeOrder': 'Order of countries',
 	'settings.homeOrder.recent': 'Most recently spotted',
@@ -521,6 +522,7 @@ export const sk: Messages = {
 
 	'settings.title': 'Nastavenia',
 	'settings.language': 'Jazyk',
+	'settings.languageSystem': 'Podľa systému ({language})',
 	'settings.home': 'Domovská obrazovka',
 	'settings.homeOrder': 'Poradie krajín',
 	'settings.homeOrder.recent': 'Naposledy videné',

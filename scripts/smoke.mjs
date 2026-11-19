@@ -369,6 +369,26 @@ try {
 	);
 	check('settings switch turns on', switchOn);
 	await shot('07-settings');
+	// Language "System default": no saved choice, the app follows the browser's languages
+	// (Slovak for sk/cs, English for anything else). Then back to English for the rest.
+	await page.select('[data-testid=language]', 'system');
+	const systemLang = await page.evaluate(() => {
+		const tags = navigator.languages.length ? navigator.languages : [navigator.language];
+		const first = tags.map((t) => t.toLowerCase().split(/[-_]/)[0]).find((l) => ['sk', 'cs', 'en'].includes(l));
+		return {
+			saved: localStorage.getItem('spz-ky.locale'),
+			lang: document.documentElement.lang,
+			expected: first === 'sk' || first === 'cs' ? 'sk' : 'en',
+			label: document.querySelector('[data-testid=language] option[value=system]')?.textContent
+		};
+	});
+	check(
+		'language: system default follows the browser, nothing saved',
+		systemLang.saved === null && systemLang.lang === systemLang.expected && !!systemLang.label?.includes(systemLang.expected === 'sk' ? 'Slovenčina' : 'English'),
+		JSON.stringify(systemLang)
+	);
+	await page.select('[data-testid=language]', 'en');
+	check('language: an explicit choice is saved', (await page.evaluate(() => localStorage.getItem('spz-ky.locale'))) === 'en');
 	await page.goto(`${APP}/add`, { waitUntil: 'networkidle0' });
 	await page.evaluate(() => [...document.querySelectorAll('[role=tab]')].find((b) => b.innerText.includes('Plate')).click());
 	await page.waitForSelector(plateSel);
