@@ -5,13 +5,11 @@
 //
 // Source: Natural Earth admin-0 countries (public domain) via the world-atlas
 // package. Coordinates are rounded to 3 decimals (~100 m), which is far below
-// the dataset's own accuracy. Add countries by ISO 3166-1 numeric code below, or by name
-// where Natural Earth has no numeric code (Kosovo).
+// the dataset's own accuracy. Countries: scripts/countries.mjs.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { feature } from 'topojson-client';
-
-const COUNTRIES = { SK: '703', CZ: '203', AT: '040', PL: '616', DE: '276', UA: '804', FR: '250', BG: '100', RO: '642', SI: '705', RS: '688', GR: '300', XK: 'Kosovo', CH: '756' };
+import { COUNTRIES, countryOfFeature } from './countries.mjs';
 const resolution = process.argv[2] ?? '10m';
 
 const require = createRequire(import.meta.url);
@@ -23,7 +21,7 @@ const out = {};
 let points = 0;
 
 for (const [code, id] of Object.entries(COUNTRIES)) {
-	const f = all.find((x) => (/^\d+$/.test(id) ? String(x.id).padStart(3, '0') === id : x.properties.name === id));
+	const f = all.find((x) => countryOfFeature(x) === code);
 	if (!f) throw new Error(`country ${code} (${id}) not found`);
 	// Only the European parts (France's overseas departments are far away and large).
 	const inEurope = (rings) => rings[0].every(([lng, lat]) => lng > -32 && lng < 50 && lat > 33 && lat < 72);

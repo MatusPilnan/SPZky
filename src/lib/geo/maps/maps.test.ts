@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { collections } from '../../collections';
-import { areaStatus, codesOfArea, hasMap, isUnmappedCode, loadMap } from './index';
+import { areaStatus, codesOfArea, hasMap, isUnmappedCode, loadContinents, loadMap } from './index';
+
+describe('continent maps', () => {
+	it('show every supported country exactly once, plus untracked land', async () => {
+		const continents = await loadContinents();
+		const codes = continents.flatMap((c) => c.countries.map((x) => x.code)).sort();
+		expect(codes).toEqual([...new Set(collections.map((c) => c.country))].sort());
+		for (const c of continents) {
+			expect(c.land.length).toBeGreaterThan(1000);
+			for (const x of c.countries) expect(x.d).toMatch(/^M[\d. MZ-]+Z$/);
+		}
+	});
+});
 
 describe('region maps', () => {
 	const mapped = collections.filter((c) => hasMap(c.id));

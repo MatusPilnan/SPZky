@@ -131,7 +131,8 @@ like normal codes. For every country added or changed in `src/lib/data/`:
     `src/lib/collections.ts` (`bandCode` = international code in the EU band, e.g. "A",
     `plateStyle`, flag); detection in `src/lib/plates/detect.ts` with tests for its formats
     **and its overlaps with other countries**; `collection.<id>` and `format.<format>` texts
-    (sk + en); outline in `scripts/build-borders.mjs` (ISO numeric code) + a `countryAt` test;
+    (sk + en); the country in `scripts/countries.mjs` (ISO numeric code), then run
+    `build-borders.mjs` (+ a `countryAt` test) and `build-continents.mjs` (Home map);
     `LOCAL_LANGUAGE` in `src/lib/geo/place.ts`; facts and map licence in docs/PLAN.md and
     README.md. One commit per country.
 
@@ -195,7 +196,8 @@ src/lib/changelog.ts  CHANGELOG.md → changelog.json (built by vite.config.ts, 
                       "What's new" in the update dialog
 src/lib/i18n/         typed sk/en messages, plural-aware formatter, reactive locale
 src/lib/*.svelte.ts   prefs (localStorage), location tracker, toasts
-src/lib/components/   PlateInput, PlateBadge, RegionGrid (filterable), CollectionTile (Home donut tile), NationwidePicker, TypeChip,
+src/lib/components/   PlateInput, PlateBadge, RegionGrid (filterable), CollectionTile (Home donut tile),
+                      ContinentMaps (Home carousel of continent maps), NationwidePicker, TypeChip,
                       SightingList, ProgressBar, RegionMap, Switch, CollectionSwitch, Toasts,
                       UpdatePrompt, AccountSection (Settings), SignInConflict (layout),
                       DataSection + ExportButton (export/import), SyncButton (Home),
@@ -206,6 +208,8 @@ supabase/             config.toml, migrations/, templates/, tests/database/ (pgT
 scripts/              check-node.cjs, smoke.mjs, sync-e2e.mjs, release-notes.mjs (+ test),
                       build-borders.mjs (regenerates src/lib/geo/borders.ts),
                       build-maps.mjs (regenerates src/lib/geo/maps/*; keep attribution/licence),
-                      import-si-areas.mjs → data/si-municipality-areas.json (SI map grouping)
+                      import-si-areas.mjs → data/si-municipality-areas.json (SI map grouping),
+                      countries.mjs (supported countries in Natural Earth, shared by
+                      build-borders.mjs and build-continents.mjs → geo/maps/continents.ts)
 .github/workflows/    ci.yml, release.yml
 ```

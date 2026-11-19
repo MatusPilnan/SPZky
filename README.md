@@ -121,7 +121,7 @@ git push --follow-tags        # pushes the commit and the tag → release workfl
   (`si-areas.ts` likewise); Kosovo
   districts © OpenStreetMap contributors, CC BY-SA 2.0 (`xk-districts.ts` likewise). All via
   [geoBoundaries](https://www.geoboundaries.org/).
-- Country outlines: [Natural Earth](https://www.naturalearthdata.com/), public domain.
+- Country outlines and continent maps: [Natural Earth](https://www.naturalearthdata.com/), public domain.
 - Plate formats and region codes: see the sources in each file of `src/lib/data/`.
 
 The app shows the map credits under each map and in Settings → Map data.

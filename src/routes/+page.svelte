@@ -9,6 +9,7 @@
 	import SightingList from '#lib/components/SightingList.svelte';
 	import RegionMap from '#lib/components/RegionMap.svelte';
 	import CollectionTile from '#lib/components/CollectionTile.svelte';
+	import ContinentMaps from '#lib/components/ContinentMaps.svelte';
 	import { hasMap } from '#lib/geo/maps/index.js';
 	import SyncButton from '#lib/components/SyncButton.svelte';
 	import { prefs } from '#lib/prefs.svelte.js';
@@ -31,6 +32,8 @@
 		)
 	);
 	const fullCount = $derived(clampFullCount(prefs.homeFullCount, main.length));
+	// Continent maps: each country coloured by its main collection (bonus ones stay separate).
+	const byCountry = $derived(new Map(main.map((m) => [m.c.country as string, { collection: m.c, progress: m.progress }])));
 	const bonus = $derived(collections.filter((c) => c.bonus).map(withProgress));
 	const bonusStats = $derived(bonusSummary(bonus.map((b) => b.progress)));
 </script>
@@ -83,6 +86,8 @@
 			</div>
 		{/if}
 	</section>
+
+	<ContinentMaps countries={byCountry} />
 
 	{#if bonus.length}
 		<details class="bonus stack tight" bind:open={prefs.bonusOpen} data-testid="bonus">

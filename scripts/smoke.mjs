@@ -471,6 +471,25 @@ try {
 	check('home: collection percentages stay on one line', wrappedPct.length === 0, wrappedPct.join(', '));
 	await shot('09-home');
 
+	// Continent map: every tracked country coloured by progress, tap opens its collection.
+	await page.waitForSelector('[data-testid=continents] path.country', { timeout: 5000 }).catch(() => {});
+	const continent = await page.$$eval('[data-testid=continents] path.country', (els) => ({
+		labels: els.map((e) => e.getAttribute('aria-label')),
+		started: els.filter((e) => e.classList.contains('started')).map((e) => e.dataset.code).sort(),
+		land: !!document.querySelector('[data-testid=continents] path.land')?.getAttribute('d')
+	}));
+	check(
+		'home: Europe map with every tracked country, coloured where plates were found',
+		continent.labels.length === tiles.length + 3 && continent.labels.includes('Slovakia: 4 %') && continent.started.join() === 'CZ,SK' && continent.land,
+		`${continent.labels.length} countries, started ${continent.started.join()}`
+	);
+	await page.$eval('[data-testid=continents] path[data-code=AT]', (p) => p.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+	const openedAt = await page
+		.waitForFunction(() => location.pathname.endsWith('/country') && location.search === '?id=at', { timeout: 5000 })
+		.then(() => true, () => false);
+	check('home: tapping a country on the map opens its collection', openedAt);
+	await page.goto(`${APP}/`, { waitUntil: 'networkidle0' });
+
 	// Settings: alphabetical order, no large cards → every country is a tile, Austria first.
 	await page.goto(`${APP}/settings`, { waitUntil: 'networkidle0' });
 	const setHome = async (order, full) => {

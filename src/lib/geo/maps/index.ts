@@ -3,9 +3,9 @@ import { plUnmappedCodes } from '../../data/pl';
 import { frUnmappedCodes } from '../../data/fr';
 import { rsUnmappedCodes } from '../../data/rs';
 import type { CollectionDef, CollectionId } from '../../data/types';
-import type { RegionMapData } from './types';
+import type { ContinentMapData, RegionMapData } from './types';
 
-export type { MapShape, RegionMapData } from './types';
+export type { ContinentMapData, MapShape, RegionMapData } from './types';
 
 /**
  * Lazily loaded map per collection (keeps the data out of screens that don't show maps).
@@ -34,6 +34,11 @@ const loaders: Partial<Record<CollectionId, () => Promise<{ map: RegionMapData }
 
 export function hasMap(collectionId: CollectionId): boolean {
 	return collectionId in loaders;
+}
+
+/** Continent maps for Home (only continents with a supported country), loaded on demand. */
+export async function loadContinents(): Promise<ContinentMapData[]> {
+	return (await import('./continents')).continents;
 }
 
 /** The collection's map, or null when it has none. */

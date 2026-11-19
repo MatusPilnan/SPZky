@@ -254,6 +254,19 @@ the Slovak 2023 series. A plate with a region is the more specific reading.
   **bonus collections** are one collapsible section: closed it shows how many there are and
   how many are started / finished / not started; open/closed is remembered. Logic in
   `src/lib/home.ts` (`orderCollections`, `bonusSummary`).
+  Between the countries and the bonus section (2026-11-19): a **carousel of continent maps**
+  (`ContinentMaps.svelte`), only continents with a tracked country (today only Europe; dots
+  appear with a second one). Decided by the owner: each country is coloured by its **main
+  collection** (bonus ones stay separate), **tapping** a tracked country opens its
+  collection, and the map is a **frame with neighbours** (Turkey, North Africa, western
+  Russia drawn as untracked). Three levels: sea (faint blue), untracked land (hatched),
+  tracked (solid with outline; green from 20 % to 80 % mixed in as the share found grows,
+  same green as the region maps). Data: `scripts/build-continents.mjs` → GENERATED
+  `src/lib/geo/maps/continents.ts` (Natural Earth 1:50m, public domain; per continent a
+  rectangle in LAEA; tracked countries as shapes, other land merged into one path; ~30 kB,
+  loaded on demand). A continent outside the existing frames needs a frame there and a
+  `ContinentId` + `continent.<id>` texts; the script fails if a supported country is in
+  no frame.
 - **Country screen** `/country?id=<collection>` (query param, so it is one precached shell):
   progress header, code grid with All / Found / Missing filter, nationwide section. Tapping a
   code or nationwide type opens a detail sheet (`<dialog>`) with count, first/last seen and

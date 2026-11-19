@@ -17,6 +17,22 @@ export interface MapProjection {
 	scale: number;
 }
 
+/**
+ * Continents with a frame in scripts/build-continents.mjs; the name is the message
+ * `continent.<id>`. Add one here (and its texts) together with its frame.
+ */
+export type ContinentId = 'europe';
+
+/** A continent on Home: supported countries as shapes, all other land as one background. */
+export interface ContinentMapData {
+	id: ContinentId;
+	viewBox: string;
+	/** Supported countries (ISO alpha-2 as in CountryCode) with their outline. */
+	countries: { code: string; d: string }[];
+	/** All other land in the frame (untracked), one path. */
+	land: string;
+}
+
 export interface RegionMapData {
 	viewBox: string;
 	projection: MapProjection;
