@@ -3,6 +3,12 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.14.1](https://github.com/MatusPilnan/SPZky/compare/v0.14.0...v0.14.1) - 2026-11-19
+
+### Bug fixes
+
+- fit long German country names in the Home tiles ([115c558](https://github.com/MatusPilnan/SPZky/commit/115c55856b6346d6375e50ab6cda37a590eeaadb))
+
 ## [0.14.0](https://github.com/MatusPilnan/SPZky/compare/v0.13.1...v0.14.0) - 2026-11-19
 
 ### Features
