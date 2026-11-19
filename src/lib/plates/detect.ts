@@ -384,11 +384,12 @@ export function detectPlate(raw: string): Detection[] {
 }
 
 /**
- * When the candidates belong to more than one country, puts the preferred
- * countries first (in the given order: GPS country, then last used), keeping
+ * When the candidates belong to more than one country: regional plates of every country
+ * first, then the nationwide ones (personalised, electric…); within each group the
+ * preferred countries first (in the given order: GPS country, then last used), keeping
  * the existing order otherwise. With a single country nothing changes.
  */
-export function orderByCountry<T extends { collectionId: string }>(
+export function orderByCountry<T extends { collectionId: string; type?: Detection['type'] }>(
 	candidates: T[],
 	preferred: (string | null | undefined)[]
 ): T[] {
@@ -399,9 +400,10 @@ export function orderByCountry<T extends { collectionId: string }>(
 		const i = ranking.indexOf(countryOf(c.collectionId) ?? '');
 		return i === -1 ? ranking.length : i;
 	};
+	const nationwideLast = (c: T) => (c.type === 'nationwide' ? 1 : 0);
 	return candidates
 		.map((c, i) => ({ c, i }))
-		.sort((a, b) => rank(a.c) - rank(b.c) || a.i - b.i)
+		.sort((a, b) => nationwideLast(a.c) - nationwideLast(b.c) || rank(a.c) - rank(b.c) || a.i - b.i)
 		.map(({ c }) => c);
 }
 

@@ -456,6 +456,24 @@ describe('orderByCountry', () => {
 		expect(spansCountries(el)).toBe(true);
 	});
 
+	it('puts regional plates of any country before nationwide ones (personalised, electric…)', () => {
+		const mixed = [
+			{ collectionId: 'sk', type: 'nationwide' as const },
+			{ collectionId: 'cz', type: 'nationwide' as const },
+			{ collectionId: 'at', type: 'region' as const },
+			{ collectionId: 'si', type: 'region' as const }
+		];
+		// GPS in Slovakia: the Slovak personalised plate still comes after both regional ones.
+		expect(countries(orderByCountry(mixed, ['SK']))).toBe('at,si,sk,cz');
+		// Within each group the GPS country leads.
+		expect(countries(orderByCountry(mixed, ['SI', 'CZ']))).toBe('si,at,cz,sk');
+		// Real plates: Ljubljana or a Slovak personalised plate; Novi Sad or the Slovak 2023 series.
+		const lj = detectPlate('LJ 12345');
+		expect(countries(lj)).toBe('si,sk');
+		expect(orderByCountry(lj, ['SK']).map((d) => `${d.collectionId}:${d.type}`)).toEqual(['si:region', 'sk:nationwide']);
+		expect(orderByCountry(detectPlate('NS 123AB'), ['SK'])[0]).toMatchObject({ collectionId: 'rs', regionCode: 'NS' });
+	});
+
 	it('treats the CZ pre-2001 bonus collection as Czechia', () => {
 		const mixed = [{ collectionId: 'sk' }, { collectionId: 'cz-vintage' }];
 		expect(countries(orderByCountry(mixed, ['CZ']))).toBe('cz-vintage,sk');
