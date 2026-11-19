@@ -3,6 +3,22 @@
 All notable changes to this project. Versions follow [Semantic Versioning](https://semver.org/);
 entries are generated from [Conventional Commits](https://www.conventionalcommits.org/) by `npm run release`.
 
+## [0.14.0](https://github.com/MatusPilnan/SPZky/compare/v0.13.1...v0.14.0) - 2026-11-19
+
+### Features
+
+- German translation ([0a791d3](https://github.com/MatusPilnan/SPZky/commit/0a791d36db200d224f01f5f5e31e2760bd7a8f99))
+- follow the system language, English for languages other than Slovak and Czech ([6863772](https://github.com/MatusPilnan/SPZky/commit/68637726e028189ebed06367048f195ea1e4aa42))
+- continent map on Home coloured by progress ([4927d90](https://github.com/MatusPilnan/SPZky/commit/4927d90da904c585800110676c947349f062c6d6))
+- prefer regional plates over nationwide ones across countries ([7e03884](https://github.com/MatusPilnan/SPZky/commit/7e038846470e0f6243464be25c3489c77d19b1bd))
+- explain why rare codes are rare ([19d9311](https://github.com/MatusPilnan/SPZky/commit/19d9311fe64771254019e555f24df70ae9d971f0))
+
+### Other changes
+
+- give the multi-page sync test more time ([0e111b3](https://github.com/MatusPilnan/SPZky/commit/0e111b37678d49715963cdeaa6ccad3e5c10d50e))
+- expect failed address lookups while the smoke test is offline ([678f640](https://github.com/MatusPilnan/SPZky/commit/678f640598d5ce4f46cb3d005b5f061c16d6974d))
+- log failed requests in the smoke test ([f86c4a8](https://github.com/MatusPilnan/SPZky/commit/f86c4a8d48662b66fb564f5a95c26d693f011a55))
+
 ## [0.13.1](https://github.com/MatusPilnan/SPZky/compare/v0.13.0...v0.13.1) - 2026-11-17
 
 ### Bug fixes
