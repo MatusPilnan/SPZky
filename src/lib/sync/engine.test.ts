@@ -128,7 +128,8 @@ describe('sync rounds', () => {
 		await syncOnce(phone, server.remote(ALICE), ALICE);
 		const tablet = await signedIn(ALICE);
 		expect(await tablet.sightings.count()).toBe(n);
-	});
+		// Over a thousand database writes: close to the 5 s default on a busy machine.
+	}, 30_000);
 
 	it('never shows one user the other user’s data', async () => {
 		const alice = await signedIn(ALICE);
